@@ -10,9 +10,9 @@
             font-family: 'Tahoma', sans-serif;
             background: linear-gradient(135deg, #ffc0cb, #ffe4e1);
             margin: 0;
-            padding: 6px;
+            padding: 10px;
             text-align: center;
-            padding-bottom: 70px;
+            padding-bottom: 90px;
         }
         
         .no-capture { /* คลาสสำหรับซ่อนตอนจะแคปหน้าจอ */
@@ -49,43 +49,41 @@
             100% { opacity: 1; }
         }
 
-        ./* GRID ไพ่ */
         .cards-container {
             display: grid;
-            grid-template-columns: repeat(4, 1fr); /* ⭐ 4 ใบในแถวเดียว */
-            gap: 6px;
-            padding: 6px;
-            max-width: 100%;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 5px;
+            max-width: 500px;
             margin: 0 auto;
-            align-items: stretch;
-}
+        }
 
-        ./* กล่องไพ่ */
         .card {
             background: #fff;
-            padding: 6px;
-            border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-            text-align: center;
-
-            aspect-ratio: 2 / 3;   /* ⭐ ไพ่ tarot มาตรฐาน */
-}
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
 
         .card img {
             width: 100%;
             height: auto;
-            object-fit: contain;  /* ไม่บี้ ไม่ครอป */
-            border-radius: 5px;}
+            border-radius: 6px;
+            background: #f9f9f9;
+        }
 
         .pos-label {
             font-weight: bold;
             color: #b22222;
-            margin-bottom: 2px;
-            font-size: 10px;
+            margin-bottom: 4px;
+            font-size: 11px;
         }
 
-        .card h3 { font-size: 11px; margin: 4 0 2px; color: #b22222; }
-        .card p { font-size: 9px; text-align: left; color: #333; line-height: 1.25; margin: 0; }
+        .card h3 { font-size: 13px; margin: 6px 0 3px; color: #b22222; }
+        .card p { font-size: 10px; text-align: left; color: #333; line-height: 1.3; margin: 0; }
 
         .bottom-nav {
             position: fixed;
@@ -142,8 +140,8 @@
     // (ข้อมูลไพ่ tarotDeck ของคุณทั้งหมดใส่ตรงนี้เหมือนเดิมครับ)
     const tarotDeck = [
         /* Major Arcana */
-        {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน สื่อถึงเจ้าชะตายังอยู่ในภาวะไม่จริงจัง รักอิสระ"},
-        {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง สื่อถึงการพูดคุยสื่อสาร ความสนใจ หรือแม้กระทั่งคำพูดโกหก"},
+        {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน"},
+        {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง"},
         {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"มีความรู้สึกซ่อนอยู่ ต่างฝ่ายยังไม่เปิดใจทั้งหมด"},
         {n:"The Empress",i:"03-TheEmpress.jpg",m:"ความรักอบอุ่น เอาใจใส่ มีพัฒนาระยะยาว"},
         {n:"The Emperor",i:"04-TheEmperor.jpg",m:"ความรักจริงจัง มั่นคง คนนี้พร้อมดูแล"},

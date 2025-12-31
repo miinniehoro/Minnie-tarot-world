@@ -2,16 +2,18 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>ไพ่ยิปซีความรัก 4 ใบ</title>
 
 <style>
 body{
   font-family:tahoma, sans-serif;
   background:linear-gradient(135deg,#ffc0cb,#ffe4e1);
-  padding:25px;
+  padding:20px;
   text-align:center;
+  margin:0;
 }
-h1{color:#8b0000}
+h1{color:#8b0000; font-size: 24px;}
 button{
   padding:12px 35px;
   border-radius:30px;
@@ -20,6 +22,7 @@ button{
   color:white;
   font-size:16px;
   cursor:pointer;
+  box-shadow: 0 4px 10px rgba(178,34,34,0.3);
   transition: 0.3s;
 }
 button:hover{ background:#8b0000; transform: scale(1.05); }
@@ -35,13 +38,18 @@ button:hover{ background:#8b0000; transform: scale(1.05); }
   background:#fff;
   padding:15px;
   border-radius:15px;
-  box-shadow:0 5px 12px rgba(0,0,0,.25);
+  box-shadow:0 5px 12px rgba(0,0,0,.15);
   position:relative;
 }
-.card img{ width:100%; border-radius:10px; background:#f9f9f9; }
-.position{ font-weight:bold; color:#444; margin-bottom:10px; display:block; }
-.card h3{ color:#b22222; margin:8px 0 3px; font-size:18px; }
-.card p{ text-align:left; font-size:14px; color:#333; line-height:1.4; }
+.card img{ 
+  width:100%; 
+  border-radius:10px; 
+  background:#f0f0f0;
+  min-height: 200px; 
+}
+.position{ font-weight:bold; color:#555; margin-bottom:10px; display:block; }
+.card h3{ color:#b22222; margin:10px 0 5px; font-size:18px; }
+.card p{ text-align:left; font-size:14px; color:#444; line-height:1.5; margin:0; }
 .card::before{
   content:attr(data-number);
   position:absolute;
@@ -68,6 +76,7 @@ button:hover{ background:#8b0000; transform: scale(1.05); }
 <div class="cards" id="result"></div>
 
 <script>
+// ตรวจสอบชื่อโฟลเดอร์ใน GitHub ของคุณให้ตรงกับคำนี้เป๊ะๆ (Case-sensitive)
 const BASE = "Cards-jpg/";
 
 const positions = [
@@ -118,7 +127,7 @@ const tarotDeck = [
 {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
 {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
 
-/* Cups */
+/* Cups (ในรูปของคุณบางไฟล์สะกด Pups อย่าลืมแก้ใน GitHub เป็น Cups นะครับ) */
 {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขามีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
 {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
 {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
@@ -150,8 +159,8 @@ const tarotDeck = [
 {n:"Queen of Swords",i:"Swords13.jpg",m:"ใช้เหตุผลนำหน้า หัวใจระวังเจ็บ/สื่อถึงอีกฝ่ายอยู่ในภาวะไม่สนใจหรือเย็นชา"},
 {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
 
-/* Pentacles */
-{n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
+/* Pentacles (ในรูปบางไฟล์ชื่อ Centacles หรือ Pentac12 อย่าลืมแก้ชื่อไฟล์ใน GitHub ให้ตรงกับข้างล่างนะครับ) */
+{n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหม่อย่างมั่นคง"},
 {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
 {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
 {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"หวงรัก ยึดติด กลัวเสียไป/ สื่อถึงเจ้าชะตามีภาวะหึงหวงและยึดติดในช่วงนั้นอยู่ หรือยังปล่อยวางไม่ได้"},
@@ -171,7 +180,7 @@ function drawCards(){
   const box = document.getElementById("result");
   box.innerHTML = "";
   
-  // สุ่มไพ่ 4 ใบไม่ซ้ำกัน
+  // สุ่มไพ่ 4 ใบ
   const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
 
   picks.forEach((c, i) => {
@@ -180,7 +189,7 @@ function drawCards(){
     el.setAttribute("data-number", i + 1);
     el.innerHTML = `
       <span class="position">${positions[i]}</span>
-      <img src="${BASE + c.i}" alt="${c.n}">
+      <img src="${BASE + c.i}" alt="${c.n}" onerror="this.onerror=null; this.src='https://placehold.co/260x400?text=Image+Not+Found';">
       <h3>${c.n}</h3>
       <p>${c.m}</p>
     `;

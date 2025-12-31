@@ -1,0 +1,23 @@
+.menu-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+  max-width: 600px;
+  margin: auto;
+}
+
+.menu-item {
+  text-align: center;
+  text-decoration: none;
+  color: #000;
+}
+
+.menu-item img {
+  width: 100%;
+  max-width: 150px;
+  transition: transform 0.3s;
+}
+
+.menu-item:hover img {
+  transform: scale(1.05);
+}

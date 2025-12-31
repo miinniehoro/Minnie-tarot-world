@@ -57,6 +57,7 @@
             padding: 6px;
             max-width: 100%;
             margin: 0 auto;
+            align-items: stretch;
 }
 
         ./* กล่องไพ่ */
@@ -66,12 +67,14 @@
             border-radius: 8px;
             box-shadow: 0 2px 6px rgba(0,0,0,0.15);
             text-align: center;
-        }
+
+            aspect-ratio: 2 / 3;   /* ⭐ ไพ่ tarot มาตรฐาน */
+}
 
         .card img {
             width: 100%;
             height: auto;
-            object-fit: contain;
+            object-fit: contain;  /* ไม่บี้ ไม่ครอป */
             border-radius: 5px;}
 
         .pos-label {

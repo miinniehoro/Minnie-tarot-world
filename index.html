@@ -52,26 +52,26 @@
         ./* GRID ไพ่ */
         .cards-container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 6px;                 /* ช่องไฟเล็กลง */
-            padding: 4px;
-            max-width: 420px;         /* บีบความกว้าง */
+            grid-template-columns: repeat(4, 1fr); /* ⭐ 4 ใบในแถวเดียว */
+            gap: 6px;
+            padding: 6px;
+            max-width: 100%;
             margin: 0 auto;
 }
 
         ./* กล่องไพ่ */
         .card {
             background: #fff;
-            padding: 5px;             /* ลด padding */
+            padding: 6px;
             border-radius: 8px;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+            text-align: center;
         }
 
         .card img {
             width: 100%;
             height: auto;
-            max-height: 170px;        
-            /* ⭐ จำกัดความสูงรูป */object-fit: contain;
+            object-fit: contain;
             border-radius: 5px;}
 
         .pos-label {

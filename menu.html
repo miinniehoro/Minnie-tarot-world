@@ -1,19 +1,3 @@
-/project
-│
-├── index.html          ← หน้าแรก
-├── menu.html           ← หน้าเมนูเลือกดูดวง (ไฟล์ใหม่)
-│
-├── css/
-│   └── style.css
-│
-└── images/
-    ├── IMG_7019.png
-    ├── tarot.png
-    └── work.p
-<nav>
-  <a href="index.html">หน้าแรก</a>
-  <a href="menu.html">ดูดวง</a>
-</nav>
 <!DOCTYPE html>
 <html lang="th">
 <head>
@@ -22,6 +6,11 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<nav>
+  <a href="index.html">หน้าแรก</a>
+  <a href="menu.html">ดูดวง</a>
+</nav>
 
 <h1>เลือกดูดวง</h1>
 
@@ -37,36 +26,10 @@
   </a>
 
   <a href="work.html" class="menu-item">
-    <img src="" alt="ดูดวงการงาน">
+    <img src="images/work.png" alt="ดูดวงการงาน">
     <p>ดูดวงการงาน</p>
   </a>
 </div>
 
 </body>
 </html>
-
-.menu-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 20px;
-  max-width: 600px;
-  margin: auto;
-}
-
-.menu-item {
-  text-align: center;
-  text-decoration: none;
-  color: #000;
-}
-
-.menu-item img {
-  width: 100%;
-  max-width: 150px;
-  transition: transform 0.3s;
-}
-
-.menu-item:hover img {
-  transform: scale(1.05);
-}
-
-<h1>ดูดวงไพ่</h1>

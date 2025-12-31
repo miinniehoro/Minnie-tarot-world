@@ -5,66 +5,85 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ไพ่ยิปซีความรัก 4 ใบ</title>
     <style>
+        /* สไตล์เดิมที่ปรับให้เหมาะกับการแคป */
         body {
             font-family: 'Tahoma', sans-serif;
             background: linear-gradient(135deg, #ffc0cb, #ffe4e1);
             margin: 0;
             padding: 10px;
             text-align: center;
-            padding-bottom: 80px;
+            padding-bottom: 90px;
         }
-        h1 { color: #8b0000; font-size: 20px; margin: 10px 0; }
         
+        .no-capture { /* คลาสสำหรับซ่อนตอนจะแคปหน้าจอ */
+            display: block;
+        }
+
+        h1 { color: #8b0000; font-size: 18px; margin: 10px 0; }
+        
+        .btn-group { margin-bottom: 5px; }
+
         button {
-            padding: 10px 30px;
-            border-radius: 25px;
+            padding: 8px 20px;
+            border-radius: 20px;
             border: none;
             background: #b22222;
             color: white;
-            font-size: 16px;
+            font-size: 14px;
             cursor: pointer;
             box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            margin-bottom: 15px;
+            margin: 5px;
+        }
+
+        .capture-hint {
+            font-size: 12px;
+            color: #d81b60;
+            margin-bottom: 10px;
+            font-weight: bold;
+            animation: blink 1.5s infinite;
+        }
+
+        @keyframes blink {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
         }
 
         .cards-container {
-            display: flex;
-            flex-direction: row;
-            justify-content: center;
-            align-items: flex-start;
-            flex-wrap: nowrap;
-            gap: 8px;
-            overflow-x: auto;
-            padding: 10px;
-            -webkit-overflow-scrolling: touch;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            padding: 5px;
+            max-width: 500px;
+            margin: 0 auto;
         }
 
         .card {
-            flex: 0 0 160px; 
             background: #fff;
-            padding: 10px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            padding: 8px;
+            border-radius: 10px;
+            box-shadow: 0 3px 8px rgba(0,0,0,0.15);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .card img {
             width: 100%;
             height: auto;
-            border-radius: 8px;
+            border-radius: 6px;
             background: #f9f9f9;
-            min-height: 240px; 
         }
 
         .pos-label {
             font-weight: bold;
             color: #b22222;
-            margin-bottom: 5px;
-            display: block;
+            margin-bottom: 4px;
             font-size: 11px;
         }
 
-        .card h3 { font-size: 14px; margin: 8px 0 4px; color: #b22222; }
-        .card p { font-size: 11px; text-align: left; color: #333; line-height: 1.4; margin: 0; }
+        .card h3 { font-size: 13px; margin: 6px 0 3px; color: #b22222; }
+        .card p { font-size: 10px; text-align: left; color: #333; line-height: 1.3; margin: 0; }
 
         .bottom-nav {
             position: fixed;
@@ -74,29 +93,51 @@
             justify-content: space-around;
             padding: 10px 0;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            z-index: 1000;
         }
-        .nav-item { text-decoration: none; color: #8b0000; font-size: 12px; display: flex; flex-direction: column; align-items: center; }
+
+        /* เมื่ออยู่ในโหมดแคปหน้าจอ ให้ซ่อนส่วนที่ไม่จำเป็น */
+        body.screenshot-mode .no-capture {
+            display: none !important;
+        }
+        body.screenshot-mode .bottom-nav {
+            display: none !important;
+        }
+        body.screenshot-mode {
+            padding-bottom: 10px;
+        }
     </style>
 </head>
-<body>
+<body id="main-body">
 
-    <h1>🔮 ไพ่ยิปซีความรัก 4 ใบ 🔮</h1>
-    <button onclick="drawCards()">สุ่มไพ่ทำนาย</button>
+    <h1 class="no-capture">🔮 ไพ่ยิปซีความรัก 4 ใบ 🔮</h1>
+    
+    <div class="no-capture btn-group">
+        <button onclick="drawCards()">สุ่มไพ่ใหม่</button>
+        <button onclick="prepareCapture()" style="background: #ad1457;">📸 เตรียมแคปหน้าจอ</button>
+    </div>
+
+    <div class="capture-hint no-capture">✨ สุ่มได้แล้ว อย่าลืมแคปหน้าจอไว้ดูคำทำนายนะ! ✨</div>
 
     <div class="cards-container" id="result"></div>
 
     <nav class="bottom-nav">
-        <a href="index.html" class="nav-item"><span>🃏</span><span>ไพ่ยิปซี</span></a>
-        <a href="javascript:void(0);" class="nav-item" onclick="shareWeb()"><span>📢</span><span>แชร์</span></a>
-        <a href="other-horo.html" class="nav-item"><span>🔮</span><span>ดูดวงอื่นฯ</span></a>
-        <a href="mutelu.html" class="nav-item"><span>🕉️</span><span>มูเตลู</span></a>
+        <a href="index.html" style="text-decoration: none; color: #8b0000; font-size: 11px; display: flex; flex-direction: column; align-items: center;">
+            <span>🃏</span><span>ไพ่ยิปซี</span>
+        </a>
+        <a href="javascript:void(0);" onclick="shareWeb()" style="text-decoration: none; color: #8b0000; font-size: 11px; display: flex; flex-direction: column; align-items: center;">
+            <span>📢</span><span>แชร์</span>
+        </a>
+        <a href="mutelu.html" style="text-decoration: none; color: #8b0000; font-size: 11px; display: flex; flex-direction: column; align-items: center;">
+            <span>🕉️</span><span>มูเตลู</span>
+        </a>
     </nav>
 
 <script>
     const BASE = ""; 
-
     const positions = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขา", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
 
+    // (ข้อมูลไพ่ tarotDeck ของคุณทั้งหมดใส่ตรงนี้เหมือนเดิมครับ)
     const tarotDeck = [
         /* Major Arcana */
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน"},
@@ -197,12 +238,23 @@
             el.className = "card";
             el.innerHTML = `
                 <span class="pos-label">${positions[i]}</span>
-                <img src="${BASE + c.i}" alt="${c.n}" onerror="this.src='https://placehold.co/160x240?text=Image+Not+Found';">
+                <img src="${BASE + c.i}" alt="${c.n}" onerror="this.src='https://placehold.co/160x240?text=Not+Found';">
                 <h3>${c.n}</h3>
                 <p>${c.m}</p>
             `;
             box.appendChild(el);
         });
+    }
+
+    // ฟังก์ชันเตรียมการแคปหน้าจอ
+    function prepareCapture() {
+        document.body.classList.add('screenshot-mode');
+        
+        // แจ้งเตือนผู้ใช้
+        setTimeout(() => {
+            alert("ปุ่มต่างๆ ถูกซ่อนแล้ว คุณสามารถแคปหน้าจอได้เลย!\n(หลังจากแคปเสร็จ กดตกลงเพื่อดึงปุ่มกลับมา)");
+            document.body.classList.remove('screenshot-mode');
+        }, 300);
     }
 
     function shareWeb() {

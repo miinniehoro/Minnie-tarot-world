@@ -127,16 +127,39 @@
         .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
-        /* --- Bottom Nav แบบรูปภาพ --- */
+        /* --- Bottom Nav แบบรูปภาพ (ปรับปรุงใหม่ตามที่ขอ) --- */
         .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            background: #ffffff; display: flex; justify-content: space-around;
-            padding: 8px 0; border-top: 2px solid #ffd700; z-index: 100;
+            position: fixed; 
+            bottom: 0; 
+            width: 100%;
+            background: #ffffff; 
+            display: flex; 
+            justify-content: space-around; /* กระจายปุ่มให้ห่างเท่ากัน */
             align-items: center;
+            padding: 10px 0; /* เพิ่มพื้นที่แนวตั้งนิดหน่อยให้รูปไม่ชิดขอบ */
+            border-top: 3px solid #ffd700; /* ขอบทองหนาขึ้นนิดนึงให้ดูพรีเมียม */
+            z-index: 100;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.15); /* เพิ่มเงาให้ดูมีมิติลอยขึ้นมา */
         }
-        .nav-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .nav-item img { height: 45px; width: auto; transition: transform 0.2s; }
-        .nav-item img:active { transform: scale(0.9); }
+        .nav-item { 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            justify-content: center;
+            flex: 1; /* ให้แต่ละปุ่มกินพื้นที่กว้างเท่าๆ กัน กดง่าย */
+            -webkit-tap-highlight-color: transparent;
+        }
+        .nav-item img { 
+            height: 50px; /* ปรับขนาดให้ใหญ่ขึ้นเล็กน้อย (จาก 45px) ให้เห็นชัด เต็มตา */
+            width: auto; 
+            object-fit: contain;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* เอฟเฟกต์เด้งดึ๋งเล็กน้อย */
+            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); /* ใส่เงาใต้รูปเล็กน้อยให้ดูเป็น icon ลอย */
+        }
+        .nav-item img:active { 
+            transform: scale(0.85); /* เวลากด รูปจะยุบลง */
+        }
 
         /* --- Popup Menu --- */
         .modal-overlay {

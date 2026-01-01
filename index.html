@@ -12,8 +12,8 @@
         * { box-sizing: border-box; }
         body {
             font-family: 'Sarabun', sans-serif !important;
-            background-color: #F5F6F1 !important;
-            color: #ffffff;
+            background-color: #F8F9FA !important; /* ปรับพื้นหลังให้อ่อนลงดูสะอาดตา */
+            color: #333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -23,143 +23,240 @@
             overflow-x: hidden;
         }
 
+        /* --- Header & Logo --- */
         .main-logo {
-            width: 55%; 
-            max-width: 200px;
+            width: 60%; 
+            max-width: 220px;
             height: auto;
-            margin: 5px auto -20px;
+            margin: 20px auto 10px;
             display: block;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
         }
 
-        #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; z-index: 10; }
-        #counter { color: #000000; font-size: 18px; font-weight: 700; margin: 0 0 10px; }
+        #selection-screen { 
+            width: 100%; 
+            max-width: 500px; 
+            text-align: center; 
+            padding: 0 15px 100px; /* เพิ่ม padding ล่างกันโดนเมนูบัง */
+            z-index: 10; 
+        }
 
+        #counter { 
+            color: #ad1457; 
+            font-size: 20px; 
+            font-weight: 700; 
+            margin: 15px 0;
+            background: #fff;
+            display: inline-block;
+            padding: 5px 20px;
+            border-radius: 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        /* --- การจัดวางสำรับไพ่ --- */
         .deck-container { 
             display: flex; 
             flex-wrap: wrap; 
             justify-content: center; 
-            padding: 5px;
-            margin-top: 5px;
+            padding: 10px;
+            perspective: 1000px;
         }
 
-        /* --- ปรับสีหลังไพ่เป็นสีดำ --- */
         .card-back {
-            width: 42px; 
-            height: 70px;
-            background: #000000; /* สีดำ */
-            border: 1.5px solid #ffd700; /* ขอบทอง */
-            border-radius: 5px;
+            width: 45px; 
+            height: 75px;
+            background: linear-gradient(135deg, #1a1a1a 0%, #000000 100%);
+            border: 1.5px solid #ffd700;
+            border-radius: 6px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
-            margin: 3px -8px; 
-            transition: 0.2s;
+            box-shadow: -3px 3px 8px rgba(0,0,0,0.4);
+            margin: 5px -10px; 
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             position: relative;
             z-index: 1;
-            font-size: 16px;
-            color: #ffd700; /* สีสัญลักษณ์ดวงจันทร์ */
+            font-size: 18px;
+            color: #ffd700;
         }
 
         .card-back:hover {
-            transform: translateY(-12px) scale(1.1);
-            z-index: 50;
-            background: #1a1a1a;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+            transform: translateY(-15px) rotate(-5deg) scale(1.2);
+            z-index: 100;
+            border-color: #fff;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
         }
         
-        .card-back.selected { visibility: hidden; opacity: 0; }
+        .card-back.selected { 
+            visibility: hidden; 
+            opacity: 0; 
+            transform: translateY(-100px);
+        }
 
-        #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
+        /* --- Loading --- */
+        #loading-screen { 
+            display: none; 
+            text-align: center; 
+            padding: 100px 20px; 
+            color: #1a237e; 
+        }
         .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #ad1457;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #ad1457;
             border-radius: 50%;
-            width: 50px; height: 50px;
+            width: 60px; height: 60px;
             animation: spin 1s linear infinite;
             margin: 20px auto;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
+        /* --- Result Screen --- */
+        #result-screen { display: none; width: 100%; max-width: 600px; padding: 15px 15px 100px; }
         
         #captureArea {
-            background-color: #1a237e;
-            padding: 15px;
-            border-radius: 12px;
+            background: linear-gradient(180deg, #1a237e 0%, #0d1242 100%);
+            padding: 20px 10px;
+            border-radius: 15px;
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
+            gap: 10px;
             width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid #ffd700;
         }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
-        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #b22222; margin-bottom: 3px; }
-        .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; }
 
-        .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        .summary-card { 
+            background: white; 
+            padding: 6px; 
+            border-radius: 8px; 
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+        .summary-card .pos-top { 
+            font-size: 10px; 
+            font-weight: bold; 
+            color: #ad1457; 
+            margin-bottom: 5px; 
+            border-bottom: 1px solid #eee;
+        }
+        .summary-card img { 
+            width: 100%; 
+            border-radius: 4px; 
+            aspect-ratio: 2/3.5; 
+            object-fit: cover; 
+        }
+        .summary-card h3 { 
+            font-size: 10px; 
+            margin: 6px 0 0; 
+            color: #1a237e; 
+            line-height: 1.2;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* --- Buttons --- */
+        .btn-group { display: flex; justify-content: center; gap: 12px; margin: 25px 0; }
         button {
-            padding: 10px 20px; border-radius: 30px; border: none;
-            font-family: 'Sarabun'; font-weight: bold; cursor: pointer;
+            padding: 12px 25px; 
+            border-radius: 50px; 
+            border: none;
+            font-family: 'Sarabun'; 
+            font-weight: bold; 
+            cursor: pointer;
+            transition: 0.3s;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
         .btn-cap { background: #ad1457; color: white; }
         .btn-new { background: #ffd700; color: #1a237e; }
+        button:active { transform: scale(0.95); }
 
-        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 120px; }
+        /* --- Detail Area --- */
+        #detailArea { width: 100%; }
         .detail-row {
-            background-color: #e3f2fd;
-            color: #333;
-            margin-bottom: 30px;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
+            background-color: #fff;
+            margin-bottom: 25px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
             overflow: hidden;
+            border: 1px solid #e0e0e0;
         }
         .detail-header {
-            background-color: #212121;
+            background: #1a237e;
             color: #ffd700;
             padding: 12px;
             font-weight: bold;
             text-align: center;
+            font-size: 16px;
+            letter-spacing: 0.5px;
         }
-        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
-        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
-        .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
-        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
+        .detail-body { display: flex; padding: 15px; gap: 15px; align-items: flex-start; }
+        .detail-img { width: 90px; border-radius: 8px; flex-shrink: 0; box-shadow: 0 3px 10px rgba(0,0,0,0.1); }
+        .detail-text h4 { margin: 0 0 8px; color: #ad1457; font-size: 18px; }
+        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; color: #444; }
 
-        /* --- Bottom Nav แบบรูปภาพ --- */
+        /* --- Bottom Nav (ปรับปรุงใหม่ตามที่คุณต้องการ) --- */
         .bottom-nav {
-            position: fixed; bottom: 0; width: 100%;
-            background: #ffffff; display: flex; justify-content: space-around;
-            padding: 8px 0; border-top: 2px solid #ffd700; z-index: 100;
+            position: fixed; 
+            bottom: 0; 
+            width: 100%;
+            background: #ffffff; 
+            display: flex; 
+            justify-content: space-around;
+            padding: 10px 0; 
+            border-top: 1px solid #eee;
+            z-index: 1000;
             align-items: center;
+            box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
         }
-        .nav-item { cursor: pointer; display: flex; flex-direction: column; align-items: center; }
-        .nav-item img { height: 45px; width: auto; transition: transform 0.2s; }
-        .nav-item img:active { transform: scale(0.9); }
+        .nav-item { 
+            cursor: pointer; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            flex: 1;
+        }
+        .nav-item img { 
+            height: 40px; /* ขนาดไอคอน PNG */
+            width: auto; 
+            transition: all 0.2s; 
+        }
+        .nav-item:hover img { transform: translateY(-3px); }
+        .nav-item:active img { transform: scale(0.85); }
 
         /* --- Popup Menu --- */
         .modal-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 1001;
+            background: rgba(0,0,0,0.8); z-index: 2000;
             justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
         }
         .modal-content {
-            background: white; width: 85%; max-width: 400px;
-            padding: 25px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            background: white; width: 90%; max-width: 400px;
+            padding: 30px 20px; border-radius: 25px; text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
         }
-        .modal-content h3 { color: #1a237e; margin-bottom: 20px; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .modal-content h3 { color: #1a237e; margin-bottom: 25px; font-size: 22px; position: relative; }
+        .modal-content h3::after {
+            content: ''; display: block; width: 50px; height: 3px; background: #ffd700; margin: 10px auto;
+        }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
         .menu-btn {
-            background: #f0f2ff; color: #1a237e; padding: 15px 5px;
-            border-radius: 12px; font-size: 14px; font-weight: bold;
-            border: 1px solid #c5cae9; transition: 0.3s;
+            background: #f8f9fa; color: #1a237e; padding: 15px 10px;
+            border-radius: 15px; font-size: 14px; font-weight: bold;
+            border: 1px solid #eee; transition: 0.3s;
         }
-        .menu-btn:hover { background: #ffd700; border-color: #ffd700; }
-        .close-modal { margin-top: 20px; color: #666; font-size: 14px; text-decoration: underline; cursor: pointer; }
+        .menu-btn:hover { background: #1a237e; color: #fff; border-color: #1a237e; }
+        .close-modal { margin-top: 25px; color: #999; font-size: 14px; text-decoration: none; cursor: pointer; }
 
+        @media (max-width: 400px) {
+            .card-back { width: 38px; height: 65px; margin: 3px -8px; }
+            .detail-body { flex-direction: column; align-items: center; text-align: center; }
+            .detail-img { width: 120px; }
+        }
     </style>
 </head>
 <body>
@@ -167,23 +264,24 @@
     <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
 
     <div id="selection-screen">
-        <p style="font-weight: 300; color: #000; margin-bottom: 5px;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบ</p>
+        <p style="font-weight: 300; color: #666; margin-bottom: 0;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบ</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p>กำลังเปิดคำทำนาย... โปรดรอ 5 วินาที</p>
+        <p style="font-weight: bold;">กำลังสื่อสารกับไพ่...</p>
+        <p style="font-size: 14px; color: #666;">โปรดรอสักครู่ (5 วินาที)</p>
     </div>
 
     <div id="result-screen">
         <div class="btn-group">
-            <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
-            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูป (.jpg)</button>
+            <button class="btn-new" onclick="location.reload()">🔄 สุ่มใหม่อีกครั้ง</button>
+            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกคำทำนาย</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายทีละใบ</h2>
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #1a237e;">📖 คำทำนายโดยละเอียด</h2>
         <div id="detailArea"></div>
     </div>
 
@@ -206,21 +304,21 @@
             <h3>เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
                 <div class="menu-btn" onclick="location.reload()">ไพ่ยิปซีความรัก</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการงาน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีคนเก่า</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีการงาน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีการเงิน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีรายวัน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีบอกตัวตน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีคนเก่า</div>
             </div>
             <p class="close-modal" onclick="toggleModal(false)">ปิดหน้าต่างนี้</p>
         </div>
     </div>
 
 <script>
+    // ส่วนนี้ใช้ Script เดิมของคุณทั้งหมด ไม่มีการเปลี่ยน logic
     const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     let selectedCount = 0;
 
-    // ข้อมูลไพ่ 78 ใบ (ครบถ้วน)
     const tarotDeck = [
         /* Major Arcana (22 ใบ) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน"},
@@ -295,7 +393,7 @@
         {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
 
         /* Pentacles (14 ใบ) */
-        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหม่อย่างมั่นคง"},
+        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
         {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
         {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
         {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"หวงรัก ยึดติด กลัวเสียไป/ สื่อถึงเจ้าชะตามีภาวะหึงหวงและยึดติดในช่วงนั้นอยู่ หรือยังปล่อยวางไม่ได้"},

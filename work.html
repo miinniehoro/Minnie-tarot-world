@@ -26,7 +26,7 @@
 
         /* --- Night Mode --- */
         body.dark-mode { background-color: #121212 !important; color: #fff; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p { color: #fff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode h2 { color: #fff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333; }
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
         body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
@@ -41,15 +41,8 @@
 
         .main-logo { width: 50%; max-width: 180px; margin: 10px auto -10px; display: block; }
 
-        /* --- หน้าเลือกไพ่ --- */
         #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; }
-        .work-title-img {
-            width: 85%;
-            max-width: 320px;
-            height: auto;
-            margin: 20px auto 10px;
-            display: block;
-        }
+        .work-title-img { width: 85%; max-width: 320px; height: auto; margin: 20px auto 10px; display: block; }
         #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
 
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; margin-top: 5px; }
@@ -63,12 +56,10 @@
         .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; background: #1a237e; }
         .card-back.selected { visibility: hidden; opacity: 0; }
 
-        /* --- Loading --- */
         #loading-screen { display: none; text-align: center; margin-top: 80px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0d47a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        /* --- ผลลัพธ์ --- */
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
         #captureArea { background-color: #1a237e; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
         .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
@@ -91,13 +82,20 @@
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
         .nav-item img { height: 65px; cursor: pointer; transition: 0.2s; }
-        .nav-item:active img { transform: scale(0.9); }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; }
+        
+        /* แก้ไขส่วนของปุ่มเมนูให้เป็น Link จริง */
+        .menu-btn { 
+            background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; 
+            font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; 
+            display: flex; align-items: center; justify-content: center; 
+            text-decoration: none; font-size: 13px; 
+        }
         .menu-btn:hover { background: #ffd700; }
+        .menu-btn.active { background: #ffd700; border-color: #ffd700; }
     </style>
 </head>
 <body>
@@ -143,8 +141,10 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0;">เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
+                <!-- แก้ไข Link ตรงนี้ -->
                 <a href="index.html" class="menu-btn">ไพ่ยิปซีความรัก</a>
-                <a href="work.html" class="menu-btn" style="background: #ffd700;">ไพ่ยิปซีการงาน</a>
+                <a href="work.html" class="menu-btn active">ไพ่ยิปซีการงาน</a>
+                
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
@@ -180,7 +180,7 @@
         {n:"Judgement",i:"20-Judgement.jpg",m:"การประกาศผลสอบ การเรียกสัมภาษณ์ หรือโอกาสที่สองในสายอาชีพเดิม"},
         {n:"The World",i:"21-TheWorld.jpg",m:"งานสำเร็จสมบูรณ์ตามเป้าหมาย งานต่างประเทศหรืองานออนไลน์ได้ผลดีมาก"},
 
-        /* Wands - พลังงานและการกระทำ (14) */
+        /* Wands (14) */
         {n:"Ace of Wands",i:"Wands01.jpg",m:"โอกาสเริ่มงานใหม่ แรงบันดาลใจเต็มเปี่ยม โปรเจกต์ที่น่าตื่นเต้นกำลังจะมา"},
         {n:"Two of Wands",i:"Wands02.jpg",m:"กำลังวางแผนขยายงาน มีการติดต่อสื่อสารทางไกลหรือเตรียมก้าวหน้าขั้นต่อไป"},
         {n:"Three of Wands",i:"Wands03.jpg",m:"งานเริ่มเห็นความสำเร็จเบื้องต้น มีโอกาสขยายธุรกิจหรืองานเสริมโดดเด่น"},
@@ -192,11 +192,11 @@
         {n:"Nine of Wands",i:"Wands09.jpg",m:"งานใกล้เสร็จแต่เหนื่อยล้ามาก ระวังความระแวงหรือความผิดพลาดช่วงโค้งสุดท้าย"},
         {n:"Ten of Wands",i:"Wands10.jpg",m:"แบกรับงานหนักเกินไป ภาระล้นมือ ต้องหาสามารจัดการด่วนก่อนจะเบิร์นเอาท์"},
         {n:"Page of Wands",i:"Wands11.jpg",m:"ได้รับข่าวดีเรื่องงานใหม่ หรือการเริ่มต้นเรียนรู้ทักษะใหม่ที่เป็นประโยชน์"},
-        {n:"Knight of Wands",i:"Wands12.jpg",m:"ความมุ่งมั่นทุ่มเททำงานอย่างรวดเร็ว มีพลังงานล้นหลามแต่อาจขาดความรอบคอบ"},
+        {n:"Knight of Wands",i:"Wands12.jpg",m:"ความมุ่งมั่นทุ่มเททำงานอย่างรวดเร็ว มีพลังงานล้นหลามแต่อาจขาดความรอบควร"},
         {n:"Queen of Wands",i:"Wands13.jpg",m:"ความเป็นมืออาชีพ จัดการงานเก่ง มีเสน่ห์และบารมีในการคุมทีม"},
         {n:"King of Wands",i:"Wands14.jpg",m:"ผู้นำที่มีวิสัยทัศน์ งานบริหารที่ต้องเด็ดขาดจะประสบความสำเร็จสูง"},
 
-        /* Cups - อารมณ์และความพอใจ (14) */
+        /* Cups (14) */
         {n:"Ace of Cups",i:"Cups01.jpg",m:"ความพึงพอใจในงานใหม่ บรรยากาศการทำงานที่เปี่ยมไปด้วยความสุข"},
         {n:"Two of Cups",i:"Cups02.jpg",m:"การร่วมมือที่ดีเยี่ยมกับเพื่อนร่วมงานหรือพาร์ทเนอร์ มีสัญญาที่ลงตัว"},
         {n:"Three of Cups",i:"Cups03.jpg",m:"ความสำเร็จเป็นกลุ่ม การเฉลิมฉลองโปรเจกต์ หรืองานสังคมที่นำโอกาสมาให้"},
@@ -212,7 +212,7 @@
         {n:"Queen of Cups",i:"Cups13.jpg",m:"ผู้ใหญ่ฝ่ายหญิงให้ความเมตตา งานที่ต้องใช้ความเห็นอกเห็นใจจะราบรื่น"},
         {n:"King of Cups",i:"Cups14.jpg",m:"ควบคุมอารมณ์ได้ดีเยี่ยมภายใต้ความกดดัน งานบริหารที่ต้องใช้ความใจเย็น"},
 
-        /* Swords - อุปสรรคและความคิด (14) */
+        /* Swords (14) */
         {n:"Ace of Swords",i:"Swords01.jpg",m:"การตัดสินใจที่เด็ดขาด การใช้ปัญญาแก้ปัญหาที่ค้างคามานานสำเร็จ"},
         {n:"Two of Swords",i:"Swords02.jpg",m:"อยู่ในสภาวะตัดสินใจลำบาก ข้อมูลไม่ครบ หรือยังปิดหูปิดตาไม่อยากรับรู้ปัญหา"},
         {n:"Three of Swords",i:"Swords03.jpg",m:"ความเสียใจในงาน โปรเจกต์ถูกยกเลิก หรือบรรยากาศในทีมบาดหมางรุนแรง"},
@@ -228,7 +228,7 @@
         {n:"Queen of Swords",i:"Swords13.jpg",m:"การใช้เหตุผลนำอารมณ์ ผู้บริหารที่เข้มงวดและตรงไปตรงมาในเนื้องาน"},
         {n:"King of Swords",i:"Swords14.jpg",m:"การใช้สติปัญญาขั้นสูงตัดสินงาน ความชัดเจนและเฉียบคมในวิสัยทัศน์งาน"},
 
-        /* Pentacles - การเงินและความมั่นคง (14) */
+        /* Pentacles (14) */
         {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"ได้รับเงินก้อนใหญ่ โบนัส หรือการเริ่มต้นธุรกิจที่มีกำไรดีมาก"},
         {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"การบริหารจัดการเงินหรือเวลาที่วุ่นวาย ต้องจับปลาหลายมือแต่ยังพอไปได้"},
         {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ความเชี่ยวชาญเฉพาะด้านได้รับคำชม การทำงานเป็นทีมที่มีประสิทธิภาพสูง"},
@@ -261,81 +261,4 @@
     }
 
     function selectCard(el) {
-        if (el.classList.contains("selected")) return;
-        el.classList.add("selected");
-        selectedCount++;
-        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedCount} / 4`;
-        if (selectedCount === 4) {
-            document.getElementById("selection-screen").style.display = "none";
-            document.querySelector(".main-logo").style.display = "none"; 
-            document.getElementById("loading-screen").style.display = "block";
-            setTimeout(showResults, 4000);
-        }
-    }
-
-    function showResults() {
-        document.getElementById("loading-screen").style.display = "none";
-        document.getElementById("result-screen").style.display = "block";
-        const summaryBox = document.getElementById("captureArea");
-        const detailBox = document.getElementById("detailArea");
-        const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
-
-        picks.forEach((c, i) => {
-            summaryBox.innerHTML += `
-                <div class="summary-card">
-                    <div class="pos-top">ใบที่ ${i+1}</div>
-                    <img src="${c.i}" onerror="this.src='https://placehold.co/100x170?text=Card';">
-                    <h3>${c.n}</h3>
-                </div>
-            `;
-            detailBox.innerHTML += `
-                <div class="detail-row">
-                    <div class="detail-header">${posTitles[i]}</div>
-                    <div class="detail-body">
-                        <img src="${c.i}" class="detail-img" onerror="this.src='https://placehold.co/100x170?text=Card';">
-                        <div class="detail-text">
-                            <h4>${c.n}</h4>
-                            <p>${c.m}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function toggleDarkMode(checkbox) {
-        if (checkbox.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    }
-
-    (function() {
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('checkbox').checked = true;
-        }
-    })();
-
-    function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
-    async function shareURL() {
-        if (navigator.share) {
-            try { await navigator.share({ title: 'ไพ่ยิปซีการงาน 4 ใบ', text: 'เช็กดวงการงานของคุณ!', url: window.location.href }); } catch (err) { console.log(err); }
-        } else { alert("คัดลอกลิงก์แล้วส่งให้เพื่อนได้เลย!"); }
-    }
-    async function captureImageJPG() {
-        const area = document.getElementById("captureArea");
-        const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
-        const link = document.createElement("a");
-        link.download = "career-reading.jpg";
-        link.href = canvas.toDataURL("image/jpeg", 0.9);
-        link.click();
-    }
-    window.onload = createDeck;
-</script>
-</body>
-</html>
+        if

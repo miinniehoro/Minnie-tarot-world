@@ -42,12 +42,11 @@
             margin-top: 5px;
         }
 
-        /* --- ปรับสีหลังไพ่เป็นสีดำ --- */
         .card-back {
             width: 42px; 
             height: 70px;
-            background: #000000; /* สีดำ */
-            border: 1.5px solid #ffd700; /* ขอบทอง */
+            background: #000000;
+            border: 1.5px solid #ffd700;
             border-radius: 5px;
             cursor: pointer;
             display: flex;
@@ -59,7 +58,7 @@
             position: relative;
             z-index: 1;
             font-size: 16px;
-            color: #ffd700; /* สีสัญลักษณ์ดวงจันทร์ */
+            color: #ffd700;
         }
 
         .card-back:hover {
@@ -127,19 +126,19 @@
         .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
-        /* --- Bottom Nav แบบรูปภาพ (ปรับปรุงใหม่ตามที่ขอ) --- */
+        /* --- ปรับปรุง Bottom Nav ใหม่ตามรูปตัวอย่าง --- */
         .bottom-nav {
             position: fixed; 
             bottom: 0; 
             width: 100%;
             background: #ffffff; 
             display: flex; 
-            justify-content: space-around; /* กระจายปุ่มให้ห่างเท่ากัน */
+            justify-content: space-around;
             align-items: center;
-            padding: 5px 0; /* เพิ่มพื้นที่แนวตั้งนิดหน่อยให้รูปไม่ชิดขอบ */
-            border-top: 2px solid #ffd700; /* ขอบทองหนาขึ้นนิดนึงให้ดูพรีเมียม */
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); /* รองรับติ่ง iPhone */
+            border-top: 1px solid #e0e0e0;
             z-index: 100;
-            box-shadow: 0 -4px 12px rgba(0,0,0,0.15); /* เพิ่มเงาให้ดูมีมิติลอยขึ้นมา */
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
         }
         .nav-item { 
             cursor: pointer; 
@@ -147,18 +146,29 @@
             flex-direction: column; 
             align-items: center; 
             justify-content: center;
-            flex: 1; /* ให้แต่ละปุ่มกินพื้นที่กว้างเท่าๆ กัน กดง่าย */
+            flex: 1;
+            text-decoration: none;
             -webkit-tap-highlight-color: transparent;
         }
         .nav-item img { 
-            height: 130px; /* ปรับขนาดให้ใหญ่ขึ้นเล็กน้อย (จาก 45px) ให้เห็นชัด เต็มตา */
+            height: 26px; /* ขนาดไอคอนมาตรฐานแบบในรูป */
             width: auto; 
+            margin-bottom: 4px;
             object-fit: contain;
-            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* เอฟเฟกต์เด้งดึ๋งเล็กน้อย */
-            filter: drop-shadow(0 2px 2px rgba(0,0,0,0.2)); /* ใส่เงาใต้รูปเล็กน้อยให้ดูเป็น icon ลอย */
+            transition: transform 0.1s;
         }
-        .nav-item img:active { 
-            transform: scale(0.85); /* เวลากด รูปจะยุบลง */
+        .nav-item span {
+            font-size: 11px;
+            color: #666; /* สีข้อความแบบในรูปตัวอย่าง */
+            font-weight: 400;
+        }
+        /* สถานะ Active (ถ้าต้องการ) */
+        .nav-item.active span {
+            color: #ad1457;
+            font-weight: bold;
+        }
+        .nav-item:active img { 
+            transform: scale(0.9);
         }
 
         /* --- Popup Menu --- */
@@ -210,16 +220,19 @@
         <div id="detailArea"></div>
     </div>
 
-    <!-- แถบเมนูด้านล่าง -->
+    <!-- แถบเมนูด้านล่าง ปรับแต่งตามตัวอย่าง -->
     <nav class="bottom-nav">
-        <div class="nav-item" onclick="toggleModal(true)">
+        <div class="nav-item active" onclick="toggleModal(true)">
             <img src="IMG_7070.png" alt="ไพ่ยิปซี">
+            <span>ไพ่ยิปซี</span>
         </div>
         <div class="nav-item" onclick="shareURL()">
             <img src="IMG_7085.png" alt="แชร์เว็บนี้">
+            <span>แชร์เว็บ</span>
         </div>
         <div class="nav-item" onclick="alert('เร็วๆ นี้')">
             <img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มูเตลู">
+            <span>มูเตลู</span>
         </div>
     </nav>
 
@@ -243,7 +256,7 @@
     const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     let selectedCount = 0;
 
-    // ข้อมูลไพ่ 78 ใบ (ครบถ้วน)
+    // ข้อมูลไพ่ 78 ใบ (ข้อมูลเดิมทั้งหมด)
     const tarotDeck = [
         /* Major Arcana (22 ใบ) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
@@ -318,7 +331,7 @@
         {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
 
         /* Pentacles (14 ใบ) */
-        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหม่อย่างมั่นคง"},
+        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
         {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
         {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
         {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"หวงรัก ยึดติด กลัวเสียไป/ สื่อถึงเจ้าชะตามีภาวะหึงหวงและยึดติดในช่วงนั้นอยู่ หรือยังปล่อยวางไม่ได้ หรือความสัมพันธ์อยู่ในขั้นกั๊กไว้ ยึดติดไว้ หรือเขา/คุณ กลัวที่จะสูญเสียกันและกัน/หรือเขาหวงตัวเองไม่เปิดหมด"},

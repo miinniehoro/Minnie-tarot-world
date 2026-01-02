@@ -89,7 +89,6 @@
         .detail-text h4 { margin: 0 0 5px; color: #1a237e; border-bottom: 1px solid #bbdefb; }
         .detail-text p { margin: 0; font-size: 14px; line-height: 1.6; }
 
-        /* --- Nav & Modal --- */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
         .nav-item img { height: 65px; cursor: pointer; transition: 0.2s; }
         .nav-item:active img { transform: scale(0.9); }
@@ -113,9 +112,7 @@
     <img src="IMG_7035.png" alt="Logo" class="main-logo">
 
     <div id="selection-screen">
-        <!-- รูป PNG หัวข้อการงานของคุณ -->
         <img src="IMG_7135.png" alt="Tarot for Work" class="work-title-img">
-        
         <p style="color: #666; font-size: 14px; margin-top: 0;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบ</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
@@ -142,17 +139,12 @@
         <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มู"></div>
     </nav>
 
-    <!-- Modal ที่แก้ไขลิงก์แล้ว -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0;">เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
-                <!-- เชื่อมไปหน้าความรัก (index.html) -->
                 <a href="index.html" class="menu-btn">ไพ่ยิปซีความรัก</a>
-                
-                <!-- เชื่อมมาหน้าการงาน (work.html) - ถ้ากดตอนอยู่หน้านี้จะรีโหลดหน้า -->
                 <a href="work.html" class="menu-btn" style="background: #ffd700;">ไพ่ยิปซีการงาน</a>
-                
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
@@ -163,9 +155,8 @@
     </div>
 
 <script>
-    // ข้อมูลไพ่ 78 ใบ (เวอร์ชันการงาน)
     const tarotDeck = [
-        /* Major Arcana */
+        /* Major Arcana (22) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"เริ่มงานใหม่ด้วยความเสี่ยงแต่มีอิสระ อย่าประมาทความละเอียดอ่อน/การออกจาก Comfort Zone"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"ทักษะดีเยี่ยม มีโปรเจกต์ใหม่ที่ใช้ความสามารถเฉพาะตัวได้ดี การสื่อสารเป็นเลิศ"},
         {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"ใช้ลางสังหรณ์ ระวังเรื่องความลับในที่ทำงาน หรือมีเรื่องที่ยังไม่ถูกเปิดเผย"},
@@ -184,20 +175,75 @@
         {n:"The Devil",i:"15-TheDevil.jpg",m:"ความโลภ อบายมุขในที่ทำงาน หรือการถูกบีบบังคับด้วยผลประโยชน์ที่ไม่ใสสะอาด"},
         {n:"The Tower",i:"16-TheTower.jpg",m:"งานเกิดปัญหาฉับพลัน ระวังเรื่องการผิดพลาดร้ายแรงหรือการเลิกจ้างกะทันหัน"},
         {n:"The Star",i:"17-TheStar.jpg",m:"ความหวังใหม่เริ่มปรากฏ งานในฝัน หรือชื่อเสียงในวิชาชีพกำลังจะโด่งดัง"},
-        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความไม่ชัดเจน บรรยากาศงานอึมครึม มีคนเลื่อยขาเก้าอี้ หรือความกังวลเกินเหตุ"},
+        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความไม่ชัดเจน บรรยากาศงานอึมครึม มีคนเลื่อยขาเก้าอี้ หรือความกังวลเหตุ"},
         {n:"The Sun",i:"19-TheSun.jpg",m:"ความสำเร็จสูงสุด งานได้รับคำชม ผลตอบแทนดีเยี่ยม ทุกอย่างกระจ่างชัด"},
         {n:"Judgement",i:"20-Judgement.jpg",m:"การประกาศผลสอบ การเรียกสัมภาษณ์ หรือโอกาสที่สองในสายอาชีพเดิม"},
         {n:"The World",i:"21-TheWorld.jpg",m:"งานสำเร็จสมบูรณ์ตามเป้าหมาย งานต่างประเทศหรืองานออนไลน์ได้ผลดีมาก"},
 
-        /* Minor Arcana (ตัวอย่าง - สามารถใส่เพิ่มให้ครบ 78 ใบได้เหมือนหน้าแรก) */
+        /* Wands - พลังงานและการกระทำ (14) */
         {n:"Ace of Wands",i:"Wands01.jpg",m:"โอกาสเริ่มงานใหม่ แรงบันดาลใจเต็มเปี่ยม โปรเจกต์ที่น่าตื่นเต้นกำลังจะมา"},
+        {n:"Two of Wands",i:"Wands02.jpg",m:"กำลังวางแผนขยายงาน มีการติดต่อสื่อสารทางไกลหรือเตรียมก้าวหน้าขั้นต่อไป"},
+        {n:"Three of Wands",i:"Wands03.jpg",m:"งานเริ่มเห็นความสำเร็จเบื้องต้น มีโอกาสขยายธุรกิจหรืองานเสริมโดดเด่น"},
+        {n:"Four of Wands",i:"Wands04.jpg",m:"ความมั่นคงในที่ทำงาน บรรยากาศอบอุ่น มีการเฉลิมฉลองความสำเร็จเล็กๆ"},
+        {n:"Five of Wands",i:"Wands05.jpg",m:"มีความขัดแย้งในทีม ความเห็นไม่ตรงกัน มีการแข่งขันสูงที่ทำให้เหนื่อยใจ"},
+        {n:"Six of Wands",i:"Wands06.jpg",m:"ความสำเร็จที่ได้รับคำชม การได้รับชัยชนะหรืองานเข้าเป้าตามที่หวังไว้"},
+        {n:"Seven of Wands",i:"Wands07.jpg",m:"ต้องยืนหยัดต่อสู้เพื่อผลงานของตัวเอง มีอุปสรรคเข้ามาให้พิสูจน์ฝีมือ"},
         {n:"Eight of Wands",i:"Wands08.jpg",m:"งานเดินหน้าเร็วมาก มีการติดต่อสื่อสารทางธุรกิจที่รวดเร็ว"},
+        {n:"Nine of Wands",i:"Wands09.jpg",m:"งานใกล้เสร็จแต่เหนื่อยล้ามาก ระวังความระแวงหรือความผิดพลาดช่วงโค้งสุดท้าย"},
         {n:"Ten of Wands",i:"Wands10.jpg",m:"แบกรับงานหนักเกินไป ภาระล้นมือ ต้องหาสามารจัดการด่วนก่อนจะเบิร์นเอาท์"},
+        {n:"Page of Wands",i:"Wands11.jpg",m:"ได้รับข่าวดีเรื่องงานใหม่ หรือการเริ่มต้นเรียนรู้ทักษะใหม่ที่เป็นประโยชน์"},
+        {n:"Knight of Wands",i:"Wands12.jpg",m:"ความมุ่งมั่นทุ่มเททำงานอย่างรวดเร็ว มีพลังงานล้นหลามแต่อาจขาดความรอบคอบ"},
+        {n:"Queen of Wands",i:"Wands13.jpg",m:"ความเป็นมืออาชีพ จัดการงานเก่ง มีเสน่ห์และบารมีในการคุมทีม"},
+        {n:"King of Wands",i:"Wands14.jpg",m:"ผู้นำที่มีวิสัยทัศน์ งานบริหารที่ต้องเด็ดขาดจะประสบความสำเร็จสูง"},
+
+        /* Cups - อารมณ์และความพอใจ (14) */
+        {n:"Ace of Cups",i:"Cups01.jpg",m:"ความพึงพอใจในงานใหม่ บรรยากาศการทำงานที่เปี่ยมไปด้วยความสุข"},
+        {n:"Two of Cups",i:"Cups02.jpg",m:"การร่วมมือที่ดีเยี่ยมกับเพื่อนร่วมงานหรือพาร์ทเนอร์ มีสัญญาที่ลงตัว"},
+        {n:"Three of Cups",i:"Cups03.jpg",m:"ความสำเร็จเป็นกลุ่ม การเฉลิมฉลองโปรเจกต์ หรืองานสังคมที่นำโอกาสมาให้"},
+        {n:"Four of Cups",i:"Cups04.jpg",m:"เริ่มรู้สึกเบื่อหน่ายงานเดิม ปฏิเสธโอกาสใหม่เพราะยังไม่ถูกใจจริงๆ"},
+        {n:"Five of Cups",i:"Cups05.jpg",m:"ผิดหวังจากงานที่พลาดไป เสียใจกับสิ่งที่เสียไปจนลืมมองโอกาสที่เหลือ"},
+        {n:"Six of Cups",i:"Cups06.jpg",m:"ได้กลับไปทำงานเก่าที่คุ้นเคย หรือได้รับความช่วยเหลือจากมิตรภาพเก่าๆ"},
+        {n:"Seven of Cups",i:"Cups07.jpg",m:"มีทางเลือกงานเยอะแต่ยังตัดสินใจไม่ได้ ระวังการเพ้อฝันจนไม่ลงมือทำ"},
+        {n:"Eight of Cups",i:"Cups08.jpg",m:"ตัดสินใจละทิ้งงานเดิมเพื่อแสวงหาสิ่งที่เติมเต็มจิตใจมากกว่า"},
+        {n:"Nine of Cups",i:"Cups09.jpg",m:"ความพึงพอใจในผลงานของตัวเอง มีความสุขกับความสำเร็จที่ได้มา"},
+        {n:"Ten of Cups",i:"Cups10.jpg",m:"ความสำเร็จที่สมบูรณ์แบบ บรรยากาศในที่ทำงานเหมือนครอบครัว อบอุ่นใจ"},
+        {n:"Page of Cups",i:"Cups11.jpg",m:"ความคิดสร้างสรรค์ใหม่ๆ มีข่าวดีเรื่องงานศิลปะ หรืองานที่ใช้อารมณ์ความรู้สึก"},
+        {n:"Knight of Cups",i:"Cups12.jpg",m:"ได้รับข้อเสนองานที่น่าประทับใจ การติดต่อประสานงานที่ใช้ความสุภาพนำหน้า"},
+        {n:"Queen of Cups",i:"Cups13.jpg",m:"ผู้ใหญ่ฝ่ายหญิงให้ความเมตตา งานที่ต้องใช้ความเห็นอกเห็นใจจะราบรื่น"},
+        {n:"King of Cups",i:"Cups14.jpg",m:"ควบคุมอารมณ์ได้ดีเยี่ยมภายใต้ความกดดัน งานบริหารที่ต้องใช้ความใจเย็น"},
+
+        /* Swords - อุปสรรคและความคิด (14) */
+        {n:"Ace of Swords",i:"Swords01.jpg",m:"การตัดสินใจที่เด็ดขาด การใช้ปัญญาแก้ปัญหาที่ค้างคามานานสำเร็จ"},
+        {n:"Two of Swords",i:"Swords02.jpg",m:"อยู่ในสภาวะตัดสินใจลำบาก ข้อมูลไม่ครบ หรือยังปิดหูปิดตาไม่อยากรับรู้ปัญหา"},
+        {n:"Three of Swords",i:"Swords03.jpg",m:"ความเสียใจในงาน โปรเจกต์ถูกยกเลิก หรือบรรยากาศในทีมบาดหมางรุนแรง"},
+        {n:"Four of Swords",i:"Swords04.jpg",m:"หยุดพักเพื่อรักษาร่างกายหรือทบทวนแผนงานใหม่ อย่าฝืนทำงานในช่วงนี้"},
+        {n:"Five of Swords",i:"Swords05.jpg",m:"ความขัดแย้งที่เอาชนะกันด้วยทิฐิ จนเสียความรู้สึกกันทุกฝ่าย"},
+        {n:"Six of Swords",i:"Swords06.jpg",m:"ปัญหาเริ่มคลี่คลาย งานที่ติดขัดจะเริ่มขยับเดินหน้าไปทีละนิด"},
+        {n:"Seven of Swords",i:"Swords07.jpg",m:"ระวังคนแทงข้างหลังในที่ทำงาน หรือการใช้ทางลัดที่ไม่ค่อยโปร่งใสนัก"},
+        {n:"Eight of Swords",i:"Swords08.jpg",m:"รู้สึกมืดแปดด้าน ถูกบีบบังคับด้วยกฎเกณฑ์หรือความคิดตัวเองจนหาทางออกไม่ได้"},
+        {n:"Nine of Swords",i:"Swords09.jpg",m:"ความเครียดสะสม นอนไม่หลับ คิดมากเรื่องงานเกินกว่าความเป็นจริง"},
+        {n:"Ten of Swords",i:"Swords10.jpg",m:"งานถึงจุดจบที่เจ็บปวด การลาออกกะทันหัน หรือโปรเจกต์ล้มเหลวที่สุด"},
+        {n:"Page of Swords",i:"Swords11.jpg",m:"การสืบหาข้อมูลในงาน ระวังคำพูดที่รุนแรงหรือการถูกตรวจสอบอย่างใกล้ชิด"},
+        {n:"Knight of Swords",i:"Swords12.jpg",m:"ลุยงานด้วยความใจร้อน ปะทะคารมเพื่อความถูกต้อง งานที่ต้องแข่งกับเวลา"},
+        {n:"Queen of Swords",i:"Swords13.jpg",m:"การใช้เหตุผลนำอารมณ์ ผู้บริหารที่เข้มงวดและตรงไปตรงมาในเนื้องาน"},
+        {n:"King of Swords",i:"Swords14.jpg",m:"การใช้สติปัญญาขั้นสูงตัดสินงาน ความชัดเจนและเฉียบคมในวิสัยทัศน์งาน"},
+
+        /* Pentacles - การเงินและความมั่นคง (14) */
         {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"ได้รับเงินก้อนใหญ่ โบนัส หรือการเริ่มต้นธุรกิจที่มีกำไรดีมาก"},
+        {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"การบริหารจัดการเงินหรือเวลาที่วุ่นวาย ต้องจับปลาหลายมือแต่ยังพอไปได้"},
+        {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ความเชี่ยวชาญเฉพาะด้านได้รับคำชม การทำงานเป็นทีมที่มีประสิทธิภาพสูง"},
+        {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"ความหวงแหนตำแหน่ง ยึดติดกับสิ่งที่ทำอยู่จนไม่กล้าขยับหรือลงทุนเพิ่ม"},
+        {n:"Five of Pentacles",i:"Pentacles05.jpg",m:"วิกฤตการเงินในงาน งบประมาณขาดแคลน หรือความรู้สึกไม่มั่นคงในอาชีพ"},
+        {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"ได้รับการอุปถัมภ์ การได้ทุน หรือการปันผลประโยชน์ที่ลงตัวจากผู้ใหญ่"},
+        {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"รอเก็บเกี่ยวผลประโยชน์จากงานที่ลงแรงไว้ เริ่มเห็นกำไรในระยะยาว"},
+        {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ความขยันหมั่นเพียร การฝึกฝนทักษะจนชำนาญจะนำไปสู่ความรุ่งเรือง"},
+        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"ความสำเร็จทางการเงินที่น่าภาคภูมิใจ มีอิสระในงานและชีวิตที่ลงตัว"},
+        {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"ความมั่งคั่งสูงสุด ธุรกิจครอบครัวที่มั่นคง หรือการวางรากฐานระยะยาวสำเร็จ"},
+        {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"ข่าวดีเรื่องเงินหรือการลงทุนเล็กๆ ที่จะเติบโตเป็นโอกาสใหญ่ในอนาคต"},
+        {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"งานเดินหน้าช้าๆ แต่มั่นคง เน้นความละเอียดและรอบคอบเพื่อให้ได้ผลชัวร์"},
+        {n:"Queen of Pentacles",i:"Pentacles13.jpg",m:"การจัดการงบประมาณดีเยี่ยม ความเป็นมืออาชีพที่ได้รับความไว้วางใจสูงสุด"},
         {n:"King of Pentacles",i:"Pentacles14.jpg",m:"ความมั่นคงสูงสุดทางการเงิน นักธุรกิจที่ประสบความสำเร็จ พ่อค้าใหญ่"}
     ];
-
-    // ** หมายเหตุ: ควรใส่ไพ่ Minor Arcana ที่เหลือให้ครบ (Wands, Cups, Swords, Pentacles) โดยปรับความหมายให้เป็นการงาน **
 
     const posTitles = ["ใบที่ 1 : สถานการณ์ปัจจุบัน", "ใบที่ 2 : อุปสรรค/สิ่งที่ต้องแก้", "ใบที่ 3 : คำแนะนำ/แนวทาง", "ใบที่ 4 : บทสรุปในอนาคต"];
     let selectedCount = 0;
@@ -232,7 +278,6 @@
         document.getElementById("result-screen").style.display = "block";
         const summaryBox = document.getElementById("captureArea");
         const detailBox = document.getElementById("detailArea");
-        
         const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
 
         picks.forEach((c, i) => {
@@ -276,24 +321,12 @@
         }
     })();
 
-    function toggleModal(show) {
-        document.getElementById("tarot-modal").style.display = show ? "flex" : "none";
-    }
-
+    function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
     async function shareURL() {
         if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'ไพ่ยิปซีการงาน 4 ใบ',
-                    text: 'เช็กดวงการงานของคุณ!',
-                    url: window.location.href,
-                });
-            } catch (err) { console.log(err); }
-        } else {
-            alert("คัดลอกลิงก์แล้วส่งให้เพื่อนได้เลย!");
-        }
+            try { await navigator.share({ title: 'ไพ่ยิปซีการงาน 4 ใบ', text: 'เช็กดวงการงานของคุณ!', url: window.location.href }); } catch (err) { console.log(err); }
+        } else { alert("คัดลอกลิงก์แล้วส่งให้เพื่อนได้เลย!"); }
     }
-
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");
         const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
@@ -302,7 +335,6 @@
         link.href = canvas.toDataURL("image/jpeg", 0.9);
         link.click();
     }
-
     window.onload = createDeck;
 </script>
 </body>

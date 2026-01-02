@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ไพ่ยิปซีการงาน 4 ใบ</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: 'Sarabun', sans-serif !important;
+            background-color: #F5F6F1 !important;
+            color: #333;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: 0.3s;
+        }
+
+        /* --- Night Mode --- */
+        body.dark-mode { background-color: #121212 !important; color: #fff; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p { color: #fff !important; }
+        body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333; }
+        body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
+        body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
+
+        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; width: 20px; left: 4px; position: absolute; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #0d47a1; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
+        .main-logo { width: 50%; max-width: 180px; margin: 10px auto -10px; display: block; }
+
+        /* --- หน้าเลือกไพ่ --- */
+        #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; }
+        .work-title-img {
+            width: 85%;
+            max-width: 320px;
+            height: auto;
+            margin: 20px auto 10px;
+            display: block;
+        }
+        #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+
+        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; margin-top: 5px; }
+        .card-back {
+            width: 42px; height: 70px; background: #0d47a1; 
+            border: 1.5px solid #ffd700; border-radius: 5px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.5); margin: 3px -8px; 
+            transition: 0.2s; color: #ffd700; font-size: 16px;
+        }
+        .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; background: #1a237e; }
+        .card-back.selected { visibility: hidden; opacity: 0; }
+
+        /* --- Loading --- */
+        #loading-screen { display: none; text-align: center; margin-top: 80px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0d47a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* --- ผลลัพธ์ --- */
+        #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
+        #captureArea { background-color: #1a237e; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
+        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #0d47a1; margin-bottom: 3px; }
+        .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
+        .summary-card h3 { font-size: 9px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; white-space: nowrap; }
+
+        .btn-group { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        button { padding: 10px 20px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-family: 'Sarabun'; }
+        .btn-cap { background: #0d47a1; color: white; }
+        .btn-new { background: #ffd700; color: #1a237e; }
+
+        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 120px; }
+        .detail-row { background-color: #e3f2fd; color: #333; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .detail-header { background-color: #1a237e; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
+        .detail-body { display: flex; padding: 15px; gap: 15px; }
+        .detail-img { width: 80px; border-radius: 5px; flex-shrink: 0; }
+        .detail-text h4 { margin: 0 0 5px; color: #1a237e; border-bottom: 1px solid #bbdefb; }
+        .detail-text p { margin: 0; font-size: 14px; line-height: 1.6; }
+
+        /* --- Nav & Modal --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
+        .nav-item img { height: 65px; cursor: pointer; transition: 0.2s; }
+        .nav-item:active img { transform: scale(0.9); }
+
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; }
+        .menu-btn:hover { background: #ffd700; }
+    </style>
+</head>
+<body>
+
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)">
+            <div class="slider"><span>☀️</span><span>🌙</span></div>
+        </label>
+    </div>
+
+    <img src="IMG_7035.png" alt="Logo" class="main-logo">
+
+    <div id="selection-screen">
+        <!-- รูป PNG หัวข้อการงานของคุณ -->
+        <img src="tarot_for_work.png" alt="Tarot for Work" class="work-title-img">
+        
+        <p style="color: #666; font-size: 14px; margin-top: 0;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบ</p>
+        <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
+        <div class="deck-container" id="deck"></div>
+    </div>
+
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p style="color: #0d47a1; font-weight: bold;">กำลังวิเคราะห์ดวงการงานของคุณ...</p>
+    </div>
+
+    <div id="result-screen">
+        <div class="btn-group">
+            <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
+            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวง</button>
+        </div>
+        <div id="captureArea"></div>
+        <h2 style="text-align: center; margin: 30px 0 15px; color: #1a237e;">📖 คำทำนายเจาะลึกการงาน</h2>
+        <div id="detailArea"></div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="toggleModal(true)"><img src="IMG_7070.png" alt="เมนู"></div>
+        <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png" alt="แชร์"></div>
+        <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มู"></div>
+    </nav>
+
+    <!-- Modal ที่แก้ไขลิงก์แล้ว -->
+    <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0;">เลือกประเภทการดูดวง</h3>
+            <div class="menu-grid">
+                <!-- เชื่อมไปหน้าความรัก (index.html) -->
+                <a href="index.html" class="menu-btn">ไพ่ยิปซีความรัก</a>
+                
+                <!-- เชื่อมมาหน้าการงาน (work.html) - ถ้ากดตอนอยู่หน้านี้จะรีโหลดหน้า -->
+                <a href="work.html" class="menu-btn" style="background: #ffd700;">ไพ่ยิปซีการงาน</a>
+                
+                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
+                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
+                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
+                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีคนเก่า</div>
+            </div>
+            <p style="margin-top:20px; color:#999; cursor:pointer;" onclick="toggleModal(false)">ปิดหน้าต่าง</p>
+        </div>
+    </div>
+
+<script>
+    // ข้อมูลไพ่ 78 ใบ (เวอร์ชันการงาน)
+    const tarotDeck = [
+        /* Major Arcana */
+        {n:"The Fool",i:"00-TheFool.jpg",m:"เริ่มงานใหม่ด้วยความเสี่ยงแต่มีอิสระ อย่าประมาทความละเอียดอ่อน/การออกจาก Comfort Zone"},
+        {n:"The Magician",i:"01-TheMagician.jpg",m:"ทักษะดีเยี่ยม มีโปรเจกต์ใหม่ที่ใช้ความสามารถเฉพาะตัวได้ดี การสื่อสารเป็นเลิศ"},
+        {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"ใช้ลางสังหรณ์ ระวังเรื่องความลับในที่ทำงาน หรือมีเรื่องที่ยังไม่ถูกเปิดเผย"},
+        {n:"The Empress",i:"03-TheEmpress.jpg",m:"ความอุดมสมบูรณ์ งานราบรื่น ได้รับการสนับสนุนจากผู้ใหญ่ฝ่ายหญิง"},
+        {n:"The Emperor",i:"04-TheEmperor.jpg",m:"ความมั่นคง มีอำนาจจัดการ งานในระบบระเบียบ การได้เลื่อนตำแหน่งหรือดูแลทีม"},
+        {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"งานเกี่ยวข้องกับวิชาการ การเรียนรู้ หรือได้รับคำปรึกษาที่ดีจากผู้ใหญ่"},
+        {n:"The Lovers",i:"06-TheLovers.jpg",m:"ต้องตัดสินใจครั้งสำคัญในงาน หรือการทำงานเป็นพาร์ทเนอร์ที่ต้องอาศัยใจ"},
+        {n:"The Chariot",i:"07-TheChariot.jpg",m:"ต้องเหนื่อยต้องลุยถึงจะสำเร็จ งานที่ต้องเดินทางหรือแข่งขันสูงมาก"},
+        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทนและจิตวิทยาในการคุมงานหรือคนลำบาก จะผ่านไปได้ด้วยความแกร่ง"},
+        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงวิเคราะห์งาน ทบทวนตัวเอง หรือทำงานวิจัย งานที่ต้องใช้สมาธิสูง"},
+        {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"จังหวะชีวิตเปลี่ยน งานจะดีขึ้นแบบกะทันหัน มีโชคเรื่องงานเข้ามา"},
+        {n:"Justice",i:"11-Justice.jpg",m:"การเซ็นสัญญา ความยุติธรรมในผลตอบแทน หรือเรื่องกฎหมายที่เกี่ยวข้องกับงาน"},
+        {n:"The Hanged Man",i:"12-TheHangedMan.jpg",m:"งานหยุดชะงัก ต้องยอมเสียสละบางอย่างเพื่อรักษาภาพรวม รอเวลาที่เหมาะสม"},
+        {n:"Death",i:"13-Death.jpg",m:"การลาออกหรือจบจากงานเดิมเพื่อเริ่มสิ่งใหม่ที่ดีกว่า เป็นการเปลี่ยนแปลงครั้งใหญ่"},
+        {n:"Temperance",i:"14-Temperance.jpg",m:"การปรับสมดุลงาน การโยกย้ายแผนก หรือการติดต่อประสานงานระหว่างองค์กร"},
+        {n:"The Devil",i:"15-TheDevil.jpg",m:"ความโลภ อบายมุขในที่ทำงาน หรือการถูกบีบบังคับด้วยผลประโยชน์ที่ไม่ใสสะอาด"},
+        {n:"The Tower",i:"16-TheTower.jpg",m:"งานเกิดปัญหาฉับพลัน ระวังเรื่องการผิดพลาดร้ายแรงหรือการเลิกจ้างกะทันหัน"},
+        {n:"The Star",i:"17-TheStar.jpg",m:"ความหวังใหม่เริ่มปรากฏ งานในฝัน หรือชื่อเสียงในวิชาชีพกำลังจะโด่งดัง"},
+        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความไม่ชัดเจน บรรยากาศงานอึมครึม มีคนเลื่อยขาเก้าอี้ หรือความกังวลเกินเหตุ"},
+        {n:"The Sun",i:"19-TheSun.jpg",m:"ความสำเร็จสูงสุด งานได้รับคำชม ผลตอบแทนดีเยี่ยม ทุกอย่างกระจ่างชัด"},
+        {n:"Judgement",i:"20-Judgement.jpg",m:"การประกาศผลสอบ การเรียกสัมภาษณ์ หรือโอกาสที่สองในสายอาชีพเดิม"},
+        {n:"The World",i:"21-TheWorld.jpg",m:"งานสำเร็จสมบูรณ์ตามเป้าหมาย งานต่างประเทศหรืองานออนไลน์ได้ผลดีมาก"},
+
+        /* Minor Arcana (ตัวอย่าง - สามารถใส่เพิ่มให้ครบ 78 ใบได้เหมือนหน้าแรก) */
+        {n:"Ace of Wands",i:"Wands01.jpg",m:"โอกาสเริ่มงานใหม่ แรงบันดาลใจเต็มเปี่ยม โปรเจกต์ที่น่าตื่นเต้นกำลังจะมา"},
+        {n:"Eight of Wands",i:"Wands08.jpg",m:"งานเดินหน้าเร็วมาก มีการติดต่อสื่อสารทางธุรกิจที่รวดเร็ว"},
+        {n:"Ten of Wands",i:"Wands10.jpg",m:"แบกรับงานหนักเกินไป ภาระล้นมือ ต้องหาสามารจัดการด่วนก่อนจะเบิร์นเอาท์"},
+        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"ได้รับเงินก้อนใหญ่ โบนัส หรือการเริ่มต้นธุรกิจที่มีกำไรดีมาก"},
+        {n:"King of Pentacles",i:"Pentacles14.jpg",m:"ความมั่นคงสูงสุดทางการเงิน นักธุรกิจที่ประสบความสำเร็จ พ่อค้าใหญ่"}
+    ];
+
+    // ** หมายเหตุ: ควรใส่ไพ่ Minor Arcana ที่เหลือให้ครบ (Wands, Cups, Swords, Pentacles) โดยปรับความหมายให้เป็นการงาน **
+
+    const posTitles = ["ใบที่ 1 : สถานการณ์ปัจจุบัน", "ใบที่ 2 : อุปสรรค/สิ่งที่ต้องแก้", "ใบที่ 3 : คำแนะนำ/แนวทาง", "ใบที่ 4 : บทสรุปในอนาคต"];
+    let selectedCount = 0;
+
+    function createDeck() {
+        const deckDiv = document.getElementById("deck");
+        deckDiv.innerHTML = ""; 
+        for(let i=0; i<60; i++) {
+            const card = document.createElement("div");
+            card.className = "card-back";
+            card.innerHTML = "💼"; 
+            card.onclick = function() { selectCard(this); };
+            deckDiv.appendChild(card);
+        }
+    }
+
+    function selectCard(el) {
+        if (el.classList.contains("selected")) return;
+        el.classList.add("selected");
+        selectedCount++;
+        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedCount} / 4`;
+        if (selectedCount === 4) {
+            document.getElementById("selection-screen").style.display = "none";
+            document.querySelector(".main-logo").style.display = "none"; 
+            document.getElementById("loading-screen").style.display = "block";
+            setTimeout(showResults, 4000);
+        }
+    }
+
+    function showResults() {
+        document.getElementById("loading-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        const summaryBox = document.getElementById("captureArea");
+        const detailBox = document.getElementById("detailArea");
+        
+        const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
+
+        picks.forEach((c, i) => {
+            summaryBox.innerHTML += `
+                <div class="summary-card">
+                    <div class="pos-top">ใบที่ ${i+1}</div>
+                    <img src="${c.i}" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                    <h3>${c.n}</h3>
+                </div>
+            `;
+            detailBox.innerHTML += `
+                <div class="detail-row">
+                    <div class="detail-header">${posTitles[i]}</div>
+                    <div class="detail-body">
+                        <img src="${c.i}" class="detail-img" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                        <div class="detail-text">
+                            <h4>${c.n}</h4>
+                            <p>${c.m}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function toggleDarkMode(checkbox) {
+        if (checkbox.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    (function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    })();
+
+    function toggleModal(show) {
+        document.getElementById("tarot-modal").style.display = show ? "flex" : "none";
+    }
+
+    async function shareURL() {
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'ไพ่ยิปซีการงาน 4 ใบ',
+                    text: 'เช็กดวงการงานของคุณ!',
+                    url: window.location.href,
+                });
+            } catch (err) { console.log(err); }
+        } else {
+            alert("คัดลอกลิงก์แล้วส่งให้เพื่อนได้เลย!");
+        }
+    }
+
+    async function captureImageJPG() {
+        const area = document.getElementById("captureArea");
+        const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
+        const link = document.createElement("a");
+        link.download = "career-reading.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
+        link.click();
+    }
+
+    window.onload = createDeck;
+</script>
+</body>
+</html>

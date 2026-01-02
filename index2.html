@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ไพ่ยิปซีการงาน 4 ใบ</title>
+    <title>ไพ่ยิปซีการงาน 4 ใบ - ดูดวงแม่นๆ</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -12,8 +12,8 @@
         * { box-sizing: border-box; }
         body {
             font-family: 'Sarabun', sans-serif !important;
-            background-color: #F5F6F1 !important;
-            color: #ffffff;
+            background-color: #F0F2F5 !important;
+            color: #333;
             margin: 0;
             padding: 0;
             display: flex;
@@ -21,416 +21,234 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s; /* เพิ่ม transition ให้เนียน */
+            transition: 0.3s;
         }
 
-        /* --- สไตล์สำหรับ Night Mode (Dark Theme) --- */
-        body.dark-mode {
-            background-color: #121212 !important;
-        }
-        body.dark-mode #counter, 
-        body.dark-mode #selection-screen p,
-        body.dark-mode #loading-screen,
-        body.dark-mode h2 {
-            color: #ffffff !important;
-        }
-        body.dark-mode .bottom-nav {
-            background: #1a1a1a !important;
-            border-top: 1px solid #333 !important;
-        }
-        body.dark-mode .modal-content {
-            background: #252525 !important;
-            color: #fff;
-        }
-        body.dark-mode .modal-content h3 { color: #ffd700; }
+        /* --- Night Mode --- */
+        body.dark-mode { background-color: #121212 !important; color: #eee; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p { color: #fff !important; }
+        body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333; }
+        body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
         body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
 
-        /* --- ปุ่มสลับ Night Mode ด้านซ้าย --- */
-        .theme-switch-wrapper {
-            position: fixed;
-            left: 15px;
-            top: 20px;
-            z-index: 1000;
-            display: flex;
-            align-items: center;
-        }
-        .theme-switch {
-            display: inline-block;
-            height: 28px;
-            position: relative;
-            width: 50px;
-        }
+        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
-        .slider {
-            background-color: #ccc;
-            bottom: 0;
-            cursor: pointer;
-            left: 0;
-            position: absolute;
-            right: 0;
-            top: 0;
-            transition: .4s;
-            border-radius: 34px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 5px;
-            font-size: 12px;
-        }
-        .slider:before {
-            background-color: white;
-            bottom: 4px;
-            content: "";
-            height: 20px;
-            left: 4px;
-            position: absolute;
-            transition: .4s;
-            width: 20px;
-            border-radius: 50%;
-            z-index: 2;
-        }
-        input:checked + .slider { background-color: #ad1457; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; width: 20px; left: 4px; position: absolute; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background-color: #0d47a1; }
         input:checked + .slider:before { transform: translateX(22px); }
-        .slider .icon-sun { color: #f39c12; }
-        .slider .icon-moon { color: #f1c40f; }
 
-        .main-logo {
-            width: 55%; 
-            max-width: 200px;
+        .main-logo { width: 50%; max-width: 180px; margin: 10px auto -10px; display: block; }
+
+        /* --- หน้าเลือกไพ่ --- */
+        #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; z-index: 10; }
+        .work-title-img {
+            width: 85%;
+            max-width: 320px;
             height: auto;
-            margin: 5px auto -20px;
+            margin: 20px auto 10px;
             display: block;
         }
+        #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
 
-        #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; z-index: 10; }
-        #counter { color: #000000; font-size: 18px; font-weight: 700; margin: 0 0 10px; }
-
-        .deck-container { 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            padding: 5px;
-            margin-top: 5px;
-        }
-
+        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; margin-top: 10px; }
         .card-back {
-            width: 42px; 
-            height: 70px;
-            background: #000000;
-            border: 1.5px solid #ffd700;
-            border-radius: 5px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.5);
-            margin: 3px -8px; 
-            transition: 0.2s;
-            position: relative;
-            z-index: 1;
-            font-size: 16px;
-            color: #ffd700;
+            width: 42px; height: 70px; background: #0d47a1; 
+            border: 1.5px solid #ffd700; border-radius: 5px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.5); margin: 3px -8px; 
+            transition: 0.2s; color: #ffd700; font-size: 16px;
         }
-
-        .card-back:hover {
-            transform: translateY(-12px) scale(1.1);
-            z-index: 50;
-            background: #1a1a1a;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-        }
-        
+        .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; background: #1a237e; }
         .card-back.selected { visibility: hidden; opacity: 0; }
 
-        #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
-        .spinner {
-            border: 4px solid #f3f3f3;
-            border-top: 4px solid #ad1457;
-            border-radius: 50%;
-            width: 50px; height: 50px;
-            animation: spin 1s linear infinite;
-            margin: 20px auto;
-        }
+        /* --- Loading --- */
+        #loading-screen { display: none; text-align: center; margin-top: 80px; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0d47a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
+        /* --- ผลลัพธ์ --- */
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
-        
-        #captureArea {
-            background-color: #1a237e;
-            padding: 15px;
-            border-radius: 12px;
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 8px;
-            width: 100%;
-        }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
-        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #b22222; margin-bottom: 3px; }
+        #captureArea { background-color: #0d47a1; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
+        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #0d47a1; margin-bottom: 3px; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; }
+        .summary-card h3 { font-size: 9px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; white-space: nowrap; }
 
-        .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-        button {
-            padding: 10px 20px; border-radius: 30px; border: none;
-            font-family: 'Sarabun'; font-weight: bold; cursor: pointer;
-        }
-        .btn-cap { background: #ad1457; color: white; }
+        .btn-group { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
+        button { padding: 12px 24px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-family: 'Sarabun'; }
+        .btn-cap { background: #0d47a1; color: white; }
         .btn-new { background: #ffd700; color: #1a237e; }
 
         #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 120px; }
-        .detail-row {
-            background-color: #e3f2fd;
-            color: #333;
-            margin-bottom: 30px;
-            border-radius: 0 0 10px 10px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
-            overflow: hidden;
-        }
-        .detail-header {
-            background-color: #212121;
-            color: #ffd700;
-            padding: 12px;
-            font-weight: bold;
-            text-align: center;
-        }
-        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
-        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
-        .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
-        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
+        .detail-row { background-color: #ffffff; color: #333; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
+        .detail-header { background-color: #1a237e; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
+        .detail-body { display: flex; padding: 15px; gap: 15px; }
+        .detail-img { width: 90px; border-radius: 5px; flex-shrink: 0; }
+        .detail-text h4 { margin: 0 0 5px; color: #1a237e; border-bottom: 1px solid #eee; }
+        .detail-text p { margin: 0; font-size: 15px; line-height: 1.6; }
 
-        .bottom-nav {
-            position: fixed; 
-            bottom: 0; 
-            width: 100%;
-            background: #ffffff; 
-            display: flex; 
-            justify-content: space-around;
-            align-items: center;
-            padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); 
-            border-top: 1px solid #e0e0e0;
-            z-index: 100;
-            box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
-        }
-        .nav-item { 
-            cursor: pointer; 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center;
-            flex: 1;
-            text-decoration: none;
-            -webkit-tap-highlight-color: transparent;
-        }
-        .nav-item img { 
-            height: 70px; 
-            width: auto; 
-            margin-bottom: 0;
-            object-fit: contain;
-            transition: transform 0.1s;
-        }
-        .nav-item:active img { 
-            transform: scale(0.9);
-        }
+        /* --- Nav & Modal --- */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
+        .nav-item img { height: 65px; cursor: pointer; transition: 0.2s; }
+        .nav-item:active img { transform: scale(0.9); }
 
-        .modal-overlay {
-            display: none; 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7); z-index: 1001;
-            justify-content: center; align-items: center;
-        }
-        .modal-content {
-            background: white; width: 85%; max-width: 400px;
-            padding: 25px; border-radius: 20px; text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        .modal-content h3 { color: #1a237e; margin-bottom: 20px; border-bottom: 2px solid #ffd700; padding-bottom: 10px; }
-        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .menu-btn {
-            background: #f0f2ff; color: #1a237e; padding: 15px 5px;
-            border-radius: 12px; font-size: 14px; font-weight: bold;
-            border: 1px solid #c5cae9; transition: 0.3s;
-        }
-        .menu-btn:hover { background: #ffd700; border-color: #ffd700; }
-        .close-modal { margin-top: 20px; color: #666; font-size: 14px; text-decoration: underline; cursor: pointer; }
-
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
+        .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; text-decoration: none; display: block; }
     </style>
 </head>
 <body>
 
-    <!-- ปุ่มสลับ Night Mode -->
     <div class="theme-switch-wrapper">
-        <label class="theme-switch" for="checkbox">
-            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
-            <div class="slider">
-                <span class="icon-sun">☀️</span>
-                <span class="icon-moon">🌙</span>
-            </div>
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)">
+            <div class="slider"><span>☀️</span><span>🌙</span></div>
         </label>
     </div>
 
-    <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
+    <img src="IMG_7035.png" alt="Logo" class="main-logo">
 
     <div id="selection-screen">
-        <p style="font-weight: 300; color: #000; margin-bottom: 5px;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบ</p>
+        <!-- รูป PNG หัวข้อตรงกลาง -->
+        <img src="tarot_for_work.png" alt="Tarot for Work" class="work-title-img">
+        
+        <p style="color: #555; font-size: 15px; margin-top: 0;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องการงาน แล้วเลือกไพ่ 4 ใบ</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p>กำลังเปิดคำทำนาย... โปรดรอ 5 วินาที</p>
+        <p style="color: #0d47a1; font-weight: bold;">กำลังวิเคราะห์ดวงการงานของคุณ...</p>
     </div>
 
     <div id="result-screen">
         <div class="btn-group">
             <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
-            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูป (.jpg)</button>
+            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวง</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายทีละใบ</h2>
+        <h2 style="text-align: center; margin: 30px 0 15px; color: #1a237e;">📖 คำทำนายเจาะลึกการงาน</h2>
         <div id="detailArea"></div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item" onclick="toggleModal(true)">
-            <img src="IMG_7070.png" alt="ไพ่ยิปซี">
-        </div>
-        <div class="nav-item" onclick="shareURL()">
-            <img src="IMG_7085.png" alt="แชร์เว็บนี้">
-        </div>
-        <div class="nav-item" onclick="alert('เร็วๆ นี้')">
-            <img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มูเตลู">
-        </div>
+        <div class="nav-item" onclick="toggleModal(true)"><img src="IMG_7070.png" alt="เมนู"></div>
+        <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png" alt="แชร์"></div>
+        <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มู"></div>
     </nav>
 
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3>เลือกประเภทการดูดวง</h3>
+            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0;">เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
-                <div class="menu-btn" onclick="location.reload()">ไพ่ยิปซีความรัก</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการงาน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีคนเก่า</div>
+                <a href="index.html" class="menu-btn">ไพ่ยิปซีความรัก</a>
+                <a href="#" class="menu-btn" onclick="location.reload()">ไพ่ยิปซีการงาน</a>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีการเงิน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีรายวัน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีบอกตัวตน</div>
+                <div class="menu-btn" onclick="alert('เร็วๆ นี้')">ไพ่ยิปซีคนเก่า</div>
             </div>
-            <p class="close-modal" onclick="toggleModal(false)">ปิดหน้าต่างนี้</p>
+            <p style="margin-top:20px; color:#999; cursor:pointer;" onclick="toggleModal(false)">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // ฟังก์ชันสำหรับสลับ Night Mode
-    function toggleDarkMode(checkbox) {
-        if (checkbox.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
-        }
-    }
-
-    // ตรวจสอบค่าที่บันทึกไว้เมื่อโหลดหน้าเว็บ
-    (function() {
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('checkbox').checked = true;
-        }
-    })();
-
-    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
-    let selectedCount = 0;
-
-    // ข้อมูลไพ่ 78 ใบ (ข้อมูลเดิมทั้งหมดของคุณ)
+    // ข้อมูลไพ่ 78 ใบ (เวอร์ชันความหมายการงาน)
     const tarotDeck = [
-        /* Major Arcana (22 ใบ) */
-        {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
-        {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
-        {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"มีความรู้สึกซ่อนอยู่ ต่างฝ่ายยังไม่เปิดใจทั้งหมด สื่อถึงการหลบเลี่ยงความรู้สึกต่อกัน มีความลับ/หรือการนอกใจ/หรือมีความไว้ใจต่อกัน คิดว่าอีกฝ่ายปิดบังหรือเข้าใจยาก"},
-        {n:"The Empress",i:"03-TheEmpress.jpg",m:"ความรักอบอุ่น เอาใจใส่ มีพัฒนาระยะยาว/ สื่อถึงคนที่คุณถามถึงให้คุณค่าและความเอาใจใส่ต่อคุณอย่างดี"},
-        {n:"The Emperor",i:"04-TheEmperor.jpg",m:"ความรักจริงจัง มั่นคง คนนี้พร้อมดูแล/ สื่อถึงคนๆนี้เป็นคนจริงจัง ชัดเจน ขี้หึง อีโก้ทิฐิ หรือความสัมพันธ์มีสภาวะตึงเครียด ต่างคนต่างอีโก้ ชอบเอาชนะ/ถ้าอยู่ช่วงโกรธมีปัญหาก็ยอมหักไม่ยอมงอ"},
-        {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"ความสัมพันธ์เป็นทางการ ผู้ใหญ่สนับสนุน/ สื่อถึงการอยากคบหาแบบจริงจัง หรือการทำทุกอย่างให้ถูกต้อง การยึดมั่นถือมั่นในความคิดความเชื่อตัวเอง / อาจจะหมายถึงความคาดหวังในสิ่งที่เชื่อได้"},
-        {n:"The Lovers",i:"06-TheLovers.jpg",m:"รักแรงดึงดูดสูง ต้องตัดสินใจด้วยความซื่อสัตย์/ สื่อถึงความรักที่มีให้กันแบบคู่รัก หรือเจ้าชะตาลังเลตัดสินใจไม่ได้ เจ้าชู้ ไม่เด็ดขาดมากพอ มีเรื่องให้ลังเลให้เลือก"},
-        {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงความเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
-        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข้มแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
-        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงทบทวนหัวใจ ต้องอยู่กับตัวเองก่อน/ สื่อถึงการคิดทบทวนอดีต คนรักเก่ากลับมา การยังไม่มูฟออนจากความสัมพันธ์ การอยากใช้เวลาอยู่คนเดียว รักตัวเองสักพัก"},
-        {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"ความรักเปลี่ยนแปลงตามจังหวะโชคชะตา/ สื่อถึงอาจจะมีการเริ่มต้นความสัมพันธ์ใหม่ หรืออาจจะเปลี่ยนแปลงความสัมพันธ์ใหม่ หรือการวนเวียนกลับมาของคนรัก หรือมีการเปลี่ยนแปลงของความสัมพันธ์/ ถ้าถามว่าจบรึยังอาจจะยังไม่จบได้"},
-        {n:"Justice",i:"11-Justice.jpg",m:"ต้องจริงใจ ชัดเจน ยุติธรรมต่อกัน/ สื่อถึงการตัดสินใจด้วยเหตุผล การตัดขาด การพูดความจริงต่อกัน"},
-        {n:"The Hanged Man",i:"12-TheHangedMan.jpg",m:"ความรักที่ต้องรอคอย หรือยอมเสียสละบางอย่าง"},
-        {n:"Death",i:"13-Death.jpg",m:"จบสิ่งเก่า เพื่อเริ่มต้นใหม่ที่ดีกว่า/ สื่อถึงการจบความสัมพันธ์ หรือเริ่มความสัมพันธ์ใหม่ขึ้นอยู่กับตำแหน่งไพ่"},
-        {n:"Temperance",i:"14-Temperance.jpg",m:"ความรักต้องประนีประนอม หาจุดสมดุล"},
-        {n:"The Devil",i:"15-TheDevil.jpg",m:"ผูกพันลึก หลงใหล ระวังความสัมพันธ์เป็นพิษ/ สื่อถึงความสัมพันธ์ท็อกซิก การยึดติด ความผูกพันที่ไม่ดีต่อกัน หรือคิดในแง่ 18+ ได้เช่นกัน คนๆนี้อาจจะยังไม่มีความจริงใจต่อคุณมากพอ"},
-        {n:"The Tower",i:"16-TheTower.jpg",m:"เหตุการณ์ฉับพลัน ทำให้รักสั่นคลอน"},
-        {n:"The Star",i:"17-TheStar.jpg",m:"ความหวัง การเยียวยาหัวใจ ความรักค่อยดีขึ้น"},
-        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความลังเล ไม่แน่ใจ ระวังคิดไปเอง/ สื่อถึงความกังวล ความเข้าใจผิดไปเอง ความเศร้า"},
-        {n:"The Sun",i:"19-TheSun.jpg",m:"ความรักสดใส ชัดเจน มีความสุข"},
-        {n:"Judgement",i:"20-Judgement.jpg",m:"การตัดสินใจครั้งสำคัญ อดีตอาจย้อนกลับมา"},
-        {n:"The World",i:"21-TheWorld.jpg",m:"ความรักลงตัว สมบูรณ์ และจริงจัง"},
+        {n:"The Fool",i:"00-TheFool.jpg",m:"เริ่มต้นสิ่งใหม่ งานใหม่ที่ท้าทาย แต่อย่าประมาท ควรวางแผนให้รอบคอบ"},
+        {n:"The Magician",i:"01-TheMagician.jpg",m:"มีความสามารถเฉพาะตัวโดดเด่น แก้ปัญหาได้ดี มีช่องทางใหม่ๆ ในงาน"},
+        {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"ใช้ลางสังหรณ์ในการทำงาน ระวังความขัดแย้งที่มองไม่เห็นหรือความลับในบริษัท"},
+        {n:"The Empress",i:"03-TheEmpress.jpg",m:"งานอุดมสมบูรณ์ ได้รับการสนับสนุนดีเยี่ยม มีโอกาสเติบโตและกำไรดี"},
+        {n:"The Emperor",i:"04-TheEmperor.jpg",m:"การจัดการที่เป็นระบบ มีอำนาจตัดสินใจ ได้เลื่อนตำแหน่งหรือดูแลโครงการใหญ่"},
+        {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"งานเกี่ยวข้องกับวิชาการ กฎระเบียบ หรือได้รับคำปรึกษาที่ดีจากผู้ใหญ่"},
+        {n:"The Lovers",i:"06-TheLovers.jpg",m:"ต้องตัดสินใจครั้งสำคัญ หรือการเลือกทำงานที่รักจริงๆ พาร์ทเนอร์งานเข้ากันได้ดี"},
+        {n:"The Chariot",i:"07-TheChariot.jpg",m:"งานหนักและต้องลุยถึงจะสำเร็จ มีการเดินทางบ่อยหรือต้องแข่งกับเวลาสูง"},
+        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทนและจิตวิทยาในการคุมคนหรืองานที่ยากลำบาก จะผ่านไปได้ด้วยความแกร่ง"},
+        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงวิเคราะห์งาน ทบทวนตัวเอง งานที่ต้องใช้สมาธิสูงหรืองานวิจัยจะดีมาก"},
+        {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"จังหวะงานเปลี่ยนไปในทางที่ดี มีโชคเรื่องงานกะทันหัน หรือได้รับโอกาสใหม่"},
+        {n:"Justice",i:"11-Justice.jpg",m:"การทำสัญญาที่ยุติธรรม การตัดสินใจด้วยเหตุผล หรืองานที่เกี่ยวข้องกับเอกสารกฎหมาย"},
+        {n:"The Hanged Man",i:"12-TheHangedMan.jpg",m:"งานหยุดชะงัก ต้องยอมเสียสละบางอย่าง หรือมองปัญหาในมุมกลับเพื่อหาทางออก"},
+        {n:"Death",i:"13-Death.jpg",m:"จบโปรเจกต์เดิมเพื่อเริ่มสิ่งใหม่ การลาออกหรือการเปลี่ยนแปลงโครงงานครั้งใหญ่"},
+        {n:"Temperance",i:"14-Temperance.jpg",m:"การปรับตัวเข้ากับเพื่อนร่วมงาน การโยกย้ายแผนก หรือการประสานงานที่ลงตัว"},
+        {n:"The Devil",i:"15-TheDevil.jpg",m:"ความโลภหรือความอึดอัดในที่ทำงาน ระวังการถูกโกงหรือความสัมพันธ์เป็นพิษในที่ทำงาน"},
+        {n:"The Tower",i:"16-TheTower.jpg",m:"งานเกิดปัญหาฉับพลัน ระวังเรื่องการผิดพลาดร้ายแรงหรือการเลิกจ้างกะทันหัน"},
+        {n:"The Star",i:"17-TheStar.jpg",m:"ความหวังใหม่เริ่มปรากฏ งานในฝัน หรือชื่อเสียงในวิชาชีพกำลังจะโดดเด่น"},
+        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความไม่ชัดเจน บรรยากาศงานอึมครึม มีคนเลื่อยขาเก้าอี้ หรือความกังวลเกินเหตุ"},
+        {n:"The Sun",i:"19-TheSun.jpg",m:"ความสำเร็จสูงสุดในงาน ได้รับคำชม ผลตอบแทนดีเยี่ยม ทุกอย่างกระจ่างชัด"},
+        {n:"Judgement",i:"20-Judgement.jpg",m:"การประกาศผลสอบ การเรียกสัมภาษณ์ หรือโอกาสที่สองในสายอาชีพเดิม"},
+        {n:"The World",i:"21-TheWorld.jpg",m:"งานสำเร็จตามเป้าหมาย งานต่างประเทศหรืองานออนไลน์ได้ผลดีมาก"},
+        
+        /* Wands (แอคชั่น/โปรเจกต์) */
+        {n:"Ace of Wands",i:"Wands01.jpg",m:"จุดเริ่มต้นโปรเจกต์ใหม่ ความคิดสร้างสรรค์พุ่งพล่าน แรงบันดาลใจดีมาก"},
+        {n:"Two of Wands",i:"Wands02.jpg",m:"การวางแผนขยายงาน การมองหาช่องทางทำธุรกิจในแดนไกล"},
+        {n:"Three of Wands",i:"Wands03.jpg",m:"งานขยายตัว ได้รับข่าวดีจากการติดต่อประสานงาน มีอนาคตสดใส"},
+        {n:"Four of Wands",i:"Wands04.jpg",m:"ความมั่นคงในหน้าที่การงาน งานเลี้ยงฉลองความสำเร็จหรือเซ็นสัญญาถาวร"},
+        {n:"Five of Wands",i:"Wands05.jpg",m:"ความขัดแย้งในที่ทำงาน ความคิดเห็นไม่ตรงกัน มีการแข่งขันที่วุ่นวาย"},
+        {n:"Six of Wands",i:"Wands06.jpg",m:"ชัยชนะ งานสำเร็จตามคาดหมาย ได้รับการยอมรับจากสังคมและเพื่อนร่วมงาน"},
+        {n:"Seven of Wands",i:"Wands07.jpg",m:"ต้องต่อสู้และพิสูจน์ฝีมือ มีอุปสรรคเข้ามาแต่คุณจะเอาชนะได้ด้วยความพยายาม"},
+        {n:"Eight of Wands",i:"Wands08.jpg",m:"งานเดินหน้าไวมาก มีการสื่อสารธุรกิจที่คึกคักและรวดเร็ว"},
+        {n:"Nine of Wands",i:"Wands09.jpg",m:"งานใกล้เสร็จแต่เหนื่อยล้า ระวังเรื่องความระแวงหรือความผิดพลาดเล็กน้อย"},
+        {n:"Ten of Wands",i:"Wands10.jpg",m:"แบกรับงานหนักเกินตัว ภาระล้นมือ ต้องหาสามารจัดการด่วนก่อนจะเบิร์นเอาท์"},
+        {n:"Page of Wands",i:"Wands11.jpg",m:"ได้รับข่าวดีเรื่องงานใหม่ หรือการเริ่มต้นเรียนรู้ทักษะใหม่ๆ ที่เป็นประโยชน์"},
+        {n:"Knight of Wands",i:"Wands12.jpg",m:"ลุยงานเต็มที่ มีพลังงานสูง มุ่งมั่นสู่เป้าหมายอย่างรวดเร็ว"},
+        {n:"Queen of Wands",i:"Wands13.jpg",m:"ผู้บริหารหญิงเก่ง จัดการงานเก่ง มีเสน่ห์และบารมีในที่ทำงาน"},
+        {n:"King of Wands",i:"Wands14.jpg",m:"ผู้นำที่มีวิสัยทัศน์ งานบริหารที่ต้องเด็ดขาด จะประสบความสำเร็จยิ่งใหญ่"},
 
-        /* Wands (14 ใบ) */
-        {n:"Ace of Wands",i:"Wands01.jpg",m:"ความรักเริ่มต้นด้วยแพชชั่น แรงดึงดูดสูง/สื่อถึงการเริ่มต้นใหม่ การทักหรือการเข้าหา"},
-        {n:"Two of Wands",i:"Wands02.jpg",m:"คิดถึงอนาคตร่วมกัน แต่ยังชั่งใจ/ สื่อถึงการมองไปข้างหน้า ยังคาดหวังและสับสน"},
-        {n:"Three of Wands",i:"Wands03.jpg",m:"รอพัฒนาความสัมพันธ์/ สื่อถึงการรอคอย หรืออยากมีอนาคตร่วมกัน การเดินหน้าความสัมพันธ์ หรืออาจจะสื่อถึงการมูฟออนได้"},
-        {n:"Four of Wands",i:"Wands04.jpg",m:"ความรักมั่นคง มีโอกาสจริงจัง/ สื่อถึงการแต่งงาน การคืนดี การกลับมาอยู่ร่วมกัน การประนีประนอม / ความสัมพันธ์ที่สบายใจ"},
-        {n:"Five of Wands",i:"Wands05.jpg",m:"มีความขัดแย้งเล็กน้อย ต่างคนต่างถือทิฐิ/ สื่อถึงภาวะทะเลาะขัดแย้ง ต่างคนต่างไม่ลงรอกัน ไม่ยอมกัน"},
-        {n:"Six of Wands",i:"Wands06.jpg",m:"ความรักได้รับการยอมรับ หรือสมหวัง/ สื่อถึงการกลับมาของคนรักเก่าการอยากคืนดี หรืออาจจะหมายถึงการคืนดีแม้มีอีโก้นำ / การติดต่อ"},
-        {n:"Seven of Wands",i:"Wands07.jpg",m:"ต้องปกป้องความรักจากสิ่งรอบข้าง/ สื่อถึงการยึดติดในแนวทางตัวเอง การต่อสู้ พยายามต่อแม้จะเหนื่อย / ทิฐิ"},
-        {n:"Eight of Wands",i:"Wands08.jpg",m:"ความรักคืบหน้าเร็ว การสื่อสารดี/สื่อถึงการติดต่อสื่อสาร การทัก การได้ข่าวต่างๆ"},
-        {n:"Nine of Wands",i:"Wands09.jpg",m:"ระวังความระแวง แต่ยังสู้เพื่อรัก/ สื่อถึงรักที่เจ็บมากเยอะ ผ่านอะไรมาเยอะ อาจจะมีอีโก้ทิฐิ มีบาดแผลเยอะจนยากจะกลับไปเป็นเหมือนเดิม / หรือการมองความสัมพันธ์แง่ลบไป"},
-        {n:"Ten of Wands",i:"Wands10.jpg",m:"ความรักหนักใจ แบกรับภาระมากเกินไป/ สื่อถึงการอดทนต่อความสัมพันธ์ การเหนื่อยสะสม"},
-        {n:"Page of Wands",i:"Wands11.jpg",m:"คนไฟแรง สดใส ความรักน่าตื่นเต้น/ สื่อถึงความรู้สึกชอบ การติดต่อ การทำอะไรไม่ค่อยจะจริงจังหรือเป็นเด็กๆ"},
-        {n:"Knight of Wands",i:"Wands12.jpg",m:"รักเร็วแรง แต่เปลี่ยนง่าย/ สื่อถึงความชอบแบบไม่ยั่งยืน การอยากเข้าหา หรือมีใจแบบไม่ยั่งยืน"},
-        {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
-        {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
+        /* Pentacles (เงิน/ความมั่นคง) */
+        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"ได้รับเงินก้อนใหญ่ โบนัส หรือการเริ่มต้นธุรกิจที่มีกำไรดีมาก"},
+        {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"การหมุนเงินหรือการรับผิดชอบงานหลายอย่างพร้อมกัน ต้องจัดตารางให้ดี"},
+        {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"การได้รับคำชมจากความเชี่ยวชาญเฉพาะด้าน งานฟรีแลนซ์หรือการจ้างงานเพิ่ม"},
+        {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"ความมั่นคงที่น่าอึดอัด การกอดตำแหน่งไว้แน่น หรือความไม่กล้าเสี่ยงลงทุน"},
+        {n:"Five of Pentacles",i:"Pentacles05.jpg",m:"วิกฤตการเงินในงาน งานขาดแคลนงบประมาณ หรือความรู้สึกไม่มั่นคง"},
+        {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"ได้รับการอุปถัมภ์ การได้ทุน หรือการปันผลประโยชน์ที่ลงตัว"},
+        {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"เก็บเกี่ยวผลประโยชน์จากงานที่ลงแรงไว้ รอรับผลกำไรในระยะยาว"},
+        {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ความขยันหมั่นเพียร การฝึกฝนทักษะจนชำนาญ จะนำไปสู่ความรวย"},
+        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"ประสบความสำเร็จทางการเงิน มีอิสระในงานและชีวิตที่หรูหรา"},
+        {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"ความมั่งคั่งสูงสุด ธุรกิจครอบครัวที่มั่นคง หรือการวางรากฐานระยะยาวสำเร็จ"},
+        {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"ข่าวดีเรื่องเงินหรือการลงทุนเริ่มต้นเล็กๆ ที่จะเติบโตในอนาคต"},
+        {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"งานเดินหน้าช้าๆ แต่มั่นคง เน้นความละเอียดรอบคอบ ได้ผลตอบแทนชัวร์"},
+        {n:"Queen of Pentacles",i:"Pentacles13.jpg",m:"การจัดการงบประมาณที่ดีเยี่ยม ความเป็นมืออาชีพที่ได้รับความไว้วางใจ"},
+        {n:"King of Pentacles",i:"Pentacles14.jpg",m:"เศรษฐีหรือนักธุรกิจผู้ประสบความสำเร็จ ความมั่นคงขั้นสูงสุดในสายอาชีพ"},
 
-        /* Cups (14 ใบ) */
-        {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขามีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
-        {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
-        {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
-        {n:"Four of Cups",i:"Cups04.jpg",m:"ลังเล เบื่อ ไม่เปิดใจเต็มที่ / คนรักอาจจะกำลังเบื่อคุณ / หรือคนที่คุณคิดถึงอาจจะยังไม่มูฟออน / ใจคุณยังไม่พร้อมเปิดรับความรักเต็มที่"},
-        {n:"Five of Cups",i:"Cups05.jpg",m:"เสียใจจากอดีต ยังตัดไม่ขาด/ ถ้าหากถามถึงคนเก่า ใบนี้แปลว่าเขยังอาลัยอาวรณ์คุณอยู่ยังไม่มูฟออน หรือมีเรื่องที่ทำให้คุณต้องผิดหวัง"},
-        {n:"Six of Cups",i:"Cups06.jpg",m:"ความรักเก่า หรือคนจากอดีตกลับมา / คนรักเก่าจะกลับมา การหวนคืน ใบนี้จะได้คืนดี หรือสุขสมหวังจากคนที่คุณรอคอย"},
-        {n:"Seven of Cups",i:"Cups07.jpg",m:"มีหลายตัวเลือก แต่ยังไม่ตัดสินใจ/สื่อถึงภาวะที่เจ้าชะตายังลังเล หรือมีคนเข้ามาเยอะแต่ไม่รู้จะเลือกใคร หรือบางทียังอยู่ในช่วงตัดสินใจยาก"},
-        {n:"Eight of Cups",i:"Cups08.jpg",m:"เดินออกจากรักที่ไม่เติมเต็ม/ คุณหรือเขาต้องตัดสินใจเดินจากแม้ยังรักกันอยู่ หรือเลือกปล่อยความสัมพันธ์ให้ถึงจุดจบ"},
-        {n:"Nine of Cups",i:"Cups09.jpg",m:"ความสมหวัง พอใจในความรัก/ พอใจกับการอยู่คนเดียวแม้โสด หรือคนที่ถามถึงค่อนข้างจะเจ้าชู้เยอะ / หรือเขาพอใจคุณแม้ไม่ได้ครอบครองก็ตาม"},
-        {n:"Ten of Cups",i:"Cups10.jpg",m:"รักอบอุ่น ครอบครัว/ สื่อถึงคนที่ถามถึงมีความคิดจริงจังกับเรา วางอนาคตไว้กับเรา หรือความรักอยู่เปี่ยมดี"},
-        {n:"Page of Cups",i:"Cups11.jpg",m:"รักใสๆ อ่อนโยน มีคนเข้ามาจีบ / สื่อถึงคนที่ชอบ คนที่รักยังอยู่ในช่วงหวานโรแมนติกกับคุณ หรือยังมีใจให้คุณ"},
-        {n:"Knight of Cups",i:"Cups12.jpg",m:"คนโรแมนติก เสน่ห์ดี/ สื่อถึงการที่ใครคนนึงอยากเข้าหาเรา อาจจะสื่อถึงการกลับมาใกล้ชิดและการจากไปได้เช่นกัน แต่คนที่ถามถึงมีใจให้เรา อยากจีบอยากเข้าหา"},
-        {n:"Queen of Cups",i:"Cups13.jpg",m:"เข้าใจ ดูแล เอาใจใส่/ สื่อถึงคนที่เราถามถึงยังมีความห่วงใย ความแคร์เรา อาจจะเป็นความรักที่อยู่ในใจ เก็บเงียบไม่ชอบแสดงออกเท่าไหร่นัก"},
-        {n:"King of Cups",i:"Cups14.jpg",m:"รักมั่นคง สุภาพ ควบคุมอารมณ์ได้/ สื่อถึงคนๆนี้อาจจะชอบเรา หรือเก็บอารมณ์ความรู้สึก หรือสนใจเราในแง่มุมนึง แต่ไมยากเปิดปากมาก"},
+        /* Swords (กลยุทธ์/อุปสรรค) */
+        {n:"Ace of Swords",i:"Swords01.jpg",m:"การตัดสินใจที่เด็ดขาด การใช้ปัญญาแก้ปัญหาที่ค้างคามานาน"},
+        {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจลำบาก ข้อมูลไม่ครบ หรือการปิดหูปิดตาไม่รับรู้ปัญหาในงาน"},
+        {n:"Three of Swords",i:"Swords03.jpg",m:"ความเสียใจในงาน โปรเจกต์ถูกยกเลิก หรือบรรยากาศในทีมบาดหมาง"},
+        {n:"Four of Swords",i:"Swords04.jpg",m:"ช่วงเวลาพักผ่อน หยุดงานเพื่อรักษาร่างกายหรือทบทวนกลยุทธ์ใหม่"},
+        {n:"Five of Swords",i:"Swords05.jpg",m:"ความขัดแย้งที่ไม่มีใครชนะ การเอาชนะกันด้วยทิฐิจนงานเสียหาย"},
+        {n:"Six of Swords",i:"Swords06.jpg",m:"ปัญหาเริ่มคลี่คลาย การเดินทางเพื่อหนีปัญหา หรือการทำงานที่ราบรื่นขึ้นช้าๆ"},
+        {n:"Seven of Swords",i:"Swords07.jpg",m:"ระวังคนแทงข้างหลัง การใช้ทางลัด หรือแผนการที่ไม่เปิดเผยในที่ทำงาน"},
+        {n:"Eight of Swords",i:"Swords08.jpg",m:"ความรู้สึกมืดแปดด้าน ถูกบีบบังคับด้วยกฎเกณฑ์จนหาทางออกไม่ได้"},
+        {n:"Nine of Swords",i:"Swords09.jpg",m:"ความเครียดสะสม นอนไม่หลับ คิดมากเรื่องงานเกินกว่าความเป็นจริง"},
+        {n:"Ten of Swords",i:"Swords10.jpg",m:"งานถึงจุดจบที่สุดทน การปิดตัวโครงการ หรือการลาออกอย่างบอบช้ำ"},
+        {n:"Page of Swords",i:"Swords11.jpg",m:"การสืบหาข้อมูล ระวังคำพูดที่รุนแรง หรือข่าวลือในบริษัท"},
+        {n:"Knight of Swords",i:"Swords12.jpg",m:"ลุยงานด้วยความใจร้อน ปะทะคารมเพื่อความถูกต้อง งานที่ต้องแข่งกับเวลา"},
+        {n:"Queen of Swords",i:"Swords13.jpg",m:"การใช้เหตุผลนำอารมณ์ ผู้บริหารที่เข้มงวดและตรงไปตรงมา"},
+        {n:"King of Swords",i:"Swords14.jpg",m:"การใช้สติปัญญาขั้นสูงตัดสินงาน ความชัดเจนและเฉียบคมในวิสัยทัศน์"},
 
-        /* Swords (14 ใบ) */
-        {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
-        {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
-        {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
-        {n:"Four of Swords",i:"Swords04.jpg",m:"พักใจ หยุดคุย หยุดคิดสักพัก/ สื่อถึงอาจจะยังอยู่ในระยะพักหรือทบทวนความสัมพันธ์ไมยากเคลื่อนไหวมากนัก"},
-        {n:"Five of Swords",i:"Swords05.jpg",m:"ทะเลาะ เอาชนะกันจนเสียความรู้สึก/ สื่อถึงอาจจะมีปัญหาขัดแย้ง ไม่ลงรอยกันด้วยอีโก้ ถ้าจบก็จบลงด้วยอีโก้"},
-        {n:"Six of Swords",i:"Swords06.jpg",m:"ก้าวข้ามอดีต เริ่มฟื้นใจ/ สื่อถึงการเดินต่อไปข้างหน้าแม้จะเจ็บปวด หรืออยากมูฟออนแต่ก้างอย่างช้าๆ"},
-        {n:"Seven of Swords",i:"Swords07.jpg",m:"มีเรื่องปิดบัง ไม่ซื่อสัตย์/ สื่อถึงอีกฝ่ายมีเรื่องปิดบัง ไม่ซื่อสัตย์ต่อคุณ หรืออาจจะมองคุณแบบไม่จริงจังนัก"},
-        {n:"Eight of Swords",i:"Swords08.jpg",m:"คิดมาก รู้สึกติดกับความสัมพันธ์/ สื่อถึงความคิดที่ฝ่ายใดฝ่ายนึงคิดไปเองและหาทางออกไม่ได้ ไม่พร้อมเผชิญปัญหา หาทางออกไม่ได้ มูฟออนไม่ได้ หรือไม่อยากรับรู้ หลีกเลี่ยงปัญหา"},
-        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกังวลใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
-        {n:"Ten of Swords",i:"Swords10.jpg",m:"จบความสัมพันธ์แบบเจ็บปวด/ สื่อถึงอยู่ช่วงเจ็บปวดที่สุดและยากที่จะหายดี หรือจบความสัมพันธ์แบบหนักหน่วง ไม่พร้อมไปคืนดี"},
-        {n:"Page of Swords",i:"Swords11.jpg",m:"สอดส่อง เช็คโซเชียล อยากรู้เรื่องเขา/สื่อถึงการส่อง การยังติดตามอีกฝ่ายอย่างใกล้ชิด อาจจะอยากสื่อสารแต่ยังไม่กล้าและมีฐิ"},
-        {n:"Knight of Swords",i:"Swords12.jpg",m:"ใจร้อน พูดตรง อารมณ์ขึ้นง่าย/ สื่อถึงการปะทะอารมณ์ต่อกัน ไม่ว่าจะเพราะคำพูดหรือเพราะพฤติกรรม หรืออาจจะหมายถึงการทักมาแบบไม่คาดคิด การติดต่อแบบไม่คาดคิด"},
-        {n:"Queen of Swords",i:"Swords13.jpg",m:"ใช้เหตุผลนำหน้า หัวใจระวังเจ็บ/สื่อถึงอีกฝ่ายอยู่ในภาวะไม่สนใจหรือเย็นชา"},
-        {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
-
-        /* Pentacles (14 ใบ) */
-        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
-        {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
-        {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
-        {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"หวงรัก ยึดติด กลัวเสียไป/ สื่อถึงเจ้าชะตามีภาวะหึงหวงและยึดติดในช่วงนั้นอยู่ หรือยังปล่อยวางไม่ได้ หรือความสัมพันธ์อยู่ในขั้นกั๊กไว้ ยึดติดไว้ หรือเขา/คุณ กลัวที่จะสูญเสียกันและกัน/หรือเขาหวงตัวเองไม่เปิดหมด"},
-        {n:"Five of Pentacles",i:"Pentacles05.jpg",m:"ความเหงา ขาดการดูแล เอาใจใส่/ สื่อถึงความรู้สึกโดนเมิน ไม่ได้รับการสนใจหรือใส่ใจดูแลมากพอ หรือห่างเหินกันไป"},
-        {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"การให้และรับที่สมดุล/ สื่อถึงภาวะอีกฝ่ายอาจจะให้มากไป หรือเราอาจจะให้น้อยไปขึ้นอยู่กับบริบทไพ่ หรืออาจจะหมายถึงการให้อภัยให้โอกาสใหม่ การรอคอยตอบรับจากอีกฝ่าย"},
-        {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"รอผลลัพธ์จากความพยายาม/ สื่อถึงการรอคอยแบบเงียบๆ การทุ่มเทแล้วรอผลลัพธ์"},
-        {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ตั้งใจพัฒนาความสัมพันธ์/ สื่อถึงอีกฝ่ายมีความจริงจัง อาจจะพยายามเข้าหาหรือพัฒนากันแบบจริงจัง หรือมีความตั้งใจในความรักมาก / หรือตอนนั้นอยู่ในช่วงที่อีกฝ่ายเอาเวลาไปพัฒนาตัวเองหรือการงานการเรียน จนเพิกเฉยเราได้"},
-        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิสระ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
-        {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"รักมั่นคงระยะยาว วางแผนอนาคตร่วมกัน/เจ้าชะตาอยู่ใช่ช่วงกำลังแต่งงาน มีครอบครัวแล้ว หรือคนที่คบหาค่อนข้างจะจริง"},
-        {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"เริ่มจริงจัง คิดอนาคต/ สื่อถึงการอยากริลองอะไรใหม่ เริ่มต้นใหม่แบบมีเงื่อนไข"},
-        {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"รักช้าแต่มั่นคง/ สื่อถึงคนๆนี้เป็นคนจริงจังในรัก อาจจะน่าเบื่อไปบ้าง แต่จริงจังกับคุณ พร้อมพัฒนาแบบช้าๆ"},
-        {n:"Queen of Pentacles",i:"Pentacles13.jpg",m:"ดูแล เอาใจใส่ มั่นคงอบอุ่น/ สื่อถึงอีกฝ่ายมองคนเป็นคนในฝัน หรือคนดีในสายตาเขา อยากดูแล อยากเอาใจใส่"},
-        {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
+        /* Cups (อารมณ์/ความพึงพอใจ) */
+        {n:"Ace of Cups",i:"Cups01.jpg",m:"ความสุขในงานใหม่ บรรยากาศการทำงานที่อบอุ่น มิตรภาพที่ดีในทีม"},
+        {n:"Two of Cups",i:"Cups02.jpg",m:"การร่วมมือที่ดีเยี่ยม พาร์ทเนอร์ที่เข้ากันได้ หรือการเซ็นสัญญาสมรสธุรกิจ"},
+        {n:"Three of Cups",i:"Cups03.jpg",m:"การเลี้ยงฉลองความสำเร็จ งานปาร์ตี้บริษัท หรือข่าวดีร่วมกันในทีม"},
+        {n:"Four of Cups",i:"Cups04.jpg",m:"ความเบื่อหน่ายงานเดิม ปฏิเสธโอกาสใหม่เพราะยังไม่ถูกใจ"},
+        {n:"Five of Cups",i:"Cups05.jpg",m:"ความผิดหวังจากงานที่พลาดไป แต่อย่าลืมมองโอกาสที่ยังเหลืออยู่"},
+        {n:"Six of Cups",i:"Cups06.jpg",m:"การทำงานกับคนคุ้นเคย เพื่อนเก่าชวนไปทำงาน หรือการหวนคืนสู่งานเก่า"},
+        {n:"Seven of Cups",i:"Cups07.jpg",m:"มีทางเลือกเยอะแต่ยังเพ้อฝัน ต้องดึงสติและเลือกสิ่งที่ทำได้จริง"},
+        {n:"Eight of Cups",i:"Cups08.jpg",m:"การเดินจากงานที่ไม่ตอบโจทย์ เพื่อไปแสวงหาสิ่งที่เติมเต็มจิตใจกว่า"},
+        {n:"Nine of Cups",i:"Cups09.jpg",m:"ความพอใจในผลงาน ความสุขที่ได้ทำงานที่ตัวเองถนัด"},
+        {n:"Ten of Cups",i:"Cups10.jpg",m:"ความสำเร็จที่นำความสุขมาสู่ครอบครัว งานที่มั่นคงและสบายใจ"},
+        {n:"Page of Cups",i:"Cups11.jpg",m:"ความคิดสร้างสรรค์ใหม่ๆ ข้อเสนองานที่น่าประทับใจแต่อาจจะยังเด็กอยู่"},
+        {n:"Knight of Cups",i:"Cups12.jpg",m:"ข้อเสนองานที่น่าดึงดูดใจ การทำงานที่ใช้ศิลปะหรือความสุนทรีย์"},
+        {n:"Queen of Cups",i:"Cups13.jpg",m:"ความเมตตาในที่ทำงาน การรับฟังและสนับสนุนทางอารมณ์ที่ดี"},
+        {n:"King of Cups",i:"Cups14.jpg",m:"ผู้บริหารที่ใจดี เข้าใจคน ควบคุมอารมณ์ได้ดีเยี่ยมภายใต้ความกดดัน"}
     ];
+
+    const posTitles = ["ใบที่ 1 : สถานการณ์ปัจจุบัน", "ใบที่ 2 : อุปสรรคที่ต้องเจอ", "ใบที่ 3 : คำแนะนำในการแก้", "ใบที่ 4 : บทสรุป/อนาคต"];
+    let selectedCount = 0;
 
     function createDeck() {
         const deckDiv = document.getElementById("deck");
@@ -438,7 +256,7 @@
         for(let i=0; i<60; i++) {
             const card = document.createElement("div");
             card.className = "card-back";
-            card.innerHTML = "🌙";
+            card.innerHTML = "💼"; 
             card.onclick = function() { selectCard(this); };
             deckDiv.appendChild(card);
         }
@@ -463,6 +281,7 @@
         const summaryBox = document.getElementById("captureArea");
         const detailBox = document.getElementById("detailArea");
         
+        // สุ่มไพ่ 4 ใบไม่ซ้ำ
         const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
 
         picks.forEach((c, i) => {
@@ -475,7 +294,7 @@
             `;
             detailBox.innerHTML += `
                 <div class="detail-row">
-                    <div class="detail-header">ไพ่ใบที่ ${i+1} : ${posTitles[i]}</div>
+                    <div class="detail-header">${posTitles[i]}</div>
                     <div class="detail-body">
                         <img src="${c.i}" class="detail-img" onerror="this.src='https://placehold.co/100x170?text=Card';">
                         <div class="detail-text">
@@ -488,32 +307,48 @@
         });
     }
 
+    function toggleDarkMode(checkbox) {
+        if (checkbox.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    (function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    })();
+
     function toggleModal(show) {
-        const modal = document.getElementById("tarot-modal");
-        modal.style.display = show ? "flex" : "none";
+        document.getElementById("tarot-modal").style.display = show ? "flex" : "none";
     }
 
     async function shareURL() {
         if (navigator.share) {
             try {
                 await navigator.share({
-                    title: 'ไพ่ยิปซีความรัก 4 ใบ',
-                    text: 'ลองมาเช็กดวงความรัก 4 ใบสิ!',
+                    title: 'ไพ่ยิปซีการงาน 4 ใบ',
+                    text: 'มาดูดวงการงานแม่นๆ กัน!',
                     url: window.location.href,
                 });
-            } catch (err) { console.log("Sharing failed", err); }
+            } catch (err) { console.log(err); }
         } else {
-            alert("Copy ลิงก์แล้วส่งให้เพื่อนได้เลย!");
+            alert("คัดลอกลิงก์ส่งให้เพื่อนได้เลย!");
         }
     }
 
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");
-        const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
-        const imageJPG = canvas.toDataURL("image/jpeg", 0.9);
+        const canvas = await html2canvas(area, { backgroundColor: "#0d47a1", scale: 2 });
         const link = document.createElement("a");
-        link.download = "tarot-reading.jpg";
-        link.href = imageJPG;
+        link.download = "my-career-reading.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
         link.click();
     }
 

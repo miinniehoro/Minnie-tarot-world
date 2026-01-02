@@ -10,9 +10,11 @@
 
     <style>
         * { box-sizing: border-box; }
+        
+        /* --- สีโหมดปกติ (Light Mode) --- */
         body {
             font-family: 'Sarabun', sans-serif !important;
-            background-color: #F5F6F1 !important;
+            background-color: #F5F6F1;
             color: #333;
             margin: 0;
             padding: 0;
@@ -21,41 +23,102 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            transition: 0.3s;
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- Night Mode --- */
-        body.dark-mode { background-color: #121212 !important; color: #fff; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode h2 { color: #fff !important; }
-        body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333; }
-        body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
+        /* --- สีโหมดกลางคืน (Night Mode) --- */
+        body.dark-mode {
+            background-color: #121212 !important;
+            color: #ffffff !important;
+        }
+        body.dark-mode #counter, 
+        body.dark-mode #selection-screen p,
+        body.dark-mode #loading-screen,
+        body.dark-mode h2 {
+            color: #ffffff !important;
+        }
+        body.dark-mode .bottom-nav {
+            background: #1a1a1a !important;
+            border-top: 1px solid #333 !important;
+        }
+        body.dark-mode .modal-content {
+            background: #252525 !important;
+            color: #fff;
+        }
         body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
 
-        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
-        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        /* --- ปุ่มสลับ Night Mode --- */
+        .theme-switch-wrapper {
+            position: fixed;
+            left: 15px;
+            top: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 28px;
+            position: relative;
+            width: 50px;
+        }
         .theme-switch input { display: none; }
-        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; }
-        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; width: 20px; left: 4px; position: absolute; transition: .4s; border-radius: 50%; }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+            font-size: 12px;
+        }
+        .slider:before {
+            background-color: white;
+            bottom: 4px;
+            content: "";
+            height: 20px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+            z-index: 2;
+        }
         input:checked + .slider { background-color: #0d47a1; }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        .main-logo { width: 50%; max-width: 180px; margin: 10px auto -10px; display: block; }
+        /* --- หัวข้อ Tarot for Work --- */
+        .work-title-img {
+            width: 70%;
+            max-width: 320px;
+            height: auto;
+            margin: 40px auto 10px;
+            display: block;
+        }
 
         #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; }
-        .work-title-img { width: 85%; max-width: 320px; height: auto; margin: 20px auto 10px; display: block; }
-        #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+        #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin: 10px 0; }
 
+        /* --- กองไพ่สีดำ-ทอง --- */
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; margin-top: 5px; }
         .card-back {
-            width: 42px; height: 70px; background: #0d47a1; 
+            width: 42px; height: 70px; background: #000000; 
             border: 1.5px solid #ffd700; border-radius: 5px; cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             box-shadow: -2px 2px 5px rgba(0,0,0,0.5); margin: 3px -8px; 
             transition: 0.2s; color: #ffd700; font-size: 16px;
         }
-        .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; background: #1a237e; }
+        .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; }
         .card-back.selected { visibility: hidden; opacity: 0; }
 
+        /* --- ส่วนแสดงผลอื่นๆ --- */
         #loading-screen { display: none; text-align: center; margin-top: 80px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0d47a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
@@ -81,44 +144,45 @@
         .detail-text p { margin: 0; font-size: 14px; line-height: 1.6; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
-        .nav-item img { height: 65px; cursor: pointer; transition: 0.2s; }
+        .nav-item img { height: 65px; cursor: pointer; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        
-        /* แก้ไขส่วนของปุ่มเมนูให้เป็น Link จริง */
         .menu-btn { 
             background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; 
             font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; 
             display: flex; align-items: center; justify-content: center; 
             text-decoration: none; font-size: 13px; 
         }
-        .menu-btn:hover { background: #ffd700; }
         .menu-btn.active { background: #ffd700; border-color: #ffd700; }
     </style>
 </head>
 <body>
 
+    <!-- สวิตช์ Night Mode -->
     <div class="theme-switch-wrapper">
-        <label class="theme-switch">
-            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)">
-            <div class="slider"><span>☀️</span><span>🌙</span></div>
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
+            <div class="slider">
+                <span>☀️</span>
+                <span>🌙</span>
+            </div>
         </label>
     </div>
 
-    <img src="IMG_7035.png" alt="Logo" class="main-logo">
+    <!-- รูปหัวข้อการงาน -->
+    <img src="IMG_7135.png" alt="Tarot for Work" class="work-title-img">
 
     <div id="selection-screen">
-        <img src="IMG_7135.png" alt="Tarot for Work" class="work-title-img">
-        <p style="color: #666; font-size: 14px; margin-top: 0;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบ</p>
+        <p style="color: #666; font-size: 14px; margin-top: 10px;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบ</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p style="color: #0d47a1; font-weight: bold;">กำลังวิเคราะห์ดวงการงานของคุณ...</p>
+        <p style="font-weight: bold;">กำลังวิเคราะห์ดวงการงานของคุณ...</p>
     </div>
 
     <div id="result-screen">
@@ -139,12 +203,10 @@
 
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0;">เลือกประเภทการดูดวง</h3>
+            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom: 10px; margin-top: 0; color: #1a237e;">เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
-                <!-- แก้ไข Link ตรงนี้ -->
                 <a href="index.html" class="menu-btn">ไพ่ยิปซีความรัก</a>
                 <a href="work.html" class="menu-btn active">ไพ่ยิปซีการงาน</a>
-                
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
@@ -156,7 +218,7 @@
 
 <script>
     const tarotDeck = [
-        /* Major Arcana (22) */
+        /* ข้อมูลไพ่ 78 ใบ (การงาน) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"เริ่มงานใหม่ด้วยความเสี่ยงแต่มีอิสระ อย่าประมาทความละเอียดอ่อน/การออกจาก Comfort Zone"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"ทักษะดีเยี่ยม มีโปรเจกต์ใหม่ที่ใช้ความสามารถเฉพาะตัวได้ดี การสื่อสารเป็นเลิศ"},
         {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"ใช้ลางสังหรณ์ ระวังเรื่องความลับในที่ทำงาน หรือมีเรื่องที่ยังไม่ถูกเปิดเผย"},
@@ -192,7 +254,7 @@
         {n:"Nine of Wands",i:"Wands09.jpg",m:"งานใกล้เสร็จแต่เหนื่อยล้ามาก ระวังความระแวงหรือความผิดพลาดช่วงโค้งสุดท้าย"},
         {n:"Ten of Wands",i:"Wands10.jpg",m:"แบกรับงานหนักเกินไป ภาระล้นมือ ต้องหาสามารจัดการด่วนก่อนจะเบิร์นเอาท์"},
         {n:"Page of Wands",i:"Wands11.jpg",m:"ได้รับข่าวดีเรื่องงานใหม่ หรือการเริ่มต้นเรียนรู้ทักษะใหม่ที่เป็นประโยชน์"},
-        {n:"Knight of Wands",i:"Wands12.jpg",m:"ความมุ่งมั่นทุ่มเททำงานอย่างรวดเร็ว มีพลังงานล้นหลามแต่อาจขาดความรอบควร"},
+        {n:"Knight of Wands",i:"Wands12.jpg",m:"ความมุ่งมั่นทุ่มเททำงานอย่างรวดเร็ว มีพลังงานล้นหลามแต่อาจขาดความรอบคอบ"},
         {n:"Queen of Wands",i:"Wands13.jpg",m:"ความเป็นมืออาชีพ จัดการงานเก่ง มีเสน่ห์และบารมีในการคุมทีม"},
         {n:"King of Wands",i:"Wands14.jpg",m:"ผู้นำที่มีวิสัยทัศน์ งานบริหารที่ต้องเด็ดขาดจะประสบความสำเร็จสูง"},
 
@@ -248,17 +310,101 @@
     const posTitles = ["ใบที่ 1 : สถานการณ์ปัจจุบัน", "ใบที่ 2 : อุปสรรค/สิ่งที่ต้องแก้", "ใบที่ 3 : คำแนะนำ/แนวทาง", "ใบที่ 4 : บทสรุปในอนาคต"];
     let selectedCount = 0;
 
+    // ฟังก์ชันไนท์โหมด
+    function toggleDarkMode(checkbox) {
+        if (checkbox.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    // ตรวจสอบธีมเมื่อโหลดหน้า
+    (function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    })();
+
     function createDeck() {
         const deckDiv = document.getElementById("deck");
         deckDiv.innerHTML = ""; 
         for(let i=0; i<60; i++) {
             const card = document.createElement("div");
             card.className = "card-back";
-            card.innerHTML = "💼"; 
+            card.innerHTML = "🌙"; 
             card.onclick = function() { selectCard(this); };
             deckDiv.appendChild(card);
         }
     }
 
     function selectCard(el) {
-        if
+        if (el.classList.contains("selected")) return;
+        el.classList.add("selected");
+        selectedCount++;
+        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedCount} / 4`;
+        if (selectedCount === 4) {
+            document.getElementById("selection-screen").style.display = "none";
+            document.getElementById("loading-screen").style.display = "block";
+            setTimeout(showResults, 4000);
+        }
+    }
+
+    function showResults() {
+        document.getElementById("loading-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        const summaryBox = document.getElementById("captureArea");
+        const detailBox = document.getElementById("detailArea");
+        const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
+
+        summaryBox.innerHTML = "";
+        detailBox.innerHTML = "";
+
+        picks.forEach((c, i) => {
+            summaryBox.innerHTML += `
+                <div class="summary-card">
+                    <div class="pos-top">ใบที่ ${i+1}</div>
+                    <img src="${c.i}" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                    <h3>${c.n}</h3>
+                </div>
+            `;
+            detailBox.innerHTML += `
+                <div class="detail-row">
+                    <div class="detail-header">${posTitles[i]}</div>
+                    <div class="detail-body">
+                        <img src="${c.i}" class="detail-img" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                        <div class="detail-text">
+                            <h4>${c.n}</h4>
+                            <p>${c.m}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
+    
+    async function shareURL() {
+        if (navigator.share) {
+            try { await navigator.share({ title: 'ไพ่ยิปซีการงาน 4 ใบ', text: 'เช็กดวงการงานของคุณ!', url: window.location.href }); } catch (err) { console.log(err); }
+        } else { alert("คัดลอกลิงก์แล้วส่งให้เพื่อนได้เลย!"); }
+    }
+    
+    async function captureImageJPG() {
+        const area = document.getElementById("captureArea");
+        const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
+        const link = document.createElement("a");
+        link.download = "career-reading.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
+        link.click();
+    }
+    
+    window.onload = createDeck;
+</script>
+</body>
+</html>

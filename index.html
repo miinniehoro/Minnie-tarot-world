@@ -21,10 +21,9 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
-            transition: background-color 0.3s, color 0.3s; /* เพิ่ม transition ให้เนียน */
+            transition: background-color 0.3s, color 0.3s;
         }
 
-        /* --- สไตล์สำหรับ Night Mode (Dark Theme) --- */
         body.dark-mode {
             background-color: #121212 !important;
         }
@@ -45,7 +44,6 @@
         body.dark-mode .modal-content h3 { color: #ffd700; }
         body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
 
-        /* --- ปุ่มสลับ Night Mode ด้านซ้าย --- */
         .theme-switch-wrapper {
             position: fixed;
             left: 15px;
@@ -248,6 +246,7 @@
             background: #f0f2ff; color: #1a237e; padding: 15px 5px;
             border-radius: 12px; font-size: 14px; font-weight: bold;
             border: 1px solid #c5cae9; transition: 0.3s;
+            cursor: pointer;
         }
         .menu-btn:hover { background: #ffd700; border-color: #ffd700; }
         .close-modal { margin-top: 20px; color: #666; font-size: 14px; text-decoration: underline; cursor: pointer; }
@@ -256,7 +255,6 @@
 </head>
 <body>
 
-    <!-- ปุ่มสลับ Night Mode -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
@@ -302,12 +300,14 @@
         </div>
     </nav>
 
+    <!-- แก้ไขลิงก์ในหน้าต่างเมนู -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
                 <div class="menu-btn" onclick="location.reload()">ไพ่ยิปซีความรัก</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการงาน</div>
+                <!-- เชื่อมโยงไปหน้าการงาน -->
+                <div class="menu-btn" onclick="window.location.href='work.html'">ไพ่ยิปซีการงาน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีบอกตัวตน</div>
@@ -318,7 +318,6 @@
     </div>
 
 <script>
-    // ฟังก์ชันสำหรับสลับ Night Mode
     function toggleDarkMode(checkbox) {
         if (checkbox.checked) {
             document.body.classList.add('dark-mode');
@@ -329,7 +328,6 @@
         }
     }
 
-    // ตรวจสอบค่าที่บันทึกไว้เมื่อโหลดหน้าเว็บ
     (function() {
         const currentTheme = localStorage.getItem('theme');
         if (currentTheme === 'dark') {
@@ -341,9 +339,7 @@
     const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     let selectedCount = 0;
 
-    // ข้อมูลไพ่ 78 ใบ (ข้อมูลเดิมทั้งหมดของคุณ)
     const tarotDeck = [
-        /* Major Arcana (22 ใบ) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
         {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"มีความรู้สึกซ่อนอยู่ ต่างฝ่ายยังไม่เปิดใจทั้งหมด สื่อถึงการหลบเลี่ยงความรู้สึกต่อกัน มีความลับ/หรือการนอกใจ/หรือมีความไว้ใจต่อกัน คิดว่าอีกฝ่ายปิดบังหรือเข้าใจยาก"},
@@ -408,7 +404,7 @@
         {n:"Six of Swords",i:"Swords06.jpg",m:"ก้าวข้ามอดีต เริ่มฟื้นใจ/ สื่อถึงการเดินต่อไปข้างหน้าแม้จะเจ็บปวด หรืออยากมูฟออนแต่ก้างอย่างช้าๆ"},
         {n:"Seven of Swords",i:"Swords07.jpg",m:"มีเรื่องปิดบัง ไม่ซื่อสัตย์/ สื่อถึงอีกฝ่ายมีเรื่องปิดบัง ไม่ซื่อสัตย์ต่อคุณ หรืออาจจะมองคุณแบบไม่จริงจังนัก"},
         {n:"Eight of Swords",i:"Swords08.jpg",m:"คิดมาก รู้สึกติดกับความสัมพันธ์/ สื่อถึงความคิดที่ฝ่ายใดฝ่ายนึงคิดไปเองและหาทางออกไม่ได้ ไม่พร้อมเผชิญปัญหา หาทางออกไม่ได้ มูฟออนไม่ได้ หรือไม่อยากรับรู้ หลีกเลี่ยงปัญหา"},
-        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกังวลใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
+        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกกังวลใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
         {n:"Ten of Swords",i:"Swords10.jpg",m:"จบความสัมพันธ์แบบเจ็บปวด/ สื่อถึงอยู่ช่วงเจ็บปวดที่สุดและยากที่จะหายดี หรือจบความสัมพันธ์แบบหนักหน่วง ไม่พร้อมไปคืนดี"},
         {n:"Page of Swords",i:"Swords11.jpg",m:"สอดส่อง เช็คโซเชียล อยากรู้เรื่องเขา/สื่อถึงการส่อง การยังติดตามอีกฝ่ายอย่างใกล้ชิด อาจจะอยากสื่อสารแต่ยังไม่กล้าและมีฐิ"},
         {n:"Knight of Swords",i:"Swords12.jpg",m:"ใจร้อน พูดตรง อารมณ์ขึ้นง่าย/ สื่อถึงการปะทะอารมณ์ต่อกัน ไม่ว่าจะเพราะคำพูดหรือเพราะพฤติกรรม หรืออาจจะหมายถึงการทักมาแบบไม่คาดคิด การติดต่อแบบไม่คาดคิด"},

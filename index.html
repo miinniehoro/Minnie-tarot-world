@@ -21,7 +21,78 @@
             align-items: center;
             min-height: 100vh;
             overflow-x: hidden;
+            transition: background-color 0.3s, color 0.3s; /* เพิ่ม transition ให้เนียน */
         }
+
+        /* --- สไตล์สำหรับ Night Mode (Dark Theme) --- */
+        body.dark-mode {
+            background-color: #121212 !important;
+        }
+        body.dark-mode #counter, 
+        body.dark-mode #selection-screen p,
+        body.dark-mode #loading-screen,
+        body.dark-mode h2 {
+            color: #ffffff !important;
+        }
+        body.dark-mode .bottom-nav {
+            background: #1a1a1a !important;
+            border-top: 1px solid #333 !important;
+        }
+        body.dark-mode .modal-content {
+            background: #252525 !important;
+            color: #fff;
+        }
+        body.dark-mode .modal-content h3 { color: #ffd700; }
+        body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
+
+        /* --- ปุ่มสลับ Night Mode ด้านซ้าย --- */
+        .theme-switch-wrapper {
+            position: fixed;
+            left: 15px;
+            top: 20px;
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+        }
+        .theme-switch {
+            display: inline-block;
+            height: 28px;
+            position: relative;
+            width: 50px;
+        }
+        .theme-switch input { display: none; }
+        .slider {
+            background-color: #ccc;
+            bottom: 0;
+            cursor: pointer;
+            left: 0;
+            position: absolute;
+            right: 0;
+            top: 0;
+            transition: .4s;
+            border-radius: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px;
+            font-size: 12px;
+        }
+        .slider:before {
+            background-color: white;
+            bottom: 4px;
+            content: "";
+            height: 20px;
+            left: 4px;
+            position: absolute;
+            transition: .4s;
+            width: 20px;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        input:checked + .slider { background-color: #ad1457; }
+        input:checked + .slider:before { transform: translateX(22px); }
+        .slider .icon-sun { color: #f39c12; }
+        .slider .icon-moon { color: #f1c40f; }
 
         .main-logo {
             width: 55%; 
@@ -126,7 +197,6 @@
         .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
-        /* --- ปรับปรุง Bottom Nav ใหม่ตามรูปตัวอย่าง --- */
         .bottom-nav {
             position: fixed; 
             bottom: 0; 
@@ -135,7 +205,7 @@
             display: flex; 
             justify-content: space-around;
             align-items: center;
-            padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); /* รองรับติ่ง iPhone */
+            padding: 8px 0 calc(8px + env(safe-area-inset-bottom)); 
             border-top: 1px solid #e0e0e0;
             z-index: 100;
             box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
@@ -151,27 +221,16 @@
             -webkit-tap-highlight-color: transparent;
         }
         .nav-item img { 
-            height: 70px; /* ขนาดไอคอนมาตรฐานแบบในรูป */
+            height: 70px; 
             width: auto; 
             margin-bottom: 0;
             object-fit: contain;
             transition: transform 0.1s;
         }
-        .nav-item span {
-            font-size: 11px;
-            color: #666; /* สีข้อความแบบในรูปตัวอย่าง */
-            font-weight: 400;
-        }
-        /* สถานะ Active (ถ้าต้องการ) */
-        .nav-item.active span {
-            color: #ad1457;
-            font-weight: bold;
-        }
         .nav-item:active img { 
             transform: scale(0.9);
         }
 
-        /* --- Popup Menu --- */
         .modal-overlay {
             display: none; 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -197,6 +256,17 @@
 </head>
 <body>
 
+    <!-- ปุ่มสลับ Night Mode -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch" for="checkbox">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
+            <div class="slider">
+                <span class="icon-sun">☀️</span>
+                <span class="icon-moon">🌙</span>
+            </div>
+        </label>
+    </div>
+
     <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
 
     <div id="selection-screen">
@@ -220,23 +290,18 @@
         <div id="detailArea"></div>
     </div>
 
-    <!-- แถบเมนูด้านล่าง ปรับแต่งตามตัวอย่าง -->
     <nav class="bottom-nav">
-        <div class="nav-item active" onclick="toggleModal(true)">
+        <div class="nav-item" onclick="toggleModal(true)">
             <img src="IMG_7070.png" alt="ไพ่ยิปซี">
-            
         </div>
         <div class="nav-item" onclick="shareURL()">
             <img src="IMG_7085.png" alt="แชร์เว็บนี้">
-            
         </div>
         <div class="nav-item" onclick="alert('เร็วๆ นี้')">
             <img src="ไม่มีชื่อ (2000 x 2000 px).png" alt="มูเตลู">
-            
         </div>
     </nav>
 
-    <!-- Pop-up เลือกดวง -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
@@ -253,10 +318,30 @@
     </div>
 
 <script>
+    // ฟังก์ชันสำหรับสลับ Night Mode
+    function toggleDarkMode(checkbox) {
+        if (checkbox.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    // ตรวจสอบค่าที่บันทึกไว้เมื่อโหลดหน้าเว็บ
+    (function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    })();
+
     const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     let selectedCount = 0;
 
-    // ข้อมูลไพ่ 78 ใบ (ข้อมูลเดิมทั้งหมด)
+    // ข้อมูลไพ่ 78 ใบ (ข้อมูลเดิมทั้งหมดของคุณ)
     const tarotDeck = [
         /* Major Arcana (22 ใบ) */
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
@@ -316,7 +401,7 @@
 
         /* Swords (14 ใบ) */
         {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
-        {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไม่อยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
+        {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
         {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
         {n:"Four of Swords",i:"Swords04.jpg",m:"พักใจ หยุดคุย หยุดคิดสักพัก/ สื่อถึงอาจจะยังอยู่ในระยะพักหรือทบทวนความสัมพันธ์ไมยากเคลื่อนไหวมากนัก"},
         {n:"Five of Swords",i:"Swords05.jpg",m:"ทะเลาะ เอาชนะกันจนเสียความรู้สึก/ สื่อถึงอาจจะมีปัญหาขัดแย้ง ไม่ลงรอยกันด้วยอีโก้ ถ้าจบก็จบลงด้วยอีโก้"},

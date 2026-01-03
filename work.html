@@ -129,13 +129,68 @@
         .btn-cap { background: #0d47a1; color: white; }
         .btn-new { background: #ffd700; color: #1a237e; }
 
-        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 120px; }
+        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 20px; }
         .detail-row { background-color: #e3f2fd; color: #333; margin-bottom: 25px; border-radius: 10px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); overflow: hidden; }
         .detail-header { background-color: #1a237e; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
         .detail-body { display: flex; padding: 15px; gap: 15px; }
         .detail-img { width: 80px; border-radius: 5px; flex-shrink: 0; }
         .detail-text h4 { margin: 0 0 5px; color: #1a237e; border-bottom: 1px solid #bbdefb; }
         .detail-text p { margin: 0; font-size: 14px; line-height: 1.6; }
+
+        /* ส่วนที่เพิ่มใหม่: CSS สนับสนุนและดูดวงส่วนตัว */
+        .support-container {
+            width: 100%;
+            max-width: 600px;
+            margin: 30px auto 120px;
+            padding: 20px;
+            background: #ffffff;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+            text-align: center;
+        }
+        body.dark-mode .support-container {
+            background: #1e1e1e;
+            color: #fff;
+        }
+        .support-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a237e;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #ffd700;
+            display: inline-block;
+            padding-bottom: 5px;
+        }
+        body.dark-mode .support-title { color: #ffd700; }
+        .donate-img {
+            width: 100%;
+            max-width: 250px;
+            border-radius: 10px;
+            margin: 10px 0;
+            border: 1px solid #eee;
+        }
+        .personal-ad-box {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px dashed #ccc;
+        }
+        .btn-contact {
+            display: inline-block;
+            background: #06c755; 
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: bold;
+            margin-top: 15px;
+            transition: 0.3s;
+        }
+        .ad-banner {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 12px;
+            margin-bottom: 10px;
+        }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
         .nav-item img { height: 65px; cursor: pointer; }
@@ -185,6 +240,27 @@
         <div id="captureArea"></div>
         <h2 style="text-align: center; margin: 30px 0 15px; color: #1a237e;">📖 คำทำนายเจาะลึกการงาน</h2>
         <div id="detailArea"></div>
+
+        <!-- ส่วนสนับสนุนและดูดวงส่วนตัว (เพิ่มใหม่) -->
+        <div class="support-container">
+            <div class="donation-section">
+                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
+                <p style="font-size: 14px; margin-bottom: 10px;">หากคำทำนายช่วยให้คุณสบายใจ ร่วมสมทบทุนค่ากาแฟให้ทีมงานได้ที่นี่ครับ</p>
+                <img src="QR_DONATE.jpg" alt="Donate QR" class="donate-img" onerror="this.src='https://via.placeholder.com/250x350?text=QR+Donate';">
+                <p style="font-weight: bold; color: #0d47a1;">ขอบพระคุณทุกการสนับสนุนครับ 🙏</p>
+            </div>
+
+            <div class="personal-ad-box">
+                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
+                <img src="AD_BANNER.jpg" alt="Personal Reading" class="ad-banner" onerror="this.src='https://via.placeholder.com/500x250?text=Banner+Promotion';">
+                <p style="font-size: 14px;">ต้องการปรึกษาเรื่องงานแบบละเอียด รายวัน รายเดือน หรือเจาะลึกปัญหาเฉพาะหน้า</p>
+                <a href="https://line.me/ti/p/@yourid" target="_blank" class="btn-contact">
+                    💬 ติดต่อจองคิวทาง Line
+                </a>
+            </div>
+        </div>
+        <!-- จบส่วนที่เพิ่มใหม่ -->
+
     </div>
 
     <nav class="bottom-nav">

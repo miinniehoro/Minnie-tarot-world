@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>โปรไฟล์ของฉัน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDK (ต้องใส่ทุกหน้าเพื่อดึงข้อมูล) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQaWNsVQ5YmNdp9QeSFvbdOqtBXYyuH9c",
+            authDomain: "index-823d8.firebaseapp.com",
+            projectId: "index-823d8",
+            storageBucket: "index-823d8.firebasestorage.app",
+            messagingSenderId: "325415376294",
+            appId: "1:325415376294:web:4aa2b04631a89959266b67",
+            measurementId: "G-5V5RH8L9X6"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // ดึงข้อมูลเมื่อโหลดหน้า
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
+                
+                // แสดงข้อมูลพื้นฐาน
+                document.getElementById('p-img').src = userData.img || user.photoURL || 'https://via.placeholder.com/80';
+                document.getElementById('p-nick').innerText = userData.nickname || "ผู้ใช้";
+                document.getElementById('p-email').innerText = user.email;
+                document.getElementById('p-zodiac').innerText = "ราศี" + (userData.zodiac || "-");
+
+                // ตรวจสอบพรีเมียม
+                if (userData.isPaid) {
+                    document.getElementById('p-status').innerText = "Premium Member";
+                    document.getElementById('history-locked').style.display = 'none';
+                    
+                    // โหลดประวัติ (ดึงจาก Firestore)
+                    const q = query(collection(db, "users", user.uid, "history"), orderBy("timestamp", "desc"), limit(10));
+                    const historySnaps = await getDocs(q);
+                    const list = document.getElementById('history-list');
+                    list.innerHTML = "";
+                    historySnaps.forEach(doc => {
+                        const data = doc.data();
+                        let cardsHTML = data.cards.map(c => `<img src="${c.i}" style="width:40px; margin-right:5px; border-radius:3px;">`).join("");
+                        list.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
+                            <small style="color:#ad1457;">${data.date}</small><br>${cardsHTML}
+                        </div>`;
+                    });
+                } else {
+                    document.getElementById('p-status').innerText = "Free Member";
+                    document.getElementById('history-locked').style.display = 'block';
+                }
+            } else {
+                window.location.href = 'index.html'; // ถ้าไม่ได้ล็อกอิน ให้เด้งกลับหน้าแรก
+            }
+        });
+
+        window.logout = () => signOut(auth).then(() => window.location.href = 'index.html');
+    </script>
+
+    <style>
+        body { font-family: 'Sarabun', sans-serif; background: #F5F6F1; margin: 0; display: flex; justify-content: center; }
+        .container { width: 90%; max-width: 500px; background: white; margin-top: 30px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #ad1457; object-fit: cover; }
+        .status-tag { display: inline-block; padding: 4px 12px; border-radius: 10px; font-size: 12px; background: #eee; margin-top: 10px; }
+        .btn-back { background: #ad1457; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; }
+        .locked { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-top: 20px; color: #888; border: 1px dashed #ccc; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; }
+        .bottom-nav img { height: 40px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <img src="" id="p-img" class="profile-img">
+        <h2 id="p-nick" style="margin: 10px 0 0; color:#ad1457;"></h2>
+        <p id="p-email" style="margin: 5px 0; color:#666; font-size:14px;"></p>
+        <p id="p-zodiac" style="font-weight:bold;"></p>
+        <span id="p-status" class="status-tag"></span>
+
+        <div style="text-align: left; margin-top: 30px;">
+            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom:5px;">📜 ประวัติการดูดวง</h3>
+            <div id="history-list"></div>
+            <div id="history-locked" class="locked" style="display:none; text-align:center;">
+                <p>🔒 ส่วนนี้เฉพาะสมาชิกพรีเมียม</p>
+                <small>บันทึกประวัติการจับไพ่ไว้อ่านย้อนหลังได้ทุกเมื่อ</small>
+            </div>
+        </div>
+
+        <button class="btn-back" onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
+        <button onclick="logout()" style="background:none; border:none; color:gray; margin-top:20px; cursor:pointer; text-decoration:underline;">ออกจากระบบ</button>
+    </div>
+
+    <!-- แถบล่างเดิม (ก๊อปมาแค่หน้าตา) -->
+    <nav class="bottom-nav">
+        <div onclick="window.location.href='index.html'"><img src="IMG_7070.png"></div>
+        <div><img src="IMG_7085.png"></div>
+        <div><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
+        <div><img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" style="filter:grayscale(0); border-bottom: 2px solid #ad1457;"></div>
+    </nav>
+</body>
+</html>

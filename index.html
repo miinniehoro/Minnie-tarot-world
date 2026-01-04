@@ -42,79 +42,56 @@
         #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
 
-        /* ปรับปรุง Deck 78 ใบให้ชิดกัน */
-        .deck-container { 
-            display: flex; 
-            flex-wrap: wrap; 
-            justify-content: center; 
-            padding: 15px 5px;
-            margin: 0 auto;
-        }
-
+        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
         .card-back {
-            width: 40px; 
-            height: 65px;
-            background: #000000;
-            border: 1.2px solid #ffd700;
-            border-radius: 4px;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.4);
-            margin: 2px -12px; /* กรีดไพ่ให้ซ้อนกัน */
-            transition: 0.2s ease-out;
-            position: relative;
-            z-index: 1;
-            font-size: 14px;
-            color: #ffd700;
-            user-select: none;
+            width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; 
+            transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none;
         }
+        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+        .card-back.selected { visibility: hidden; opacity: 0; pointer-events: none; }
 
-        .card-back:hover {
-            transform: translateY(-15px) scale(1.15);
-            z-index: 100;
-            background: #1a1a1a;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-        }
-        
-        .card-back.selected { 
-            visibility: hidden; 
-            opacity: 0; 
-            pointer-events: none;
-        }
-
-        /* --- ส่วนอื่นๆ คงเดิม --- */
         #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
-        #captureArea { background-color: #1a237e; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
         .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
-        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #b22222; margin-bottom: 3px; }
+        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #ad1457; margin-bottom: 3px; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; }
+        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #ad1457; overflow: hidden; }
 
         .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
         button { padding: 10px 20px; border-radius: 30px; border: none; font-family: 'Sarabun'; font-weight: bold; cursor: pointer; }
         .btn-cap { background: #ad1457; color: white; }
         .btn-new { background: #ffd700; color: #1a237e; }
 
-        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 120px; }
-        .detail-row { background-color: #e3f2fd; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.4); overflow: hidden; }
+        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 20px; }
+        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         .detail-header { background-color: #212121; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
         .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
         .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
-        .detail-text h4 { margin: 0 0 8px; color: #1a237e; border-bottom: 1px solid #ccc; font-size: 18px; }
+        .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
+        /* ส่วนสนับสนุน (เหมือนการงาน) */
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
+        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
+        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
+        body.dark-mode .support-title { color: #ffd700; }
+        .donate-img { width: 100%; max-width: 250px; border-radius: 10px; margin: 10px 0; border: 1px solid #eee; }
+        .personal-ad-box { margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc; }
+        .btn-contact { display: inline-block; background: #06c755; color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+        .ad-banner { width: 100%; max-width: 100%; border-radius: 12px; margin-bottom: 10px; }
+
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
-        .nav-item img { height: 60px; transition: 0.1s; cursor: pointer; }
+        .nav-item img { height: 60px; cursor: pointer; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 15px 5px; border-radius: 12px; font-size: 14px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; }
+        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 15px 5px; border-radius: 12px; font-size: 14px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; text-decoration: none; }
     </style>
 </head>
 <body>
@@ -136,17 +113,34 @@
 
     <div id="loading-screen">
         <div class="spinner"></div>
-        <p>กำลังเปิดคำทำนาย... โปรดรอสักครู่</p>
+        <p>กำลังเปิดคำทำนายความรัก... โปรดรอสักครู่</p>
     </div>
 
     <div id="result-screen">
         <div class="btn-group">
             <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
-            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูป (.jpg)</button>
+            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวงความรัก</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายทีละใบ</h2>
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
+
+        <!-- ส่วนสนับสนุน (เพิ่มใหม่เหมือนหน้าการงาน) -->
+        <div class="support-container">
+            <div class="donation-section">
+                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
+                <p style="font-size: 14px; margin-bottom: 10px;">หากคำทำนายช่วยให้คุณสบายใจ ร่วมสมทบทุนค่ากาแฟให้ทีมงานได้ที่นี่ครับ</p>
+                <img src="IMG_7157.png" alt="Donate QR" class="donate-img" onerror="this.src='https://via.placeholder.com/250x350?text=QR+Donate';">
+                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุนครับ 🙏</p>
+            </div>
+
+            <div class="personal-ad-box">
+                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
+                <img src="IMG_7155.png" alt="Personal Reading" class="ad-banner" onerror="this.src='https://via.placeholder.com/500x250?text=Banner+Promotion';">
+                <p style="font-size: 14px;">ต้องการปรึกษาเรื่องความรักแบบละเอียด รายวัน รายเดือน หรือเจาะลึกปัญหาหัวใจ</p>
+                <a href="https://line.me/ti/p/@yourid" target="_blank" class="btn-contact">💬 ติดต่อจองคิวทาง Line</a>
+            </div>
+        </div>
     </div>
 
     <nav class="bottom-nav">
@@ -159,8 +153,8 @@
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
             <div class="menu-grid">
-                <div class="menu-btn" onclick="location.reload()">ไพ่ยิปซีความรัก</div>
-                <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการงาน</div>
+                <a href="index.html" class="menu-btn" style="background:#ffd700;">ไพ่ยิปซีความรัก</a>
+                <a href="work.html" class="menu-btn">ไพ่ยิปซีการงาน</a>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีการเงิน</div>
                 <div class="menu-btn" onclick="alert('กำลังพัฒนา...')">ไพ่ยิปซีรายวัน</div>
             </div>
@@ -171,7 +165,7 @@
 <script>
     const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     
-    // --- รวบรวมคำทำนายเดิมของคุณทั้งหมด (ไม่แก้ไข) ---
+    // --- คำทำนายเดิม (ไม่มีการแก้ไข) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -196,7 +190,7 @@
         {n:"Judgement",i:"20-Judgement.jpg",m:"การตัดสินใจครั้งสำคัญ อดีตอาจย้อนกลับมา"},
         {n:"The World",i:"21-TheWorld.jpg",m:"ความรักลงตัว สมบูรณ์ และจริงจัง"},
 
-        /* Wands */
+        /* Wands (14) */
         {n:"Ace of Wands",i:"Wands01.jpg",m:"ความรักเริ่มต้นด้วยแพชชั่น แรงดึงดูดสูง/สื่อถึงการเริ่มต้นใหม่ การทักหรือการเข้าหา"},
         {n:"Two of Wands",i:"Wands02.jpg",m:"คิดถึงอนาคตร่วมกัน แต่ยังชั่งใจ/ สื่อถึงการมองไปข้างหน้า ยังคาดหวังและสับสน"},
         {n:"Three of Wands",i:"Wands03.jpg",m:"รอพัฒนาความสัมพันธ์/ สื่อถึงการรอคอย หรืออยากมีอนาคตร่วมกัน การเดินหน้าความสัมพันธ์ หรืออาจจะสื่อถึงการมูฟออนได้"},
@@ -212,7 +206,7 @@
         {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
         {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
 
-        /* Cups */
+        /* Cups (14) */
         {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขามีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
         {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
         {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
@@ -228,7 +222,7 @@
         {n:"Queen of Cups",i:"Cups13.jpg",m:"เข้าใจ ดูแล เอาใจใส่/ สื่อถึงคนที่เราถามถึงยังมีความห่วงใย ความแคร์เรา อาจจะเป็นความรักที่อยู่ในใจ เก็บเงียบไม่ชอบแสดงออกเท่าไหร่นัก"},
         {n:"King of Cups",i:"Cups14.jpg",m:"รักมั่นคง สุภาพ ควบคุมอารมณ์ได้/ สื่อถึงคนๆนี้อาจจะชอบเรา หรือเก็บอารมณ์ความรู้สึก หรือสนใจเราในแง่มุมนึง แต่ไมยากเปิดปากมาก"},
 
-        /* Swords */
+        /* Swords (14) */
         {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
         {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
         {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
@@ -244,7 +238,7 @@
         {n:"Queen of Swords",i:"Swords13.jpg",m:"ใช้เหตุผลนำหน้า หัวใจระวังเจ็บ/สื่อถึงอีกฝ่ายอยู่ในภาวะไม่สนใจหรือเย็นชา"},
         {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
 
-        /* Pentacles */
+        /* Pentacles (14) */
         {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
         {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
         {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
@@ -264,7 +258,6 @@
     let shuffledDeck = [];
     let selectedIndices = [];
 
-    // ฟังก์ชันสลับไพ่จริง (Fisher-Yates)
     function shuffleArray(array) {
         for (let i = array.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -277,17 +270,12 @@
         const deckDiv = document.getElementById("deck");
         deckDiv.innerHTML = "";
         selectedIndices = [];
-        document.getElementById("counter").innerText = "เลือกแล้ว: 0 / 4";
-        
-        // สับไพ่จริงทั้ง 78 ใบก่อนวาง
         shuffledDeck = shuffleArray([...rawData]);
-
-        // สร้างไพ่ 78 ใบลงบนจอ
         for(let i=0; i<78; i++) {
             const card = document.createElement("div");
             card.className = "card-back";
             card.innerHTML = "🌙";
-            card.dataset.index = i; // เก็บตำแหน่งของใบนี้ในกองที่สับแล้ว
+            card.dataset.index = i;
             card.onclick = function() { selectCard(this); };
             deckDiv.appendChild(card);
         }
@@ -295,13 +283,10 @@
 
     function selectCard(el) {
         if (selectedIndices.length >= 4 || el.classList.contains("selected")) return;
-        
         el.classList.add("selected");
         const idx = parseInt(el.dataset.index);
-        selectedIndices.push(shuffledDeck[idx]); // ดึงข้อมูลไพ่จากตำแหน่งที่สับไว้จริง
-
+        selectedIndices.push(shuffledDeck[idx]);
         document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
-        
         if (selectedIndices.length === 4) {
             setTimeout(() => {
                 document.getElementById("selection-screen").style.display = "none";
@@ -317,7 +302,6 @@
         document.getElementById("result-screen").style.display = "block";
         const summaryBox = document.getElementById("captureArea");
         const detailBox = document.getElementById("detailArea");
-
         selectedIndices.forEach((cardData, i) => {
             summaryBox.innerHTML += `
                 <div class="summary-card">
@@ -341,7 +325,6 @@
         });
     }
 
-    // --- ฟังก์ชันเสริม (Dark Mode, Modal, Share, Capture) ---
     function toggleDarkMode(checkbox) {
         document.body.classList.toggle('dark-mode', checkbox.checked);
         localStorage.setItem('theme', checkbox.checked ? 'dark' : 'light');
@@ -352,24 +335,18 @@
             document.getElementById('checkbox').checked = true;
         }
     })();
-
     function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
-    
     async function shareURL() {
-        if (navigator.share) {
-            navigator.share({ title: 'ดูดวงไพ่ยิปซีความรัก', url: window.location.href });
-        } else { alert("คัดลอกลิงก์ส่งให้เพื่อนได้เลย!"); }
+        if (navigator.share) { navigator.share({ title: 'ไพ่ยิปซีความรัก', url: window.location.href }); } else { alert("คัดลอกลิงก์ส่งให้เพื่อนได้เลย!"); }
     }
-
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");
-        const canvas = await html2canvas(area, { backgroundColor: "#1a237e", scale: 2 });
+        const canvas = await html2canvas(area, { backgroundColor: "#ad1457", scale: 2 });
         const link = document.createElement("a");
-        link.download = "tarot-result.jpg";
+        link.download = "love-tarot-result.jpg";
         link.href = canvas.toDataURL("image/jpeg", 0.9);
         link.click();
     }
-
     window.onload = createDeck;
 </script>
 </body>

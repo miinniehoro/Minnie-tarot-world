@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ไพ่ยิปซีความรัก 4 ใบ (78 ใบสมจริง) x Firebase</title>
+    <title>ไพ่ยิปซีความรัก 4 ใบ (78 ใบสมจริง)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK Setup -->
+    <!-- Firebase SDK (Script Tag) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // โค้ด Config ที่คุณให้มา
         const firebaseConfig = {
             apiKey: "AIzaSyCQaWNsVQ5YmNdp9QeSFvbdOqtBXYyuH9c",
             authDomain: "index-823d8.firebaseapp.com",
@@ -25,13 +24,11 @@
             measurementId: "G-5V5RH8L9X6"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // Export ไปที่ window เพื่อให้สคริปต์ปกติเรียกใช้ได้
         window.fbAuth = auth;
         window.fbDb = db;
         window.googleProvider = googleProvider;
@@ -39,131 +36,202 @@
     </script>
 
     <style>
+        /* --- CSS เดิมของคุณทั้งหมด --- */
         * { box-sizing: border-box; }
         body {
             font-family: 'Sarabun', sans-serif !important;
             background-color: #F5F6F1 !important;
-            color: #333; margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center; min-height: 100vh;
+            color: #ffffff; margin: 0; padding: 0;
+            display: flex; flex-direction: column; align-items: center;
+            min-height: 100vh; overflow-x: hidden;
         }
-        body.dark-mode { background-color: #121212 !important; color: #fff; }
+        body.dark-mode { background-color: #121212 !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
+        body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
+        body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
 
-        /* Auth Pill */
-        .top-right-auth { position: fixed; top: 15px; right: 15px; z-index: 1100; }
+        /* ระบบ Login UI (เพิ่มใหม่) */
+        .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
         .user-pill {
-            background: #ffffff; color: #ad1457; padding: 6px 12px; border-radius: 25px;
+            background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px;
             display: flex; align-items: center; gap: 8px; cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px;
         }
-        .user-pill img { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background: #eee; }
+        .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; background: #eee; }
 
-        /* Auth Modal */
         .auth-overlay {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center;
+            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
         }
-        .auth-card {
-            background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px;
-            color: #333; text-align: center;
-        }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
         .auth-card h2 { color: #ad1457; margin-top: 0; }
         .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
         .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-        .social-btn { width: 100%; padding: 10px; margin: 5px 0; border-radius: 10px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .social-btn { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-google { background: #DB4437; }
         .error-msg { color: red; font-size: 12px; display: none; margin: 5px 0; }
 
-        .profile-upload-area { position: relative; width: 80px; height: 80px; margin: 0 auto 15px; }
-        .profile-upload-area img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd700; }
-        .profile-upload-area label { position: absolute; bottom: 0; right: 0; background: #ad1457; color: #fff; width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        /* --- สไตล์เดิมต่อ --- */
+        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-size: 12px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #ad1457; }
+        input:checked + .slider:before { transform: translateX(22px); }
 
-        /* Deck & Result Styles */
-        .main-logo { width: 50%; max-width: 180px; height: auto; margin: 60px auto 10px; display: block; }
-        #counter { color: #ad1457; font-size: 18px; font-weight: 700; margin: 10px 0; }
-        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; max-width: 600px; }
+        .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
+        #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
+        #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
+
+        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
         .card-back {
-            width: 40px; height: 65px; background: #000; border: 1.2px solid #ffd700; border-radius: 4px; 
-            cursor: pointer; margin: 2px -12px; transition: 0.2s; position: relative; z-index: 1;
+            width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; 
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; 
+            transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none;
         }
-        .card-back:hover { transform: translateY(-15px); z-index: 100; }
-        .card-back.selected { visibility: hidden; }
+        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+        .card-back.selected { visibility: hidden; opacity: 0; pointer-events: none; }
+
+        #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
         #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; }
-        .summary-card img { width: 100%; border-radius: 4px; }
-        .summary-card h3 { font-size: 10px; color: #ad1457; margin: 5px 0; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
+        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #ad1457; margin-bottom: 3px; }
+        .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
+        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #ad1457; overflow: hidden; }
 
-        .detail-row { background: #fff; color: #333; margin-bottom: 20px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .detail-header { background: #212121; color: #ffd700; padding: 10px; text-align: center; font-weight: bold; }
-        .detail-body { display: flex; padding: 15px; gap: 15px; }
-        .detail-img { width: 80px; border-radius: 5px; }
+        .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        button { padding: 10px 20px; border-radius: 30px; border: none; font-family: 'Sarabun'; font-weight: bold; cursor: pointer; }
+        .btn-cap { background: #ad1457; color: white; }
+        .btn-new { background: #ffd700; color: #1a237e; }
+
+        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 20px; }
+        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .detail-header { background-color: #212121; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
+        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
+        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
+        .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
+        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
+
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
+        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
+        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
+        .nav-item img { height: 60px; cursor: pointer; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
     </style>
 </head>
 <body>
 
-    <div class="top-right-auth">
+    <!-- ปุ่ม Login มุมขวาบน -->
+    <div class="auth-header">
         <div class="user-pill" onclick="openAuthModal()">
             <img src="https://via.placeholder.com/40" id="pill-img">
             <span id="pill-name">เข้าสู่ระบบ</span>
         </div>
     </div>
 
-    <img src="IMG_7035.png" alt="Logo" class="main-logo">
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
+            <div class="slider"><span class="icon-sun">☀️</span><span class="icon-moon">🌙</span></div>
+        </label>
+    </div>
 
-    <div id="selection-screen" style="text-align:center;">
-        <p>ตั้งจิตอธิษฐานแล้วเลือกไพ่ 4 ใบ</p>
+    <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
+
+    <div id="selection-screen">
+        <p style="font-weight: 300; color: #000;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
-    <div id="result-screen">
-        <div id="captureArea"></div>
-        <div id="detailArea" style="margin-top:20px;"></div>
-        <button class="auth-btn" onclick="location.reload()">สุ่มใหม่</button>
+    <div id="loading-screen">
+        <div class="spinner"></div>
+        <p>กำลังเปิดคำทำนายความรัก... โปรดรอสักครู่</p>
     </div>
 
-    <!-- Auth Modal -->
+    <div id="result-screen">
+        <div class="btn-group">
+            <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
+            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวงความรัก</button>
+        </div>
+        <div id="captureArea"></div>
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
+        <div id="detailArea"></div>
+
+        <div class="support-container">
+            <div class="donation-section">
+                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
+                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
+                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
+            </div>
+            <div class="personal-ad-box">
+                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
+                <img src="IMG_7155.png" alt="Personal Reading" style="width:100%; border-radius:12px;">
+                <a href="https://line.me/ti/p/@yourid" target="_blank" style="display:inline-block; background:#06c755; color:white; padding:12px 25px; border-radius:50px; text-decoration:none; margin-top:15px; font-weight:bold;">💬 ติดต่อทาง Line</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- แถบ 3 เมนูเดิมด้านล่าง -->
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
+        <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
+        <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
+    </nav>
+
+    <!-- Modal เลือกประเภทดูดวง (เดิม) -->
+    <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>เลือกประเภทการดูดวง</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <a href="index.html" style="background:#ffd700; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none;">ไพ่ยิปซีความรัก</a>
+                <a href="work.html" style="background:#f0f2ff; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
+            </div>
+            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
+        </div>
+    </div>
+
+    <!-- Auth Modal (ระบบ Firebase ใหม่) -->
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
             <div id="auth-form-box">
                 <h2 id="auth-title">เข้าสู่ระบบ</h2>
-                
                 <div id="register-fields" style="display:none;">
-                    <div class="profile-upload-area">
-                        <img src="https://via.placeholder.com/80" id="reg-preview">
-                        <label for="p-input">📷</label>
-                        <input type="file" id="p-input" hidden accept="image/*">
-                    </div>
                     <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
                     <input type="date" id="reg-bdate">
+                    <div style="margin:10px 0; font-size:12px;">อัปโหลดรูปโปรไฟล์: <input type="file" id="p-input" accept="image/*"></div>
                 </div>
-
                 <input type="email" id="auth-email" placeholder="อีเมล">
                 <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
-                
                 <div id="confirm-pass-box" style="display:none;">
                     <input type="password" id="auth-pass-confirm" placeholder="ยืนยันรหัสผ่าน">
                     <p id="pw-error" class="error-msg">รหัสผ่านไม่ตรงกัน!</p>
                 </div>
-
                 <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
                 <button class="social-btn btn-google" onclick="handleGoogleLogin()">Login with Google</button>
                 <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
             </div>
-
             <div id="profile-box" style="display:none;">
-                <img src="" id="p-img-show" style="width:80px; height:80px; border-radius:50%; object-fit:cover;">
-                <h2 id="p-name-show"></h2>
-                <p id="p-zodiac-show" style="font-weight:bold; color: #ad1457;"></p>
-                <button class="auth-btn" style="background:#666" onclick="handleLogout()">ออกจากระบบ</button>
+                <img src="" id="p-img-show" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #ad1457;">
+                <h2 id="p-name-show" style="margin:10px 0;"></h2>
+                <p id="p-zodiac-show" style="font-weight:bold; color:#ad1457;"></p>
+                <button class="auth-btn" style="background:#666;" onclick="handleLogout()">ออกจากระบบ</button>
             </div>
-            <p style="margin-top:15px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
+            <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // --- 1. ข้อมูลไพ่ 78 ใบ (ชุดเดิมของคุณ) ---
+    // --- คำทำนาย 78 ใบ (ข้อมูลชุดเดิมของคุณทั้งหมด) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -201,7 +269,7 @@
         {n:"Knight of Wands",i:"Wands12.jpg",m:"รักเร็วแรง แต่เปลี่ยนง่าย/ สื่อถึงความชอบแบบไม่ยั่งยืน การอยากเข้าหา หรือมีใจแบบไม่ยั่งยืน"},
         {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
         {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
-        {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขามีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
+        {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขมีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
         {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
         {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
         {n:"Four of Cups",i:"Cups04.jpg",m:"ลังเล เบื่อ ไม่เปิดใจเต็มที่ / คนรักอาจจะกำลังเบื่อคุณ / หรือคนที่คุณคิดถึงอาจจะยังไม่มูฟออน / ใจคุณยังไม่พร้อมเปิดรับความรักเต็มที่"},
@@ -218,7 +286,7 @@
         {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
         {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
         {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
-        {n:"Four of Swords",i:"Swords04.jpg",m:"พักใจ หยุดคุย หยุดคิดสักพัก/ สื่อถึงอาจจะยังอยู่ในระยะพักหรือทบทวนความสัมพันธ์ไมยากเคลื่อนหวัดมากนัก"},
+        {n:"Four of Swords",i:"Swords04.jpg",m:"พักใจ หยุดคุย หยุดคิดสักพัก/ สื่อถึงอาจจะยังอยู่ในระยะพักหรือทบทวนความสัมพันธ์ไมยากเคลื่อนไหวมากนัก"},
         {n:"Five of Swords",i:"Swords05.jpg",m:"ทะเลาะ เอาชนะกันจนเสียความรู้สึก/ สื่อถึงอาจจะมีปัญหาขัดแย้ง ไม่ลงรอยกันด้วยอีโก้ ถ้าจบก็จบลงด้วยอีโก้"},
         {n:"Six of Swords",i:"Swords06.jpg",m:"ก้าวข้ามอดีต เริ่มฟื้นใจ/ สื่อถึงการเดินต่อไปข้างหน้าแม้จะเจ็บปวด หรืออยากมูฟออนแต่ก้างอย่างช้าๆ"},
         {n:"Seven of Swords",i:"Swords07.jpg",m:"มีเรื่องปิดบัง ไม่ซื่อสัตย์/ สื่อถึงอีกฝ่ายมีเรื่องปิดบัง ไม่ซื่อสัตย์ต่อคุณ หรืออาจจะมองคุณแบบไม่จริงจังนัก"},
@@ -245,7 +313,7 @@
         {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
     ];
 
-    // --- 2. ระบบสมาชิก & Firebase ---
+    // --- ระบบสมาชิก (Firebase Logic) ---
     let isLoginMode = true;
     let tempPic = "";
 
@@ -257,7 +325,122 @@
         document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
     }
 
-    // คำนวณราศี
+    async function handleAuth() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        if (isLoginMode) {
+            try {
+                await window.fbFns.signInWithEmailAndPassword(window.fbAuth, email, pass);
+                closeAuthModal();
+            } catch(e) { alert(e.message); }
+        } else {
+            const nick = document.getElementById('reg-nickname').value;
+            const bdate = document.getElementById('reg-bdate').value;
+            const confirm = document.getElementById('auth-pass-confirm').value;
+            if (pass !== confirm) { document.getElementById('pw-error').style.display='block'; return; }
+            try {
+                const userCred = await window.fbFns.createUserWithEmailAndPassword(window.fbAuth, email, pass);
+                await window.fbFns.setDoc(window.fbFns.doc(window.fbDb, "users", userCred.user.uid), {
+                    nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), img: tempPic
+                });
+                closeAuthModal();
+            } catch(e) { alert(e.message); }
+        }
+    }
+
+    async function handleGoogleLogin() {
+        try { await window.fbFns.signInWithPopup(window.fbAuth, window.googleProvider); closeAuthModal(); } catch(e) { alert(e.message); }
+    }
+
+    function handleLogout() { window.fbFns.signOut(window.fbAuth).then(() => location.reload()); }
+
+    // ติดตามสถานะ User
+    setTimeout(() => {
+        window.fbFns.onAuthStateChanged(window.fbAuth, async (user) => {
+            if (user) {
+                const snap = await window.fbFns.getDoc(window.fbFns.doc(window.fbDb, "users", user.uid));
+                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
+                document.getElementById('pill-name').innerText = userData.nickname || "ผู้ใช้";
+                document.getElementById('pill-img').src = userData.img || 'https://via.placeholder.com/40';
+                document.getElementById('p-name-show').innerText = userData.nickname;
+                document.getElementById('p-img-show').src = userData.img || 'https://via.placeholder.com/80';
+                document.getElementById('p-zodiac-show').innerText = userData.zodiac ? "ราศี" + userData.zodiac : "";
+            }
+        });
+    }, 1500);
+
+    // --- ระบบไพ่ (เดิมของคุณ) ---
+    let shuffledDeck = [];
+    let selectedIndices = [];
+    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
+
+    function shuffleArray(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+    }
+
+    function createDeck() {
+        const deckDiv = document.getElementById("deck");
+        deckDiv.innerHTML = "";
+        selectedIndices = [];
+        shuffledDeck = shuffleArray([...rawData]);
+        for(let i=0; i<78; i++) {
+            const card = document.createElement("div");
+            card.className = "card-back";
+            card.innerHTML = "🌙";
+            card.dataset.index = i;
+            card.onclick = function() { selectCard(this); };
+            deckDiv.appendChild(card);
+        }
+    }
+
+    function selectCard(el) {
+        if (selectedIndices.length >= 4 || el.classList.contains("selected")) return;
+        el.classList.add("selected");
+        const idx = parseInt(el.dataset.index);
+        selectedIndices.push(shuffledDeck[idx]);
+        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
+        if (selectedIndices.length === 4) {
+            setTimeout(() => {
+                document.getElementById("selection-screen").style.display = "none";
+                document.getElementById("loading-screen").style.display = "block";
+                setTimeout(showResults, 2000);
+            }, 600);
+        }
+    }
+
+    function showResults() {
+        document.getElementById("loading-screen").style.display = "none";
+        document.getElementById("result-screen").style.display = "block";
+        const summaryBox = document.getElementById("captureArea");
+        const detailBox = document.getElementById("detailArea");
+        selectedIndices.forEach((cardData, i) => {
+            summaryBox.innerHTML += `
+                <div class="summary-card">
+                    <div class="pos-top">ใบที่ ${i+1}</div>
+                    <img src="${cardData.i}" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
+                    <h3>${cardData.n}</h3>
+                </div>
+            `;
+            detailBox.innerHTML += `
+                <div class="detail-row">
+                    <div class="detail-header">${posTitles[i]}</div>
+                    <div class="detail-body">
+                        <img src="${cardData.i}" class="detail-img" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
+                        <div class="detail-text">
+                            <h4>${cardData.n}</h4>
+                            <p>${cardData.m}</p>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+    }
+
+    // ฟังก์ชันเสริมอื่นๆ
     function getZodiac(dateStr) {
         if(!dateStr) return "";
         const d = new Date(dateStr);
@@ -276,113 +459,34 @@
         return "มีน";
     }
 
-    async function handleAuth() {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-pass').value;
-        const auth = window.fbAuth;
-
-        try {
-            if (isLoginMode) {
-                await window.fbFns.signInWithEmailAndPassword(auth, email, pass);
-                alert("เข้าสู่ระบบสำเร็จ!");
-            } else {
-                const nick = document.getElementById('reg-nickname').value;
-                const bdate = document.getElementById('reg-bdate').value;
-                const confirm = document.getElementById('auth-pass-confirm').value;
-                if (pass !== confirm) { document.getElementById('pw-error').style.display='block'; return; }
-                
-                const userCred = await window.fbFns.createUserWithEmailAndPassword(auth, email, pass);
-                await window.fbFns.setDoc(window.fbFns.doc(window.fbDb, "users", userCred.user.uid), {
-                    nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), img: tempPic
-                });
-                alert("สมัครสมาชิกสำเร็จ!");
-            }
-            closeAuthModal();
-        } catch (e) { alert("เกิดข้อผิดพลาด: " + e.message); }
-    }
-
-    async function handleGoogleLogin() {
-        try {
-            await window.fbFns.signInWithPopup(window.fbAuth, window.googleProvider);
-            closeAuthModal();
-        } catch(e) { alert(e.message); }
-    }
-
-    function handleLogout() { window.fbFns.signOut(window.fbAuth).then(() => location.reload()); }
-
-    // ตรวจสอบสถานะ User
-    setTimeout(() => {
-        window.fbFns.onAuthStateChanged(window.fbAuth, async (user) => {
-            if (user) {
-                const snap = await window.fbFns.getDoc(window.fbFns.doc(window.fbDb, "users", user.uid));
-                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                document.getElementById('pill-name').innerText = userData.nickname || "ผู้ใช้";
-                document.getElementById('pill-img').src = userData.img || 'https://via.placeholder.com/40';
-                document.getElementById('p-name-show').innerText = userData.nickname;
-                document.getElementById('p-zodiac-show').innerText = userData.zodiac ? "ราศี" + userData.zodiac : "";
-                document.getElementById('p-img-show').src = userData.img || 'https://via.placeholder.com/80';
-            }
-        });
-    }, 1500);
-
-    // --- 3. ระบบไพ่ ---
-    let selected = [];
-    const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
-
-    function createDeck() {
-        const deck = document.getElementById('deck');
-        deck.innerHTML = "";
-        for(let i=0; i<78; i++) {
-            const card = document.createElement('div');
-            card.className = 'card-back';
-            card.onclick = () => selectCard(card, i);
-            deck.appendChild(card);
-        }
-    }
-
-    function selectCard(el, idx) {
-        if(selected.length < 4 && !el.classList.contains('selected')) {
-            el.classList.add('selected');
-            const card = rawData[Math.floor(Math.random()*rawData.length)];
-            selected.push(card);
-            document.getElementById('counter').innerText = `เลือกแล้ว: ${selected.length} / 4`;
-            if(selected.length === 4) setTimeout(showResults, 800);
-        }
-    }
-
-    function showResults() {
-        document.getElementById('selection-screen').style.display = 'none';
-        document.getElementById('result-screen').style.display = 'block';
-        const area = document.getElementById('captureArea');
-        const detail = document.getElementById('detailArea');
-        selected.forEach((c, i) => {
-            area.innerHTML += `<div class="summary-card"><h3>ใบที่ ${i+1}</h3><img src="${c.i}"><h3>${c.n}</h3></div>`;
-            detail.innerHTML += `
-                <div class="detail-row">
-                    <div class="detail-header">ใบที่ ${i+1} : ${posTitles[i]}</div>
-                    <div class="detail-body">
-                        <img src="${c.i}" class="detail-img">
-                        <div><h4>${c.n}</h4><p>${c.m}</p></div>
-                    </div>
-                </div>`;
-        });
-    }
-
-    // รูปพรีวิว
     document.getElementById('p-input').addEventListener('change', function(e) {
         const reader = new FileReader();
-        reader.onload = (ev) => { tempPic = ev.target.result; document.getElementById('reg-preview').src = tempPic; }
+        reader.onload = (ev) => tempPic = ev.target.result;
         reader.readAsDataURL(e.target.files[0]);
     });
 
+    function toggleDarkMode(checkbox) { document.body.classList.toggle('dark-mode', checkbox.checked); }
+    function toggleMenuModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
     function openAuthModal() {
         document.getElementById('auth-overlay').style.display = 'flex';
         if(window.fbAuth.currentUser) {
             document.getElementById('auth-form-box').style.display='none';
             document.getElementById('profile-box').style.display='block';
+        } else {
+            document.getElementById('auth-form-box').style.display='block';
+            document.getElementById('profile-box').style.display='none';
         }
     }
     function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
+    function shareURL() { navigator.share ? navigator.share({url: window.location.href}) : alert("Copy link!"); }
+    async function captureImageJPG() {
+        const area = document.getElementById("captureArea");
+        const canvas = await html2canvas(area, { backgroundColor: "#ad1457", scale: 2 });
+        const link = document.createElement("a");
+        link.download = "love-tarot.jpg";
+        link.href = canvas.toDataURL("image/jpeg", 0.9);
+        link.click();
+    }
 
     window.onload = createDeck;
 </script>

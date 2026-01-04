@@ -29,6 +29,61 @@
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
         body.dark-mode .menu-btn { background: #333; color: #fff; border-color: #444; }
 
+        /* --- ระบบ Login/Member Styles --- */
+        .top-right-auth {
+            position: fixed;
+            top: 15px;
+            right: 15px;
+            z-index: 1100;
+        }
+        .user-pill {
+            background: #ffffff;
+            color: #ad1457;
+            padding: 6px 12px;
+            border-radius: 25px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border: 1.5px solid #ad1457;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        body.dark-mode .user-pill { background: #333; color: #fff; border-color: #ffd700; }
+        .user-pill img {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            object-fit: cover;
+            background: #ddd;
+        }
+
+        .auth-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 2000; justify-content: center; align-items: center;
+        }
+        .auth-card {
+            background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px;
+            color: #333; text-align: center;
+        }
+        body.dark-mode .auth-card { background: #252525; color: #fff; }
+        .auth-card h2 { margin-top: 0; color: #ad1457; }
+        .auth-card input {
+            width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun';
+        }
+        .auth-btn {
+            width: 100%; background: #ad1457; color: white; border: none; padding: 12px;
+            border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer;
+        }
+        .profile-upload-area { position: relative; width: 80px; height: 80px; margin: 0 auto 15px; }
+        .profile-upload-area img { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 2px solid #ffd700; }
+        .profile-upload-area label {
+            position: absolute; bottom: 0; right: 0; background: #ad1457; color: #fff; 
+            width: 25px; height: 25px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer;
+        }
+
+        /* --- Styles เดิม --- */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -38,7 +93,6 @@
         input:checked + .slider:before { transform: translateX(22px); }
 
         .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
-
         #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
 
@@ -76,16 +130,10 @@
         .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
-        /* ส่วนสนับสนุน (เหมือนการงาน) */
         .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
         body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
         .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
-        body.dark-mode .support-title { color: #ffd700; }
-        .donate-img { width: 100%; max-width: 250px; border-radius: 10px; margin: 10px 0; border: 1px solid #eee; }
-        .personal-ad-box { margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc; }
-        .btn-contact { display: inline-block; background: #06c755; color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 15px; }
-        .ad-banner { width: 100%; max-width: 100%; border-radius: 12px; margin-bottom: 10px; }
-
+        
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
         .nav-item img { height: 60px; cursor: pointer; }
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
@@ -95,6 +143,14 @@
     </style>
 </head>
 <body>
+
+    <!-- ระบบล็อกอิน / ข้อมูลสมาชิก -->
+    <div class="top-right-auth">
+        <div class="user-pill" onclick="openAuthModal()">
+            <img src="https://via.placeholder.com/40" id="pill-img">
+            <span id="pill-name">เข้าสู่ระบบ</span>
+        </div>
+    </div>
 
     <div class="theme-switch-wrapper">
         <label class="theme-switch">
@@ -125,30 +181,59 @@
         <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
 
-        <!-- ส่วนสนับสนุน (เพิ่มใหม่เหมือนหน้าการงาน) -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
-                <p style="font-size: 14px; margin-bottom: 10px;">หากคำทำนายช่วยให้คุณสบายใจ</p>
-                <img src="IMG_7157.png" alt="Donate QR" class="donate-img" onerror="this.src='https://via.placeholder.com/250x350?text=QR+Donate';">
-                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
+                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Modal (Login/Register/Profile) -->
+    <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
+        <div class="auth-card" onclick="event.stopPropagation()">
+            <!-- หน้า Login/Register -->
+            <div id="auth-form-box">
+                <h2 id="auth-title">เข้าสู่ระบบ</h2>
+                
+                <div id="register-only" style="display:none;">
+                    <div class="profile-upload-area">
+                        <img src="https://via.placeholder.com/80" id="reg-preview">
+                        <label for="p-input">📷</label>
+                        <input type="file" id="p-input" hidden accept="image/*">
+                    </div>
+                    <label style="font-size: 12px; display: block; margin-bottom: 5px;">วันเดือนปีเกิดของคุณ:</label>
+                    <input type="date" id="reg-date">
+                </div>
+
+                <input type="text" id="auth-user" placeholder="ชื่อผู้ใช้งาน">
+                <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
+                
+                <button class="auth-btn" onclick="processAuth()">ตกลง</button>
+                <p id="toggle-text" style="font-size: 13px; margin-top: 15px; cursor: pointer; text-decoration: underline;" onclick="toggleAuthMode()">
+                    ยังไม่มีบัญชี? สมัครสมาชิกที่นี่
+                </p>
             </div>
 
-            <div class="personal-ad-box">
-                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
-                <img src="IMG_7155.png" alt="Personal Reading" class="ad-banner" onerror="this.src='https://via.placeholder.com/500x250?text=Banner+Promotion';">
-                <p style="font-size: 14px;">ต้องการปรึกษาเรื่องความรักแบบละเอียด รายวัน รายเดือน หรือเจาะลึกปัญหาหัวใจ</p>
-                <a href="https://line.me/ti/p/@yourid" target="_blank" class="btn-contact">💬 ติดต่อจองคิวทาง Line</a>
+            <!-- หน้าแสดงข้อมูลสมาชิก -->
+            <div id="profile-display-box" style="display:none;">
+                <h2>ข้อมูลสมาชิก</h2>
+                <img src="" id="display-img" style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #ad1457; margin-bottom:10px;">
+                <h3 id="display-name" style="margin: 5px 0;"></h3>
+                <p id="display-zodiac" style="font-weight: bold; color: #ad1457; margin-bottom: 20px;"></p>
+                <button class="auth-btn" style="background: #666;" onclick="doLogout()">ออกจากระบบ</button>
             </div>
+            
+            <p style="margin-top:20px; font-size:12px; cursor:pointer;" onclick="closeAuthModal()">ปิดหน้าต่างนี้</p>
         </div>
     </div>
 
     <nav class="bottom-nav">
         <div class="nav-item" onclick="toggleModal(true)"><img src="IMG_7070.png"></div>
         <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
-        <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
     </nav>
 
+    <!-- Modal เมนู (เหมือนเดิม) -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
@@ -163,9 +248,7 @@
     </div>
 
 <script>
-    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
-    
-    // --- คำทำนายเดิม (ไม่มีการแก้ไข) ---
+    // --- 1. ข้อมูลไพ่ 78 ใบ (ชุดเดิมทั้งหมด ห้ามลบ) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -189,8 +272,6 @@
         {n:"The Sun",i:"19-TheSun.jpg",m:"ความรักสดใส ชัดเจน มีความสุข"},
         {n:"Judgement",i:"20-Judgement.jpg",m:"การตัดสินใจครั้งสำคัญ อดีตอาจย้อนกลับมา"},
         {n:"The World",i:"21-TheWorld.jpg",m:"ความรักลงตัว สมบูรณ์ และจริงจัง"},
-
-        /* Wands (14) */
         {n:"Ace of Wands",i:"Wands01.jpg",m:"ความรักเริ่มต้นด้วยแพชชั่น แรงดึงดูดสูง/สื่อถึงการเริ่มต้นใหม่ การทักหรือการเข้าหา"},
         {n:"Two of Wands",i:"Wands02.jpg",m:"คิดถึงอนาคตร่วมกัน แต่ยังชั่งใจ/ สื่อถึงการมองไปข้างหน้า ยังคาดหวังและสับสน"},
         {n:"Three of Wands",i:"Wands03.jpg",m:"รอพัฒนาความสัมพันธ์/ สื่อถึงการรอคอย หรืออยากมีอนาคตร่วมกัน การเดินหน้าความสัมพันธ์ หรืออาจจะสื่อถึงการมูฟออนได้"},
@@ -205,8 +286,6 @@
         {n:"Knight of Wands",i:"Wands12.jpg",m:"รักเร็วแรง แต่เปลี่ยนง่าย/ สื่อถึงความชอบแบบไม่ยั่งยืน การอยากเข้าหา หรือมีใจแบบไม่ยั่งยืน"},
         {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
         {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
-
-        /* Cups (14) */
         {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขามีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
         {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
         {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
@@ -221,8 +300,6 @@
         {n:"Knight of Cups",i:"Cups12.jpg",m:"คนโรแมนติก เสน่ห์ดี/ สื่อถึงการที่ใครคนนึงอยากเข้าหาเรา อาจจะสื่อถึงการกลับมาใกล้ชิดและการจากไปได้เช่นกัน แต่คนที่ถามถึงมีใจให้เรา อยากจีบอยากเข้าหา"},
         {n:"Queen of Cups",i:"Cups13.jpg",m:"เข้าใจ ดูแล เอาใจใส่/ สื่อถึงคนที่เราถามถึงยังมีความห่วงใย ความแคร์เรา อาจจะเป็นความรักที่อยู่ในใจ เก็บเงียบไม่ชอบแสดงออกเท่าไหร่นัก"},
         {n:"King of Cups",i:"Cups14.jpg",m:"รักมั่นคง สุภาพ ควบคุมอารมณ์ได้/ สื่อถึงคนๆนี้อาจจะชอบเรา หรือเก็บอารมณ์ความรู้สึก หรือสนใจเราในแง่มุมนึง แต่ไมยากเปิดปากมาก"},
-
-        /* Swords (14) */
         {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
         {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
         {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
@@ -237,8 +314,6 @@
         {n:"Knight of Swords",i:"Swords12.jpg",m:"ใจร้อน พูดตรง อารมณ์ขึ้นง่าย/ สื่อถึงการปะทะอารมณ์ต่อกัน ไม่ว่าจะเพราะคำพูดหรือเพราะพฤติกรรม หรืออาจจะหมายถึงการทักมาแบบไม่คาดคิด การติดต่อแบบไม่คาดคิด"},
         {n:"Queen of Swords",i:"Swords13.jpg",m:"ใช้เหตุผลนำหน้า หัวใจระวังเจ็บ/สื่อถึงอีกฝ่ายอยู่ในภาวะไม่สนใจหรือเย็นชา"},
         {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
-
-        /* Pentacles (14) */
         {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
         {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
         {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
@@ -255,6 +330,120 @@
         {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
     ];
 
+    // --- 2. ระบบสมาชิก (Member System) ---
+    let isLoginMode = true;
+    let currentUser = JSON.parse(localStorage.getItem('user_session')) || null;
+    let tempProfilePic = "";
+
+    function toggleAuthMode() {
+        isLoginMode = !isLoginMode;
+        document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
+        document.getElementById('register-only').style.display = isLoginMode ? "none" : "block";
+        document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิกที่นี่" : "มีบัญชีอยู่แล้ว? เข้าสู่ระบบ";
+    }
+
+    function openAuthModal() {
+        document.getElementById('auth-overlay').style.display = "flex";
+        if (currentUser) {
+            document.getElementById('auth-form-box').style.display = "none";
+            document.getElementById('profile-display-box').style.display = "block";
+            document.getElementById('display-name').innerText = currentUser.username;
+            document.getElementById('display-zodiac').innerText = `ราศี${currentUser.zodiac}`;
+            document.getElementById('display-img').src = currentUser.img || 'https://via.placeholder.com/100';
+        } else {
+            document.getElementById('auth-form-box').style.display = "block";
+            document.getElementById('profile-display-box').style.display = "none";
+        }
+    }
+
+    function closeAuthModal() { document.getElementById('auth-overlay').style.display = "none"; }
+
+    // พรีวิวรูปภาพ
+    document.getElementById('p-input').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                tempProfilePic = event.target.result;
+                document.getElementById('reg-preview').src = tempProfilePic;
+            };
+            reader.readAsDataURL(file);
+        }
+    });
+
+    // คำนวณราศี
+    function getZodiac(dateStr) {
+        const d = new Date(dateStr);
+        const day = d.getDate();
+        const month = d.getMonth() + 1;
+        if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
+        if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
+        if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
+        if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "กรกฎ";
+        if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "สิงห์";
+        if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "กันย์";
+        if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "ตุลย์";
+        if ((month == 10 && day >= 24) || (month == 11 && day <= 21)) return "พิจิก";
+        if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "ธนู";
+        if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "มังกร";
+        if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "กุมภ์";
+        return "มีน";
+    }
+
+    function processAuth() {
+        const user = document.getElementById('auth-user').value.trim();
+        const pass = document.getElementById('auth-pass').value.trim();
+        
+        if (!user || !pass) { alert("กรุณากรอกข้อมูลให้ครบ"); return; }
+
+        if (isLoginMode) {
+            // เข้าสู่ระบบ
+            const storedData = JSON.parse(localStorage.getItem('app_user_' + user));
+            if (storedData && storedData.password === pass) {
+                currentUser = storedData;
+                localStorage.setItem('user_session', JSON.stringify(currentUser));
+                updateUI();
+                closeAuthModal();
+            } else {
+                alert("ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+            }
+        } else {
+            // สมัครสมาชิก
+            const bDate = document.getElementById('reg-date').value;
+            if (!bDate) { alert("กรุณาเลือกวันเกิด"); return; }
+            
+            const newUser = {
+                username: user,
+                password: pass,
+                birthdate: bDate,
+                zodiac: getZodiac(bDate),
+                img: tempProfilePic
+            };
+            localStorage.setItem('app_user_' + user, JSON.stringify(newUser));
+            alert("สมัครสมาชิกสำเร็จ! ลองเข้าสู่ระบบดูนะครับ");
+            toggleAuthMode();
+        }
+    }
+
+    function doLogout() {
+        localStorage.removeItem('user_session');
+        currentUser = null;
+        updateUI();
+        closeAuthModal();
+    }
+
+    function updateUI() {
+        if (currentUser) {
+            document.getElementById('pill-name').innerText = currentUser.username;
+            document.getElementById('pill-img').src = currentUser.img || 'https://via.placeholder.com/40';
+        } else {
+            document.getElementById('pill-name').innerText = "เข้าสู่ระบบ";
+            document.getElementById('pill-img').src = 'https://via.placeholder.com/40';
+        }
+    }
+
+    // --- 3. ระบบไพ่ (เดิม) ---
+    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
     let shuffledDeck = [];
     let selectedIndices = [];
 
@@ -306,7 +495,7 @@
             summaryBox.innerHTML += `
                 <div class="summary-card">
                     <div class="pos-top">ใบที่ ${i+1}</div>
-                    <img src="${cardData.i}" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                    <img src="${cardData.i}" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
                     <h3>${cardData.n}</h3>
                 </div>
             `;
@@ -314,7 +503,7 @@
                 <div class="detail-row">
                     <div class="detail-header">${posTitles[i]}</div>
                     <div class="detail-body">
-                        <img src="${cardData.i}" class="detail-img" onerror="this.src='https://placehold.co/100x170?text=Card';">
+                        <img src="${cardData.i}" class="detail-img" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
                         <div class="detail-text">
                             <h4>${cardData.n}</h4>
                             <p>${cardData.m}</p>
@@ -329,16 +518,7 @@
         document.body.classList.toggle('dark-mode', checkbox.checked);
         localStorage.setItem('theme', checkbox.checked ? 'dark' : 'light');
     }
-    (function() {
-        if (localStorage.getItem('theme') === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('checkbox').checked = true;
-        }
-    })();
-    function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
-    async function shareURL() {
-        if (navigator.share) { navigator.share({ title: 'ไพ่ยิปซีความรัก', url: window.location.href }); } else { alert("คัดลอกลิงก์ส่งให้เพื่อนได้เลย!"); }
-    }
+
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");
         const canvas = await html2canvas(area, { backgroundColor: "#ad1457", scale: 2 });
@@ -347,7 +527,20 @@
         link.href = canvas.toDataURL("image/jpeg", 0.9);
         link.click();
     }
-    window.onload = createDeck;
+
+    function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
+    function shareURL() {
+        if (navigator.share) { navigator.share({ title: 'ไพ่ยิปซีความรัก', url: window.location.href }); } else { alert("คัดลอกลิงก์ส่งให้เพื่อนได้เลย!"); }
+    }
+
+    window.onload = function() {
+        createDeck();
+        updateUI();
+        if (localStorage.getItem('theme') === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    };
 </script>
 </body>
 </html>

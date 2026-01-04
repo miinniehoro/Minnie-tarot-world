@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ไพ่ยิปซีการงาน 4 ใบ</title>
+    <title>ไพ่ยิปซีการงาน 4 ใบ (78 ใบสมจริง)</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
@@ -93,25 +93,53 @@
 
         .work-title-img {
             width: 50%;
-            max-width: 200px;
+            max-width: 180px;
             height: auto;
             margin: 40px auto 10px;
             display: block;
         }
 
-        #selection-screen { width: 100%; max-width: 500px; text-align: center; padding: 0 10px; }
+        #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; }
         #counter { color: #0d47a1; font-size: 20px; font-weight: 700; margin: 10px 0; }
 
-        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 5px; margin-top: 5px; }
-        .card-back {
-            width: 42px; height: 70px; background: #000000; 
-            border: 1.5px solid #ffd700; border-radius: 5px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.5); margin: 3px -8px; 
-            transition: 0.2s; color: #ffd700; font-size: 16px;
+        /* ปรับปรุงกองไพ่ 78 ใบให้เรียงซ้อนกันสวยงาม */
+        .deck-container { 
+            display: flex; 
+            flex-wrap: wrap; 
+            justify-content: center; 
+            padding: 20px 10px; 
+            margin-top: 5px; 
         }
-        .card-back:hover { transform: translateY(-12px) scale(1.1); z-index: 50; }
-        .card-back.selected { visibility: hidden; opacity: 0; }
+        .card-back {
+            width: 40px; 
+            height: 65px; 
+            background: #000000; 
+            border: 1.2px solid #ffd700; 
+            border-radius: 4px; 
+            cursor: pointer;
+            display: flex; 
+            align-items: center; 
+            justify-content: center;
+            box-shadow: -2px 2px 5px rgba(0,0,0,0.4); 
+            margin: 2px -12px; /* กรีดไพ่ให้ชิดกัน */
+            transition: 0.2s ease-out; 
+            color: #ffd700; 
+            font-size: 14px;
+            position: relative;
+            z-index: 1;
+            user-select: none;
+        }
+        .card-back:hover { 
+            transform: translateY(-15px) scale(1.15); 
+            z-index: 100; 
+            background: #1a1a1a;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+        }
+        .card-back.selected { 
+            visibility: hidden; 
+            opacity: 0; 
+            pointer-events: none;
+        }
 
         #loading-screen { display: none; text-align: center; margin-top: 80px; }
         .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #0d47a1; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
@@ -122,7 +150,7 @@
         .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
         .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #0d47a1; margin-bottom: 3px; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 9px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; white-space: nowrap; }
+        .summary-card h3 { font-size: 9px; margin: 4px 0 2px; color: #1a237e; overflow: hidden; }
 
         .btn-group { display: flex; justify-content: center; gap: 10px; margin: 20px 0; }
         button { padding: 10px 20px; border-radius: 30px; border: none; font-weight: bold; cursor: pointer; font-family: 'Sarabun'; }
@@ -137,60 +165,14 @@
         .detail-text h4 { margin: 0 0 5px; color: #1a237e; border-bottom: 1px solid #bbdefb; }
         .detail-text p { margin: 0; font-size: 14px; line-height: 1.6; }
 
-        /* ส่วนที่เพิ่มใหม่: CSS สนับสนุนและดูดวงส่วนตัว */
-        .support-container {
-            width: 100%;
-            max-width: 600px;
-            margin: 30px auto 120px;
-            padding: 20px;
-            background: #ffffff;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-            text-align: center;
-        }
-        body.dark-mode .support-container {
-            background: #1e1e1e;
-            color: #fff;
-        }
-        .support-title {
-            font-size: 18px;
-            font-weight: bold;
-            color: #1a237e;
-            margin-bottom: 15px;
-            border-bottom: 2px solid #ffd700;
-            display: inline-block;
-            padding-bottom: 5px;
-        }
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; }
+        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
+        .support-title { font-size: 18px; font-weight: bold; color: #1a237e; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
         body.dark-mode .support-title { color: #ffd700; }
-        .donate-img {
-            width: 100%;
-            max-width: 250px;
-            border-radius: 10px;
-            margin: 10px 0;
-            border: 1px solid #eee;
-        }
-        .personal-ad-box {
-            margin-top: 25px;
-            padding-top: 20px;
-            border-top: 1px dashed #ccc;
-        }
-        .btn-contact {
-            display: inline-block;
-            background: #06c755; 
-            color: white;
-            padding: 12px 25px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-weight: bold;
-            margin-top: 15px;
-            transition: 0.3s;
-        }
-        .ad-banner {
-            width: 100%;
-            max-width: 100%;
-            border-radius: 12px;
-            margin-bottom: 10px;
-        }
+        .donate-img { width: 100%; max-width: 250px; border-radius: 10px; margin: 10px 0; border: 1px solid #eee; }
+        .personal-ad-box { margin-top: 25px; padding-top: 20px; border-top: 1px dashed #ccc; }
+        .btn-contact { display: inline-block; background: #06c755; color: white; padding: 12px 25px; border-radius: 50px; text-decoration: none; font-weight: bold; margin-top: 15px; }
+        .ad-banner { width: 100%; max-width: 100%; border-radius: 12px; margin-bottom: 10px; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 100; }
         .nav-item img { height: 65px; cursor: pointer; }
@@ -198,12 +180,7 @@
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1001; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
         .menu-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .menu-btn { 
-            background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; 
-            font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; 
-            display: flex; align-items: center; justify-content: center; 
-            text-decoration: none; font-size: 13px; 
-        }
+        .menu-btn { background: #f0f2ff; color: #1a237e; padding: 12px 5px; border-radius: 10px; font-weight: bold; border: 1px solid #c5cae9; cursor: pointer; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 13px; }
         .menu-btn.active { background: #ffd700; border-color: #ffd700; }
     </style>
 </head>
@@ -212,17 +189,14 @@
     <div class="theme-switch-wrapper">
         <label class="theme-switch" for="checkbox">
             <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
-            <div class="slider">
-                <span>☀️</span>
-                <span>🌙</span>
-            </div>
+            <div class="slider"><span>☀️</span><span>🌙</span></div>
         </label>
     </div>
 
     <img src="IMG_7135.png" alt="Tarot for Work" class="work-title-img">
 
     <div id="selection-screen">
-        <p style="color: #666; font-size: 14px; margin-top: 10px;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบ</p>
+        <p style="color: #666; font-size: 14px; margin-top: 10px;">ตั้งจิตอธิษฐานนิ่งๆ ถึงเรื่องงาน แล้วเลือกไพ่ 4 ใบจากกอง</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
@@ -241,26 +215,20 @@
         <h2 style="text-align: center; margin: 30px 0 15px; color: #1a237e;">📖 คำทำนายเจาะลึกการงาน</h2>
         <div id="detailArea"></div>
 
-        <!-- ส่วนสนับสนุนและดูดวงส่วนตัว (เพิ่มใหม่) -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
-                <p style="font-size: 14px; margin-bottom: 10px;">หากคำทำนายช่วยให้คุณสบายใจ ร่วมสมทบทุนค่ากาแฟให้ทีมงานได้ที่นี่ครับ</p>
+                <p style="font-size: 14px; margin-bottom: 10px;">หากคำทำนายช่วยให้คุณสบายใจ</p>
                 <img src="IMG_7157.png" alt="Donate QR" class="donate-img" onerror="this.src='https://via.placeholder.com/250x350?text=QR+Donate';">
-                <p style="font-weight: bold; color: #0d47a1;">ขอบพระคุณทุกการสนับสนุนครับ 🙏</p>
+                <p style="font-weight: bold; color: #0d47a1;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
             </div>
-
             <div class="personal-ad-box">
                 <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
                 <img src="IMG_7155.png" alt="Personal Reading" class="ad-banner" onerror="this.src='https://via.placeholder.com/500x250?text=Banner+Promotion';">
                 <p style="font-size: 14px;">ต้องการปรึกษาเรื่องงานแบบละเอียด รายวัน รายเดือน หรือเจาะลึกปัญหาเฉพาะหน้า</p>
-                <a href="https://line.me/ti/p/@yourid" target="_blank" class="btn-contact">
-                    💬 ติดต่อจองคิวทาง Line
-                </a>
+                <a href="https://line.me/ti/p/@yourid" target="_blank" class="btn-contact">💬 ติดต่อจองคิวทาง Line</a>
             </div>
         </div>
-        <!-- จบส่วนที่เพิ่มใหม่ -->
-
     </div>
 
     <nav class="bottom-nav">
@@ -285,6 +253,7 @@
     </div>
 
 <script>
+    // --- คำทำนายเดิมของคุณทั้งหมด ---
     const tarotDeck = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"เริ่มงานใหม่ด้วยความเสี่ยงแต่มีอิสระ อย่าประมาทความละเอียดอ่อน / สถานการณ์งานช่วงนี้จะเป็นช่วงสบายๆ ไม่ค่อยมีปัญหา แต่ก็ยังไม่มีความมั่นคงของตำแหน่งเช่นกัน"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"ทักษะดีเยี่ยม มีโปรเจกต์ใหม่ที่ใช้ความสามารถเฉพาะตัวได้ดี การสื่อสารเป็นเลิศ / ระยะนี้เป็นระยะแสดงความสามารถ คุณทำอะไรคนอื่นก็หลงก็ติดใจ ชื่นชมในความสามารถ"},
@@ -295,7 +264,7 @@
         {n:"The Lovers",i:"06-TheLovers.jpg",m:"ต้องตัดสินใจครั้งสำคัญในงาน หรือการทำงานเป็นพาร์ทเนอร์ที่ต้องอาศัยใจ / ถ้าทำฟรีแลนซ์มีโอกาสรุ่ง ถ้างานประจำอาจเป็นช่วงทำงานเป็นทีมหรือโปรเจกต์สร้างสรรค์"},
         {n:"The Chariot",i:"07-TheChariot.jpg",m:"ต้องเหนื่อยต้องลุยถึงจะสำเร็จ งานที่ต้องเดินทางหรือแข่งขันสูงมาก / ระยะนี้ค่อนข้างจะเหนื่อยงาน ต้องต่อสู้แข่งขันหรืออยากเปลี่ยนงาน"},
         {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทนและจิตวิทยาในการคุมงานหรือคนลำบาก จะผ่านไปได้ด้วยความแกร่ง / ช่วงนี้มักได้ทำงานคนเดียวไร้คนพึ่งพาแต่ไม่มีปัญหามากนัก"},
-        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงวิเคราะห์งาน ทบทวนตัวเอง หรือทำงานวิจัย งานที่ต้องใช้สมาธิสูง / ระยะนี้อาจจะเริ่มเบื่อหน่ายตึงเครียดกับงาน หรือรู้สึกไม่อยากเข้าสังคม"},
+        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงวิเคราะห์งาน ทบทวนตัวเอง หรือทำงานวิจัย งานที่ต้องใช้สมาธิสูง / ระยะนี้อาจจะเริ่มเบื่อหน่ายตึงเครียดกับงาน หรือรู้สึกไมยากเข้าสังคม"},
         {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"จังหวะชีวิตเปลี่ยน งานจะดีขึ้นแบบกะทันหัน มีโชคเรื่องงานเข้ามา / จะมีเรื่องดีๆ เปลี่ยนแปลงในด้านการงาน"},
         {n:"Justice",i:"11-Justice.jpg",m:"การเซ็นสัญญา ความยุติธรรมในผลตอบแทน หรือเรื่องกฎหมายที่เกี่ยวข้องกับงาน / มีเรื่องให้ตัดสินใจครั้งใหญ่เรื่องงาน"},
         {n:"The Hanged Man",i:"12-TheHangedMan.jpg",m:"งานหยุดชะงัก ต้องยอมเสียสละบางอย่างเพื่อรักษาภาพรวม รอเวลาที่เหมาะสม / อาจอยู่ในช่วงไม่มีความสุขเรื่องงาน ต้องอดทนมากกว่าปกติ"},
@@ -371,47 +340,52 @@
     ];
 
     const posTitles = ["ใบที่ 1 : สถานการณ์ปัจจุบัน", "ใบที่ 2 : อุปสรรค/สิ่งที่ต้องแก้", "ใบที่ 3 : คำแนะนำ/แนวทาง", "ใบที่ 4 : บทสรุปในอนาคต"];
-    let selectedCount = 0;
+    let shuffledDeck = [];
+    let selectedCards = [];
 
-    function toggleDarkMode(checkbox) {
-        if (checkbox.checked) {
-            document.body.classList.add('dark-mode');
-            localStorage.setItem('theme', 'dark');
-        } else {
-            document.body.classList.remove('dark-mode');
-            localStorage.setItem('theme', 'light');
+    function shuffle(array) {
+        let currentIndex = array.length, randomIndex;
+        while (currentIndex != 0) {
+            randomIndex = Math.floor(Math.random() * currentIndex);
+            currentIndex--;
+            [array[currentIndex], array[randomIndex]] = [array[randomIndex], array[currentIndex]];
         }
+        return array;
     }
-
-    (function() {
-        const currentTheme = localStorage.getItem('theme');
-        if (currentTheme === 'dark') {
-            document.body.classList.add('dark-mode');
-            document.getElementById('checkbox').checked = true;
-        }
-    })();
 
     function createDeck() {
         const deckDiv = document.getElementById("deck");
         deckDiv.innerHTML = ""; 
-        for(let i=0; i<60; i++) {
+        selectedCards = [];
+        
+        // สับไพ่จริงทั้ง 78 ใบก่อนวาง
+        shuffledDeck = shuffle([...tarotDeck]);
+
+        for(let i=0; i<78; i++) {
             const card = document.createElement("div");
             card.className = "card-back";
             card.innerHTML = "🌙"; 
+            card.dataset.index = i; // เก็บตำแหน่งลำดับไพ่จริง
             card.onclick = function() { selectCard(this); };
             deckDiv.appendChild(card);
         }
     }
 
     function selectCard(el) {
-        if (el.classList.contains("selected")) return;
+        if (selectedCards.length >= 4 || el.classList.contains("selected")) return;
+        
         el.classList.add("selected");
-        selectedCount++;
-        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedCount} / 4`;
-        if (selectedCount === 4) {
-            document.getElementById("selection-screen").style.display = "none";
-            document.getElementById("loading-screen").style.display = "block";
-            setTimeout(showResults, 3000);
+        const idx = parseInt(el.dataset.index);
+        selectedCards.push(shuffledDeck[idx]); // เก็บข้อมูลจากตำแหน่งที่เลือกจริง
+
+        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedCards.length} / 4`;
+        
+        if (selectedCards.length === 4) {
+            setTimeout(() => {
+                document.getElementById("selection-screen").style.display = "none";
+                document.getElementById("loading-screen").style.display = "block";
+                setTimeout(showResults, 3000);
+            }, 600);
         }
     }
 
@@ -420,12 +394,11 @@
         document.getElementById("result-screen").style.display = "block";
         const summaryBox = document.getElementById("captureArea");
         const detailBox = document.getElementById("detailArea");
-        const picks = [...tarotDeck].sort(() => 0.5 - Math.random()).slice(0, 4);
 
         summaryBox.innerHTML = "";
         detailBox.innerHTML = "";
 
-        picks.forEach((c, i) => {
+        selectedCards.forEach((c, i) => {
             summaryBox.innerHTML += `
                 <div class="summary-card">
                     <div class="pos-top">ใบที่ ${i+1}</div>
@@ -447,6 +420,24 @@
             `;
         });
     }
+
+    function toggleDarkMode(checkbox) {
+        if (checkbox.checked) {
+            document.body.classList.add('dark-mode');
+            localStorage.setItem('theme', 'dark');
+        } else {
+            document.body.classList.remove('dark-mode');
+            localStorage.setItem('theme', 'light');
+        }
+    }
+
+    (function() {
+        const currentTheme = localStorage.getItem('theme');
+        if (currentTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            document.getElementById('checkbox').checked = true;
+        }
+    })();
 
     function toggleModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
     

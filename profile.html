@@ -3,112 +3,180 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>โปรไฟล์ของฉัน</title>
+    <title>โปรไฟล์ & ตั้งค่า</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (ใช้ Config ใหม่ล่าสุดที่คุณได้จากหน้าลงทะเบียน) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
-        // อัปเดต Config เป็นชุดใหม่แล้ว
         const firebaseConfig = {
             apiKey: "AIzaSyCQaWNsVQ5YmNdp9QeSFvbdOqtBXYyuH9c",
             authDomain: "index-823d8.firebaseapp.com",
             projectId: "index-823d8",
             storageBucket: "index-823d8.firebasestorage.app",
             messagingSenderId: "325415376294",
-            appId: "1:325415376294:web:2eeb267e5718b6f5266b67", // อัปเดตใหม่
-            measurementId: "G-7NDK3D96WM" // อัปเดตใหม่
+            appId: "1:325415376294:web:2eeb267e5718b6f5266b67",
+            measurementId: "G-7NDK3D96WM"
         };
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
 
-        // ดึงข้อมูลเมื่อโหลดหน้า
+        let currentUser = null;
+
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentUser = user;
                 const snap = await getDoc(doc(db, "users", user.uid));
-                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                
-                // แสดงข้อมูลพื้นฐาน
-                document.getElementById('p-img').src = userData.img || user.photoURL || 'https://via.placeholder.com/80';
-                document.getElementById('p-nick').innerText = userData.nickname || "ผู้ใช้";
-                document.getElementById('p-email').innerText = user.email;
-                document.getElementById('p-zodiac').innerText = "ราศี" + (userData.zodiac || "-");
-
-                // ตรวจสอบพรีเมียม
-                if (userData.isPaid) {
-                    document.getElementById('p-status').innerText = "Premium Member";
-                    document.getElementById('p-status').style.background = "#ffd700";
-                    document.getElementById('p-status').style.color = "#000";
-                    document.getElementById('history-locked').style.display = 'none';
+                if (snap.exists()) {
+                    const data = snap.data();
+                    document.getElementById('p-img').src = data.img || 'https://via.placeholder.com/100';
+                    document.getElementById('edit-nick').value = data.nickname || "";
+                    document.getElementById('edit-bdate').value = data.birthdate || "";
+                    if(data.birthdate) updateZodiacDisplay(data.birthdate);
                     
-                    // โหลดประวัติ
-                    const q = query(collection(db, "users", user.uid, "history"), orderBy("timestamp", "desc"), limit(10));
-                    const historySnaps = await getDocs(q);
-                    const list = document.getElementById('history-list');
-                    list.innerHTML = "";
-                    historySnaps.forEach(doc => {
-                        const data = doc.data();
-                        let cardsHTML = data.cards.map(c => `<img src="${c.i}" style="width:40px; margin-right:5px; border-radius:3px;">`).join("");
-                        list.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px 0; text-align:left;">
-                            <small style="color:#ad1457;">${data.date}</small><br>${cardsHTML}
-                        </div>`;
-                    });
-                } else {
-                    document.getElementById('p-status').innerText = "Free Member";
-                    document.getElementById('history-locked').style.display = 'block';
+                    if (data.isPaid) {
+                        document.getElementById('premium-tools').style.display = 'block';
+                        document.getElementById('buy-premium-section').style.display = 'none';
+                        document.getElementById('history-locked').style.display = 'none';
+                        loadHistory(user.uid);
+                    } else {
+                        document.getElementById('premium-tools').style.display = 'none';
+                        document.getElementById('buy-premium-section').style.display = 'block';
+                        document.getElementById('history-locked').style.display = 'block';
+                    }
                 }
-            } else {
-                window.location.href = 'index.html'; 
-            }
+            } else { window.location.href = 'index.html'; }
         });
 
-        window.logout = () => signOut(auth).then(() => window.location.href = 'index.html');
+        window.updateZodiacDisplay = (dateStr) => {
+            const zodiac = getZodiac(dateStr);
+            document.getElementById('display-zodiac').innerText = "ราศี: " + zodiac;
+        };
+
+        window.saveProfile = async () => {
+            const nick = document.getElementById('edit-nick').value;
+            const bdate = document.getElementById('edit-bdate').value;
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), {
+                    nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate)
+                });
+                alert("บันทึกสำเร็จ!");
+                window.location.href = 'index.html';
+            } catch(e) { alert(e.message); }
+        };
+
+        window.uploadImg = (e) => {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                await updateDoc(doc(db, "users", currentUser.uid), { img: ev.target.result });
+                document.getElementById('p-img').src = ev.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        window.setTheme = async (url) => {
+            await updateDoc(doc(db, "users", currentUser.uid), { bgTheme: url });
+            alert("เปลี่ยนพื้นหลังแล้ว!");
+        };
+
+        window.setCardColor = async (color) => {
+            await updateDoc(doc(db, "users", currentUser.uid), { cardColor: color });
+            alert("เปลี่ยนสีไพ่แล้ว!");
+        };
+
+        async function loadHistory(uid) {
+            const q = query(collection(db, "users", uid, "history"), orderBy("timestamp", "desc"), limit(5));
+            const snaps = await getDocs(q);
+            const list = document.getElementById('history-list'); list.innerHTML = "";
+            snaps.forEach(d => {
+                const h = d.data();
+                list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; text-align:left;">
+                    <small>${h.date}</small><br>
+                    ${h.cards.map(c => `<img src="${c.i}" style="width:30px; margin:2px;">`).join("")}
+                </div>`;
+            });
+        }
+
+        function getZodiac(dateStr) {
+            if(!dateStr) return "-"; const d = new Date(dateStr); const day = d.getDate(); const month = d.getMonth() + 1;
+            if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
+            if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
+            if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
+            if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "กรกฎ";
+            if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "สิงห์";
+            if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "กันย์";
+            if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "ตุลย์";
+            if ((month == 10 && day >= 24) || (month == 11 && day <= 21)) return "พิจิก";
+            if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "ธนู";
+            if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "มังกร";
+            if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "กุมภ์";
+            return "มีน";
+        }
+        window.logout = () => signOut(auth).then(() => location.href='index.html');
     </script>
 
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #F5F6F1; margin: 0; display: flex; justify-content: center; padding-bottom: 80px; }
-        .container { width: 90%; max-width: 500px; background: white; margin-top: 30px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #ad1457; object-fit: cover; }
-        .status-tag { display: inline-block; padding: 4px 12px; border-radius: 10px; font-size: 12px; background: #eee; margin-top: 10px; font-weight: bold; }
-        .btn-back { background: #ad1457; color: white; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; }
-        .locked { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-top: 20px; color: #888; border: 1px dashed #ccc; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; align-items: center; }
-        .bottom-nav img { height: 45px; cursor: pointer; }
-        .nav-active { border-bottom: 3px solid #ad1457; padding-bottom: 5px; border-radius: 0; }
+        body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; width: 100%; max-width: 450px; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
+        .p-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ad1457; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0; font-family: 'Sarabun'; }
+        .btn-save { background: #ad1457; color: white; }
+        .btn-premium { background: #ffd700; color: #1a237e; }
+        .section-title { text-align: left; border-left: 4px solid #ad1457; padding-left: 10px; margin: 25px 0 10px; font-weight: bold; color: #ad1457; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .theme-item { height: 60px; border-radius: 8px; cursor: pointer; background-size: cover; border: 1px solid #eee; }
+        .color-item { height: 40px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
+        #display-zodiac { font-size: 18px; font-weight: bold; color: #ad1457; margin: 10px 0; }
     </style>
 </head>
 <body>
-    <div class="container">
-        <img src="" id="p-img" class="profile-img">
-        <h2 id="p-nick" style="margin: 10px 0 0; color:#ad1457;"></h2>
-        <p id="p-email" style="margin: 5px 0; color:#666; font-size:14px;"></p>
-        <p id="p-zodiac" style="font-weight:bold; margin: 10px 0; color: #333;"></p>
-        <span id="p-status" class="status-tag"></span>
+    <div class="card">
+        <label style="cursor: pointer;">
+            <img id="p-img" class="p-img" src="">
+            <input type="file" style="display:none" onchange="uploadImg(event)">
+            <p style="font-size: 12px; color: #ad1457; margin-top: 5px;">แตะเปลี่ยนรูป</p>
+        </label>
+        
+        <div class="section-title">ข้อมูลส่วนตัว</div>
+        <input type="text" id="edit-nick" placeholder="ชื่อเล่น">
+        <input type="date" id="edit-bdate" onchange="updateZodiacDisplay(this.value)">
+        <div id="display-zodiac">ราศี: -</div>
+        <button class="btn btn-save" onclick="saveProfile()">บันทึกและกลับหน้าหลัก</button>
 
-        <div style="text-align: left; margin-top: 30px;">
-            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom:5px; color: #333;">📜 ประวัติการดูดวง</h3>
-            <div id="history-list"></div>
-            <div id="history-locked" class="locked" style="display:none; text-align:center;">
-                <p>🔒 ส่วนนี้เฉพาะสมาชิกพรีเมียม</p>
-                <small>บันทึกประวัติการจับไพ่ไว้อ่านย้อนหลังได้ทุกเมื่อ</small>
+        <div id="buy-premium-section" style="margin-top: 20px; padding: 15px; background: #fff9e6; border-radius: 10px;">
+            <p style="font-size: 14px; margin-bottom: 10px;">💎 ปลดล็อกประวัติและธีมพิเศษ</p>
+            <button class="btn btn-premium" onclick="window.open('https://line.me/ti/p/@yourid', '_blank')">สมัครพรีเมียม (ทักแชท)</button>
+        </div>
+
+        <div id="premium-tools" style="display: none;">
+            <div class="section-title">พรีเมียมคัสตอม</div>
+            <div class="theme-grid">
+                <div class="theme-item" style="background: #F5F6F1;" onclick="setTheme('')"></div>
+                <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')"></div>
+                <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1854')"></div>
+            </div>
+            <p style="text-align:left; font-size:12px; margin-top:10px;">สีหลังไพ่:</p>
+            <div class="theme-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="color-item" style="background: #000;" onclick="setCardColor('#000')"></div>
+                <div class="color-item" style="background: #4a148c;" onclick="setCardColor('#4a148c')"></div>
+                <div class="color-item" style="background: #ad1457;" onclick="setCardColor('#ad1457')"></div>
+                <div class="color-item" style="background: #1b5e20;" onclick="setCardColor('#1b5e20')"></div>
             </div>
         </div>
 
-        <button class="btn-back" onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-        <button onclick="logout()" style="background:none; border:none; color:gray; margin-top:20px; cursor:pointer; text-decoration:underline; font-family: 'Sarabun';">ออกจากระบบ</button>
-    </div>
+        <div class="section-title">ประวัติการดูดวง</div>
+        <div id="history-list"></div>
+        <div id="history-locked" style="padding: 15px; color: #999; font-size: 12px; border: 1px dashed #ccc; border-radius: 10px;">
+            🔒 ประวัติและธีมสงวนไว้สำหรับสมาชิกพรีเมียม
+        </div>
 
-    <!-- แถบล่าง 4 เมนู -->
-    <nav class="bottom-nav">
-        <div onclick="window.location.href='index.html'"><img src="IMG_7070.png"></div>
-        <div><img src="IMG_7085.png"></div>
-        <div><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
-        <div><img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" class="nav-active"></div>
-    </nav>
+        <button class="btn" style="margin-top: 20px; background: #eee;" onclick="location.href='index.html'">ยกเลิก</button>
+        <button class="btn" style="color: red; background: none; font-size: 14px;" onclick="logout()">ออกจากระบบ</button>
+    </div>
 </body>
 </html>

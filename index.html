@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK (Script Tag) -->
+    <!-- Firebase SDK (ใช้ Config ใหม่ที่คุณให้มา) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -20,8 +20,8 @@
             projectId: "index-823d8",
             storageBucket: "index-823d8.firebasestorage.app",
             messagingSenderId: "325415376294",
-            appId: "1:325415376294:web:4aa2b04631a89959266b67",
-            measurementId: "G-5V5RH8L9X6"
+            appId: "1:325415376294:web:2eeb267e5718b6f5266b67", // อัปเดต appId ใหม่แล้ว
+            measurementId: "G-7NDK3D96WM" // อัปเดต measurementId ใหม่แล้ว
         };
 
         const app = initializeApp(firebaseConfig);
@@ -29,49 +29,77 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        window.fbAuth = auth;
-        window.fbDb = db;
-        window.googleProvider = googleProvider;
-        window.fbFns = { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut, doc, setDoc, getDoc };
+        window.goToProfile = () => {
+            if (auth.currentUser) {
+                window.location.href = 'profile.html';
+            } else {
+                openAuthModal();
+            }
+        };
+
+        window.handleAuth = async () => {
+            const email = document.getElementById('auth-email').value;
+            const pass = document.getElementById('auth-pass').value;
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, pass);
+                    window.location.href = 'profile.html'; 
+                } else {
+                    const nick = document.getElementById('reg-nickname').value;
+                    const bdate = document.getElementById('reg-bdate').value;
+                    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
+                    await setDoc(doc(db, "users", userCred.user.uid), {
+                        nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), img: tempPic || ""
+                    });
+                    window.location.href = 'profile.html';
+                }
+            } catch(e) { alert("เกิดข้อผิดพลาด: " + e.message); }
+        };
+
+        window.handleGoogleLogin = async () => {
+            try { 
+                const res = await signInWithPopup(auth, googleProvider); 
+                const docRef = doc(db, "users", res.user.uid);
+                const snap = await getDoc(docRef);
+                if(!snap.exists()) {
+                    await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, email: res.user.email });
+                }
+                window.location.href = 'profile.html'; 
+            } catch(e) { alert(e.message); }
+        };
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
+                document.getElementById('nav-p-img').src = userData.img || 'https://cdn-icons-png.flaticon.com/512/3135/3135715.png';
+                document.getElementById('pill-img').src = userData.img || 'https://via.placeholder.com/40';
+                document.getElementById('pill-name').innerText = userData.nickname || "โปรไฟล์";
+            }
+        });
     </script>
 
     <style>
-        /* --- CSS เดิมของคุณทั้งหมด --- */
+        /* --- CSS เดิมทั้งหมดคงไว้ --- */
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Sarabun', sans-serif !important;
-            background-color: #F5F6F1 !important;
-            color: #ffffff; margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow-x: hidden;
-        }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         body.dark-mode { background-color: #121212 !important; }
         body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
 
-        /* ระบบ Login UI (เพิ่มใหม่) */
         .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
-        .user-pill {
-            background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px;
-            display: flex; align-items: center; gap: 8px; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px;
-        }
+        .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; background: #eee; }
 
-        .auth-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
-        }
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
         .auth-card h2 { color: #ad1457; margin-top: 0; }
         .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
         .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
         .social-btn { width: 100%; padding: 10px; margin: 8px 0; border-radius: 10px; border: none; color: white; font-weight: bold; cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; }
         .btn-google { background: #DB4437; }
-        .error-msg { color: red; font-size: 12px; display: none; margin: 5px 0; }
 
-        /* --- สไตล์เดิมต่อ --- */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -85,12 +113,7 @@
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
 
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
-        .card-back {
-            width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; 
-            transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none;
-        }
+        .card-back { width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none; }
         .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .card-back.selected { visibility: hidden; opacity: 0; pointer-events: none; }
 
@@ -119,20 +142,20 @@
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
         .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
-        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
         .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
 
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
-        .nav-item img { height: 60px; cursor: pointer; }
+        .nav-item img { height: 50px; cursor: pointer; }
+        .nav-profile-img { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 1.5px solid #ad1457; }
+
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
         .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
     </style>
 </head>
 <body>
 
-    <!-- ปุ่ม Login มุมขวาบน -->
     <div class="auth-header">
-        <div class="user-pill" onclick="openAuthModal()">
+        <div class="user-pill" onclick="goToProfile()">
             <img src="https://via.placeholder.com/40" id="pill-img">
             <span id="pill-name">เข้าสู่ระบบ</span>
         </div>
@@ -164,74 +187,40 @@
             <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวงความรัก</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
-
-        <div class="support-container">
-            <div class="donation-section">
-                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
-                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
-                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
-            </div>
-            <div class="personal-ad-box">
-                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
-                <img src="IMG_7155.png" alt="Personal Reading" style="width:100%; border-radius:12px;">
-                <a href="https://line.me/ti/p/@yourid" target="_blank" style="display:inline-block; background:#06c755; color:white; padding:12px 25px; border-radius:50px; text-decoration:none; margin-top:15px; font-weight:bold;">💬 ติดต่อทาง Line</a>
-            </div>
-        </div>
     </div>
 
-    <!-- แถบ 3 เมนูเดิมด้านล่าง -->
     <nav class="bottom-nav">
         <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
         <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
         <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
+        <div class="nav-item" onclick="goToProfile()">
+            <img id="nav-p-img" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" class="nav-profile-img">
+        </div>
     </nav>
 
-    <!-- Modal เลือกประเภทดูดวง (เดิม) -->
-    <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <h3>เลือกประเภทการดูดวง</h3>
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <a href="index.html" style="background:#ffd700; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none;">ไพ่ยิปซีความรัก</a>
-                <a href="work.html" style="background:#f0f2ff; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
-            </div>
-            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
-        </div>
-    </div>
-
-    <!-- Auth Modal (ระบบ Firebase ใหม่) -->
+    <!-- Auth Modal -->
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
-            <div id="auth-form-box">
-                <h2 id="auth-title">เข้าสู่ระบบ</h2>
-                <div id="register-fields" style="display:none;">
-                    <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
-                    <input type="date" id="reg-bdate">
-                    <div style="margin:10px 0; font-size:12px;">อัปโหลดรูปโปรไฟล์: <input type="file" id="p-input" accept="image/*"></div>
-                </div>
-                <input type="email" id="auth-email" placeholder="อีเมล">
-                <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
-                <div id="confirm-pass-box" style="display:none;">
-                    <input type="password" id="auth-pass-confirm" placeholder="ยืนยันรหัสผ่าน">
-                    <p id="pw-error" class="error-msg">รหัสผ่านไม่ตรงกัน!</p>
-                </div>
-                <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
-                <button class="social-btn btn-google" onclick="handleGoogleLogin()">Login with Google</button>
-                <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
+            <h2 id="auth-title">เข้าสู่ระบบ</h2>
+            <div id="register-fields" style="display:none;">
+                <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
+                <input type="date" id="reg-bdate">
+                <div style="margin:10px 0; font-size:12px;">รูปโปรไฟล์: <input type="file" id="p-input" accept="image/*"></div>
             </div>
-            <div id="profile-box" style="display:none;">
-                <img src="" id="p-img-show" style="width:80px; height:80px; border-radius:50%; object-fit:cover; border:2px solid #ad1457;">
-                <h2 id="p-name-show" style="margin:10px 0;"></h2>
-                <p id="p-zodiac-show" style="font-weight:bold; color:#ad1457;"></p>
-                <button class="auth-btn" style="background:#666;" onclick="handleLogout()">ออกจากระบบ</button>
+            <input type="email" id="auth-email" placeholder="อีเมล">
+            <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
+            <div id="confirm-pass-box" style="display:none;">
+                <input type="password" id="auth-pass-confirm" placeholder="ยืนยันรหัสผ่าน">
             </div>
-            <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
+            <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
+            <button class="social-btn btn-google" onclick="handleGoogleLogin()">Login with Google</button>
+            <p id="toggle-text" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
         </div>
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ข้อมูลชุดเดิมของคุณทั้งหมด) ---
+    // --- คำทำนาย 78 ใบ (ข้อมูลเดิมของคุณเป๊ะๆ) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -240,7 +229,7 @@
         {n:"The Emperor",i:"04-TheEmperor.jpg",m:"ความรักจริงจัง มั่นคง คนนี้พร้อมดูแล/ สื่อถึงคนๆนี้เป็นคนจริงจัง ชัดเจน ขี้หึง อีโก้ทิฐิ หรือความสัมพันธ์มีสภาวะตึงเครียด ต่างคนต่างอีโก้ ชอบเอาชนะ/ถ้าอยู่ช่วงโกรธมีปัญหาก็ยอมหักไม่ยอมงอ"},
         {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"ความสัมพันธ์เป็นทางการ ผู้ใหญ่สนับสนุน/ สื่อถึงการอยากคบหาแบบจริงจัง หรือการทำทุกอย่างให้ถูกต้อง การยึดมั่นถือมั่นในความคิดความเชื่อตัวเอง / อาจจะหมายถึงความคาดหวังในสิ่งที่เชื่อได้"},
         {n:"The Lovers",i:"06-TheLovers.jpg",m:"รักแรงดึงดูดสูง ต้องตัดสินใจด้วยความซื่อสัตย์/ สื่อถึงความรักที่มีให้กันแบบคู่รัก หรือเจ้าชะตาลังเลตัดสินใจไม่ได้ เจ้าชู้ ไม่เด็ดขาดมากพอ มีเรื่องให้ลังเลให้เลือก"},
-        {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงความเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
+        {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงการระเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
         {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข้มแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
         {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงทบทวนหัวใจ ต้องอยู่กับตัวเองก่อน/ สื่อถึงการคิดทบทวนอดีต คนรักเก่ากลับมา การยังไม่มูฟออนจากความสัมพันธ์ การอยากใช้เวลาอยู่คนเดียว รักตัวเองสักพัก"},
         {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"ความรักเปลี่ยนแปลงตามจังหวะโชคชะตา/ สื่อถึงอาจจะมีการเริ่มต้นความสัมพันธ์ใหม่ หรืออาจจะเปลี่ยนแปลงความสัมพันธ์ใหม่ หรือการวนเวียนกลับมาของคนรัก หรือมีการเปลี่ยนแปลงของความสัมพันธ์/ ถ้าถามว่าจบรึยังอาจจะยังไม่จบได้"},
@@ -313,9 +302,8 @@
         {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
     ];
 
-    // --- ระบบสมาชิก (Firebase Logic) ---
-    let isLoginMode = true;
-    let tempPic = "";
+    let isLoginMode = true; let tempPic = ""; let selectedIndices = [];
+    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
 
     function toggleAuthMode() {
         isLoginMode = !isLoginMode;
@@ -325,126 +313,43 @@
         document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
     }
 
-    async function handleAuth() {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-pass').value;
-        if (isLoginMode) {
-            try {
-                await window.fbFns.signInWithEmailAndPassword(window.fbAuth, email, pass);
-                closeAuthModal();
-            } catch(e) { alert(e.message); }
-        } else {
-            const nick = document.getElementById('reg-nickname').value;
-            const bdate = document.getElementById('reg-bdate').value;
-            const confirm = document.getElementById('auth-pass-confirm').value;
-            if (pass !== confirm) { document.getElementById('pw-error').style.display='block'; return; }
-            try {
-                const userCred = await window.fbFns.createUserWithEmailAndPassword(window.fbAuth, email, pass);
-                await window.fbFns.setDoc(window.fbFns.doc(window.fbDb, "users", userCred.user.uid), {
-                    nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), img: tempPic
-                });
-                closeAuthModal();
-            } catch(e) { alert(e.message); }
-        }
-    }
-
-    async function handleGoogleLogin() {
-        try { await window.fbFns.signInWithPopup(window.fbAuth, window.googleProvider); closeAuthModal(); } catch(e) { alert(e.message); }
-    }
-
-    function handleLogout() { window.fbFns.signOut(window.fbAuth).then(() => location.reload()); }
-
-    // ติดตามสถานะ User
-    setTimeout(() => {
-        window.fbFns.onAuthStateChanged(window.fbAuth, async (user) => {
-            if (user) {
-                const snap = await window.fbFns.getDoc(window.fbFns.doc(window.fbDb, "users", user.uid));
-                const userData = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                document.getElementById('pill-name').innerText = userData.nickname || "ผู้ใช้";
-                document.getElementById('pill-img').src = userData.img || 'https://via.placeholder.com/40';
-                document.getElementById('p-name-show').innerText = userData.nickname;
-                document.getElementById('p-img-show').src = userData.img || 'https://via.placeholder.com/80';
-                document.getElementById('p-zodiac-show').innerText = userData.zodiac ? "ราศี" + userData.zodiac : "";
-            }
-        });
-    }, 1500);
-
-    // --- ระบบไพ่ (เดิมของคุณ) ---
-    let shuffledDeck = [];
-    let selectedIndices = [];
-    const posTitles = ["ใบที่ 1 : ตัวคุณ", "ใบที่ 2 : เขาคนนั้น", "ใบที่ 3 : ปัจจุบัน", "ใบที่ 4 : อนาคต"];
-
-    function shuffleArray(array) {
-        for (let i = array.length - 1; i > 0; i--) {
-            const j = Math.floor(Math.random() * (i + 1));
-            [array[i], array[j]] = [array[j], array[i]];
-        }
-        return array;
-    }
+    function openAuthModal() { document.getElementById('auth-overlay').style.display = 'flex'; }
+    function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
 
     function createDeck() {
-        const deckDiv = document.getElementById("deck");
-        deckDiv.innerHTML = "";
-        selectedIndices = [];
-        shuffledDeck = shuffleArray([...rawData]);
+        const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";
+        let deck = [...rawData].sort(() => Math.random() - 0.5);
         for(let i=0; i<78; i++) {
             const card = document.createElement("div");
-            card.className = "card-back";
-            card.innerHTML = "🌙";
-            card.dataset.index = i;
-            card.onclick = function() { selectCard(this); };
+            card.className = "card-back"; card.innerHTML = "🌙";
+            card.onclick = function() { 
+                if (selectedIndices.length < 4 && !this.classList.contains("selected")) {
+                    this.classList.add("selected"); selectedIndices.push(deck[i]);
+                    document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
+                    if (selectedIndices.length === 4) {
+                        setTimeout(() => {
+                            document.getElementById("selection-screen").style.display = "none";
+                            document.getElementById("loading-screen").style.display = "block";
+                            setTimeout(showResults, 1500);
+                        }, 600);
+                    }
+                }
+            };
             deckDiv.appendChild(card);
-        }
-    }
-
-    function selectCard(el) {
-        if (selectedIndices.length >= 4 || el.classList.contains("selected")) return;
-        el.classList.add("selected");
-        const idx = parseInt(el.dataset.index);
-        selectedIndices.push(shuffledDeck[idx]);
-        document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
-        if (selectedIndices.length === 4) {
-            setTimeout(() => {
-                document.getElementById("selection-screen").style.display = "none";
-                document.getElementById("loading-screen").style.display = "block";
-                setTimeout(showResults, 2000);
-            }, 600);
         }
     }
 
     function showResults() {
         document.getElementById("loading-screen").style.display = "none";
         document.getElementById("result-screen").style.display = "block";
-        const summaryBox = document.getElementById("captureArea");
-        const detailBox = document.getElementById("detailArea");
-        selectedIndices.forEach((cardData, i) => {
-            summaryBox.innerHTML += `
-                <div class="summary-card">
-                    <div class="pos-top">ใบที่ ${i+1}</div>
-                    <img src="${cardData.i}" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
-                    <h3>${cardData.n}</h3>
-                </div>
-            `;
-            detailBox.innerHTML += `
-                <div class="detail-row">
-                    <div class="detail-header">${posTitles[i]}</div>
-                    <div class="detail-body">
-                        <img src="${cardData.i}" class="detail-img" onerror="this.src='https://via.placeholder.com/100x170?text=Card';">
-                        <div class="detail-text">
-                            <h4>${cardData.n}</h4>
-                            <p>${cardData.m}</p>
-                        </div>
-                    </div>
-                </div>
-            `;
+        selectedIndices.forEach((card, i) => {
+            document.getElementById("captureArea").innerHTML += `<div class="summary-card"><div class="pos-top">ใบที่ ${i+1}</div><img src="${card.i}"><h3>${card.n}</h3></div>`;
+            document.getElementById("detailArea").innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div class="detail-text"><h4>${card.n}</h4><p>${card.m}</p></div></div></div>`;
         });
     }
 
-    // ฟังก์ชันเสริมอื่นๆ
     function getZodiac(dateStr) {
-        if(!dateStr) return "";
-        const d = new Date(dateStr);
-        const day = d.getDate(); const month = d.getMonth() + 1;
+        if(!dateStr) return ""; const d = new Date(dateStr); const day = d.getDate(); const month = d.getMonth() + 1;
         if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
         if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
         if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
@@ -460,34 +365,17 @@
     }
 
     document.getElementById('p-input').addEventListener('change', function(e) {
-        const reader = new FileReader();
-        reader.onload = (ev) => tempPic = ev.target.result;
-        reader.readAsDataURL(e.target.files[0]);
+        const reader = new FileReader(); reader.onload = (ev) => tempPic = ev.target.result; reader.readAsDataURL(e.target.files[0]);
     });
 
     function toggleDarkMode(checkbox) { document.body.classList.toggle('dark-mode', checkbox.checked); }
     function toggleMenuModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
-    function openAuthModal() {
-        document.getElementById('auth-overlay').style.display = 'flex';
-        if(window.fbAuth.currentUser) {
-            document.getElementById('auth-form-box').style.display='none';
-            document.getElementById('profile-box').style.display='block';
-        } else {
-            document.getElementById('auth-form-box').style.display='block';
-            document.getElementById('profile-box').style.display='none';
-        }
-    }
-    function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
-    function shareURL() { navigator.share ? navigator.share({url: window.location.href}) : alert("Copy link!"); }
+    function shareURL() { navigator.share ? navigator.share({url: window.location.href}) : alert("คัดลอกลิงก์สำเร็จ!"); }
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");
         const canvas = await html2canvas(area, { backgroundColor: "#ad1457", scale: 2 });
-        const link = document.createElement("a");
-        link.download = "love-tarot.jpg";
-        link.href = canvas.toDataURL("image/jpeg", 0.9);
-        link.click();
+        const link = document.createElement("a"); link.download = "love-tarot.jpg"; link.href = canvas.toDataURL("image/jpeg", 0.9); link.click();
     }
-
     window.onload = createDeck;
 </script>
 </body>

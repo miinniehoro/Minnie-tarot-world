@@ -60,13 +60,8 @@
         window.saveProfile = async () => {
             const nick = document.getElementById('edit-nick').value;
             const bdate = document.getElementById('edit-bdate').value;
-            try {
-                await updateDoc(doc(db, "users", currentUser.uid), {
-                    nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate)
-                });
-                alert("บันทึกสำเร็จ!");
-                window.location.href = 'index.html';
-            } catch(e) { alert(e.message); }
+            await updateDoc(doc(db, "users", currentUser.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate) });
+            alert("บันทึกข้อมูลแล้ว!"); window.location.href = 'index.html';
         };
 
         window.uploadImg = (e) => {
@@ -129,7 +124,7 @@
         .btn-premium { background: #ffd700; color: #1a237e; }
         .section-title { text-align: left; border-left: 4px solid #ad1457; padding-left: 10px; margin: 25px 0 10px; font-weight: bold; color: #ad1457; }
         .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-        .theme-item { height: 60px; border-radius: 8px; cursor: pointer; background-size: cover; border: 1px solid #eee; }
+        .theme-item { height: 60px; border-radius: 8px; cursor: pointer; background-size: cover; border: 1px solid #eee; background-color: #ddd; }
         .color-item { height: 40px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
         #display-zodiac { font-size: 18px; font-weight: bold; color: #ad1457; margin: 10px 0; }
     </style>
@@ -155,6 +150,7 @@
 
         <div id="premium-tools" style="display: none;">
             <div class="section-title">พรีเมียมคัสตอม</div>
+            <p style="text-align:left; font-size:12px;">เปลี่ยนพื้นหลังเว็บ:</p>
             <div class="theme-grid">
                 <div class="theme-item" style="background: #F5F6F1;" onclick="setTheme('')"></div>
                 <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')"></div>

@@ -60,8 +60,12 @@
         window.saveProfile = async () => {
             const nick = document.getElementById('edit-nick').value;
             const bdate = document.getElementById('edit-bdate').value;
-            await updateDoc(doc(db, "users", currentUser.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate) });
-            alert("บันทึกข้อมูลแล้ว!"); window.location.href = 'index.html';
+            const zodiac = getZodiac(bdate);
+            try {
+                await updateDoc(doc(db, "users", currentUser.uid), { nickname: nick, birthdate: bdate, zodiac: zodiac });
+                alert("บันทึกสำเร็จ!"); 
+                window.location.href = 'index.html';
+            } catch(e) { alert(e.message); }
         };
 
         window.uploadImg = (e) => {
@@ -150,7 +154,7 @@
 
         <div id="premium-tools" style="display: none;">
             <div class="section-title">พรีเมียมคัสตอม</div>
-            <p style="text-align:left; font-size:12px;">เปลี่ยนพื้นหลังเว็บ:</p>
+            <p style="text-align:left; font-size:12px;">เปลี่ยนวอลเปเปอร์เว็บ:</p>
             <div class="theme-grid">
                 <div class="theme-item" style="background: #F5F6F1;" onclick="setTheme('')"></div>
                 <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')"></div>

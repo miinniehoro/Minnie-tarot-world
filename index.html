@@ -11,7 +11,7 @@
     <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, signInWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -29,40 +29,61 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
+        // ฟังก์ชันไปหน้าโปรไฟล์
+        window.goToProfile = () => { 
+            if (auth.currentUser) {
+                window.location.href = 'profile.html'; 
+            } else {
+                openAuthModal(); 
+            }
+        };
 
-        // ตรวจสอบสถานะการล็อกอิน
+        // ตรวจสอบสถานะการล็อกอิน (เพื่อให้ล็อกอินค้างไว้แม้รีเฟรช)
         onAuthStateChanged(auth, async (user) => {
+            const pillImg = document.getElementById('pill-img');
+            const pillName = document.getElementById('pill-name');
+            const navImg = document.getElementById('nav-p-img');
+            const authOverlay = document.getElementById('auth-overlay');
+
             if (user) {
-                document.getElementById('auth-overlay').style.display = 'none';
+                // ล็อกอินแล้ว -> ปิดหน้าต่างล็อกอินทันที
+                if(authOverlay) authOverlay.style.display = 'none';
+                
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                document.getElementById('pill-name').innerText = data.nickname || "โปรไฟล์";
-                document.getElementById('pill-img').src = data.img || 'https://via.placeholder.com/40';
-                document.getElementById('nav-p-img').src = data.img || 'https://via.placeholder.com/40';
+                
+                pillName.innerText = data.nickname || "โปรไฟล์";
+                pillImg.src = data.img || 'https://via.placeholder.com/40';
+                navImg.src = data.img || 'https://via.placeholder.com/40';
+                
                 if (data.isPaid) {
                     if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
                     if (data.cardColor) window.customCardColor = data.cardColor;
                     createDeck(); 
                 }
             } else {
-                document.getElementById('pill-name').innerText = "เข้าสู่ระบบ";
-                document.getElementById('pill-img').src = 'https://via.placeholder.com/40';
+                pillName.innerText = "เข้าสู่ระบบ";
+                pillImg.src = 'https://via.placeholder.com/40';
             }
         });
 
+        // จัดการผลลัพธ์หลัง Redirect กลับมาจาก Google
         getRedirectResult(auth).then(async (res) => {
             if (res && res.user) {
                 const docRef = doc(db, "users", res.user.uid);
                 const snap = await getDoc(docRef);
-                if (!snap.exists()) await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
+                if (!snap.exists()) {
+                    await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
+                }
+                document.getElementById('auth-overlay').style.display = 'none';
             }
         });
 
+        // ฟังก์ชันล็อกอิน/สมัครสมาชิกแบบ Email
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) return;
+            if(!email || !pass) { alert("กรุณากรอกข้อมูล"); return; }
             try {
                 if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
                 else {
@@ -71,24 +92,38 @@
                     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
                     await setDoc(doc(db, "users", userCred.user.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), isPaid: false });
                 }
-            } catch(e) { alert("ผิดพลาด: " + e.message); }
+            } catch(e) { alert("เกิดข้อผิดพลาด: " + e.message); }
         };
-        window.handleGoogleLogin = () => signInWithRedirect(auth, googleProvider);
+
+        // ฟังก์ชันล็อกอิน Google (แก้ให้ลอง Popup ก่อน ถ้าไม่ได้ให้ใช้ Redirect)
+        window.handleGoogleLogin = async () => {
+            try {
+                await signInWithPopup(auth, googleProvider);
+            } catch (error) {
+                console.log("Popup blocked, trying redirect...");
+                await signInWithRedirect(auth, googleProvider);
+            }
+        };
+
+        // แนบฟังก์ชันที่จำเป็นเข้ากับ window เพื่อให้ปุ่ม HTML เรียกใช้ได้
+        window.toggleDarkMode = (checkbox) => { document.body.classList.toggle('dark-mode', checkbox.checked); };
+        window.toggleMenuModal = (show) => { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; };
+        window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
+        window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
+
     </script>
 
     <style>
-        /* --- CSS เดิม + Night Mode --- */
+        /* --- CSS เดิมทั้งหมด (รักใคร่ Night Mode มากๆ) --- */
         * { box-sizing: border-box; }
         body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* สไตล์ Night Mode */
         body.dark-mode { background-color: #121212 !important; color: #fff !important; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen { color: #ffffff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
         body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
 
-        /* สวิตช์ Night Mode */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -102,8 +137,9 @@
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
 
         .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
-        .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+        .auth-card h2 { color: #ad1457; margin-top: 0; }
+        .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; font-size: 14px; }
         .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
 
         .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
@@ -151,7 +187,7 @@
 </head>
 <body>
 
-    <!-- สวิตช์ Night Mode (คืนมาแล้ว) -->
+    <!-- สวิตช์ Night Mode -->
     <div class="theme-switch-wrapper">
         <label class="theme-switch">
             <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
@@ -159,6 +195,7 @@
         </label>
     </div>
 
+    <!-- ปุ่มโปรไฟล์มุมขวาบน -->
     <div class="auth-header">
         <div class="user-pill" onclick="goToProfile()">
             <img id="pill-img" src="https://via.placeholder.com/40">
@@ -188,6 +225,7 @@
         <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
 
+        <!-- ส่วนสนับสนุน -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
@@ -209,7 +247,7 @@
         <div class="nav-item" onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
     </nav>
 
-    <!-- Modal เลือกประเภทดูดวง (คงเดิม) -->
+    <!-- Modal เลือกประเภทดูดวง -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
@@ -221,6 +259,7 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
             <h2 id="auth-title" style="color:#ad1457">เข้าสู่ระบบ</h2>
@@ -233,12 +272,12 @@
             <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
             <button class="auth-btn" style="background: #DB4437;" onclick="handleGoogleLogin()">Login with Google</button>
             <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
-            <p style="margin-top:15px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
+            <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณ 100%) ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ 100%) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -312,7 +351,7 @@
         {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"การให้และรับที่สมดุล/ สื่อถึงภาวะอีกฝ่ายอาจจะให้มากไป หรือเราอาจจะให้น้อยไปขึ้นอยู่กับบริบทไพ่ หรืออาจจะหมายถึงการให้อภัยให้โอกาสใหม่ การรอคอยตอบรับจากอีกฝ่าย"},
         {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"รอผลลัพธ์จากความพยายาม/ สื่อถึงการรอคอยแบบเงียบๆ การทุ่มเทแล้วรอผลลัพธ์"},
         {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ตั้งใจพัฒนาความสัมพันธ์/ สื่อถึงอีกฝ่ายมีความจริงจัง อาจจะพยายามเข้าหาหรือพัฒนากันแบบจริงจัง หรือมีความตั้งใจในความรักมาก / หรือตอนนั้นอยู่ในช่วงที่อีกฝ่ายเอาเวลาไปพัฒนาตัวเองหรือการงานการเรียน จนเพิกเฉยเราได้"},
-        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิสระ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
+        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิรสะ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
         {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"รักมั่นคงระยะยาว วางแผนอนาคตร่วมกัน/เจ้าชะตาอยู่ใช่ช่วงกำลังแต่งงาน มีครอบครัวแล้ว หรือคนที่คบหาค่อนข้างจะจริง"},
         {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"เริ่มจริงจัง คิดอนาคต/ สื่อถึงการอยากริลองอะไรใหม่ เริ่มต้นใหม่แบบมีเงื่อนไข"},
         {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"รักช้าแต่มั่นคง/ สื่อถึงคนๆนี้เป็นคนจริงจังในรัก อาจจะน่าเบื่อไปบ้าง แต่จริงจังกับคุณ พร้อมพัฒนาแบบช้าๆ"},
@@ -329,8 +368,6 @@
         document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
         document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
     }
-    function openAuthModal() { document.getElementById('auth-overlay').style.display = 'flex'; }
-    function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
 
     function createDeck() {
         const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";
@@ -361,8 +398,9 @@
         document.getElementById("result-screen").style.display = "block";
         const area = document.getElementById("captureArea");
         const detail = document.getElementById("detailArea");
+        area.innerHTML = ""; detail.innerHTML = "";
         selectedIndices.forEach((card, i) => {
-            area.innerHTML += `<div class="summary-card"><p style="font-size:9px; font-weight:bold; color:#ad1457;">${posTitles[i]}</p><img src="${card.i}"><h3>${card.n}</h3></div>`;
+            area.innerHTML += `<div class="summary-card"><p style="font-size:9px; font-weight:bold; color:#ad1457; margin-bottom:3px;">${posTitles[i]}</p><img src="${card.i}"><h3>${card.n}</h3></div>`;
             detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div>${card.m}</div></div></div>`;
         });
     }
@@ -383,8 +421,6 @@
         return "มีน";
     }
 
-    function toggleDarkMode(checkbox) { document.body.classList.toggle('dark-mode', checkbox.checked); }
-    function toggleMenuModal(show) { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; }
     function shareURL() { navigator.share ? navigator.share({url: window.location.href}) : alert("คัดลอกลิงก์สำเร็จ!"); }
     async function captureImageJPG() {
         const area = document.getElementById("captureArea");

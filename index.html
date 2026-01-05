@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (ใช้ Config ของคุณ) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -29,26 +29,22 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        window.goToProfile = () => { 
-            if (auth.currentUser) {
-                window.location.href = 'profile.html'; 
-            } else {
-                openAuthModal(); 
-            }
-        };
-
-        // ตรวจสอบสถานะการล็อกอิน
+        // 1. ตรวจสอบสถานะการล็อกอิน (ให้ล็อกอินค้างไว้)
         onAuthStateChanged(auth, async (user) => {
+            const pillImg = document.getElementById('pill-img');
+            const pillName = document.getElementById('pill-name');
+            const navImg = document.getElementById('nav-p-img');
+            const authOverlay = document.getElementById('auth-overlay');
+
             if (user) {
-                // ถ้าล็อกอินอยู่ ให้ปิดหน้าต่างล็อกอินทันที
-                document.getElementById('auth-overlay').style.display = 'none';
+                if(authOverlay) authOverlay.style.display = 'none'; // ปิดหน้าล็อกอินทันที
                 
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
                 
-                document.getElementById('pill-name').innerText = data.nickname || "โปรไฟล์";
-                document.getElementById('pill-img').src = data.img || 'https://via.placeholder.com/40';
-                document.getElementById('nav-p-img').src = data.img || 'https://via.placeholder.com/40';
+                pillName.innerText = data.nickname || "โปรไฟล์";
+                pillImg.src = data.img || 'https://via.placeholder.com/40';
+                navImg.src = data.img || 'https://via.placeholder.com/40';
                 
                 if (data.isPaid) {
                     if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
@@ -56,12 +52,12 @@
                     createDeck(); 
                 }
             } else {
-                document.getElementById('pill-name').innerText = "เข้าสู่ระบบ";
-                document.getElementById('pill-img').src = 'https://via.placeholder.com/40';
+                pillName.innerText = "เข้าสู่ระบบ";
+                pillImg.src = 'https://via.placeholder.com/40';
             }
         });
 
-        // จัดการผลลัพธ์หลัง Redirect กลับมาจาก Google
+        // 2. จัดการผลลัพธ์ Google Login (แบบ Redirect)
         getRedirectResult(auth).then(async (res) => {
             if (res && res.user) {
                 const docRef = doc(db, "users", res.user.uid);
@@ -71,12 +67,18 @@
                 }
                 document.getElementById('auth-overlay').style.display = 'none';
             }
-        });
+        }).catch((e) => console.error("Login Error:", e));
+
+        // 3. ผูกฟังก์ชันเข้ากับ Window (สำคัญมากเพื่อให้ปุ่มกดติด)
+        window.handleGoogleLogin = () => {
+            console.log("Google Login Clicked");
+            signInWithRedirect(auth, googleProvider);
+        };
 
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) return;
+            if(!email || !pass) { alert("กรุณากรอกข้อมูล"); return; }
             try {
                 if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
                 else {
@@ -88,26 +90,31 @@
             } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
 
-        window.handleGoogleLogin = () => signInWithRedirect(auth, googleProvider);
-        window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
-        window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
+        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
         window.toggleDarkMode = (checkbox) => { document.body.classList.toggle('dark-mode', checkbox.checked); };
         window.toggleMenuModal = (show) => { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; };
-
+        window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
+        window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
+        window.toggleAuthMode = () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
+            document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
+            document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
+        };
     </script>
 
     <style>
-        /* --- CSS เดิมทั้งหมด (Night Mode กลับมาครบ) --- */
+        /* --- CSS เดิม (Night Mode คืนชีพ) --- */
         * { box-sizing: border-box; }
         body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
+        /* Night Mode */
         body.dark-mode { background-color: #121212 !important; color: #fff !important; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
-        body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
+        body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff; }
         body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
 
-        /* สวิตช์ Night Mode */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -120,7 +127,6 @@
         .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
 
-        /* หน้าจอ Login ซ่อนเป็นค่าเริ่มต้น */
         .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
         .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
@@ -228,6 +234,7 @@
         <div class="nav-item" onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
     </nav>
 
+    <!-- Modal เลือกประเภทดูดวง -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
@@ -239,6 +246,7 @@
         </div>
     </div>
 
+    <!-- Login Modal -->
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
             <h2 id="auth-title" style="color:#ad1457">เข้าสู่ระบบ</h2>
@@ -249,14 +257,15 @@
             <input type="email" id="auth-email" placeholder="อีเมล">
             <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
             <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
-            <button class="auth-btn" style="background: #DB4437;" onclick="handleGoogleLogin()">Login with Google</button>
+            <!-- แก้ไขปุ่ม Google ให้ชัดเจน -->
+            <button class="auth-btn" style="background: #DB4437; position: relative; z-index: 9999;" onclick="handleGoogleLogin()">Login with Google</button>
             <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
             <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ ไม่แก้แม้แต่นิดเดียว) ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -340,13 +349,6 @@
 
     let isLoginMode = true; let selectedIndices = [];
     const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
-        document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
-        document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
-    }
 
     function createDeck() {
         const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";

@@ -3,15 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ไพ่ยิปซีความรัก 4 ใบ (78 ใบสมจริง)</title>
-    
+    <title>โปรไฟล์ & ตั้งค่า</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCQaWNsVQ5YmNdp9QeSFvbdOqtBXYyuH9c",
@@ -26,299 +24,155 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
-        const googleProvider = new GoogleAuthProvider();
 
-        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
+        let currentUser = null;
 
-        // โหลดธีมและสีไพ่ทันทีที่ล็อกอิน
         onAuthStateChanged(auth, async (user) => {
             if (user) {
+                currentUser = user;
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
-                    document.getElementById('pill-name').innerText = data.nickname || "โปรไฟล์";
-                    document.getElementById('pill-img').src = data.img || 'https://via.placeholder.com/40';
-                    document.getElementById('nav-p-img').src = data.img || 'https://via.placeholder.com/40';
+                    document.getElementById('p-img').src = data.img || 'https://via.placeholder.com/100';
+                    document.getElementById('edit-nick').value = data.nickname || "";
+                    document.getElementById('edit-bdate').value = data.birthdate || "";
+                    if(data.birthdate) updateZodiacDisplay(data.birthdate);
                     
                     if (data.isPaid) {
-                        if (data.bgTheme) {
-                            document.body.style.backgroundImage = `url('${data.bgTheme}')`;
-                            document.body.style.backgroundSize = "cover";
-                            document.body.style.backgroundAttachment = "fixed";
-                        }
-                        if (data.cardColor) window.customCardColor = data.cardColor;
-                        createDeck(); // สร้างไพ่ใหม่ด้วยสีที่เลือก
+                        document.getElementById('premium-tools').style.display = 'block';
+                        document.getElementById('buy-premium-section').style.display = 'none';
+                        document.getElementById('history-locked').style.display = 'none';
+                        loadHistory(user.uid);
+                    } else {
+                        document.getElementById('premium-tools').style.display = 'none';
+                        document.getElementById('buy-premium-section').style.display = 'block';
+                        document.getElementById('history-locked').style.display = 'block';
                     }
                 }
-            }
+            } else { window.location.href = 'index.html'; }
         });
 
-        window.handleAuth = async () => {
-            const email = document.getElementById('auth-email').value;
-            const pass = document.getElementById('auth-pass').value;
-            try {
-                if (isLoginMode) {
-                    await signInWithEmailAndPassword(auth, email, pass);
-                } else {
-                    const nick = document.getElementById('reg-nickname').value;
-                    const bdate = document.getElementById('reg-bdate').value;
-                    const userCred = await createUserWithEmailAndPassword(auth, email, pass);
-                    await setDoc(doc(db, "users", userCred.user.uid), {
-                        nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), isPaid: false
-                    });
-                }
-                closeAuthModal();
-            } catch(e) { alert(e.message); }
+        window.updateZodiacDisplay = (dateStr) => {
+            const zodiac = getZodiac(dateStr);
+            document.getElementById('display-zodiac').innerText = "ราศี: " + zodiac;
         };
 
-        window.handleGoogleLogin = async () => {
-            try { 
-                const res = await signInWithPopup(auth, googleProvider);
-                const docRef = doc(db, "users", res.user.uid);
-                const snap = await getDoc(docRef);
-                if (!snap.exists()) await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
-                closeAuthModal();
-            } catch(e) { alert(e.message); }
+        window.saveProfile = async () => {
+            const nick = document.getElementById('edit-nick').value;
+            const bdate = document.getElementById('edit-bdate').value;
+            await updateDoc(doc(db, "users", currentUser.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate) });
+            alert("บันทึกข้อมูลแล้ว!"); window.location.href = 'index.html';
         };
+
+        window.uploadImg = (e) => {
+            const reader = new FileReader();
+            reader.onload = async (ev) => {
+                await updateDoc(doc(db, "users", currentUser.uid), { img: ev.target.result });
+                document.getElementById('p-img').src = ev.target.result;
+            };
+            reader.readAsDataURL(e.target.files[0]);
+        };
+
+        window.setTheme = async (url) => {
+            await updateDoc(doc(db, "users", currentUser.uid), { bgTheme: url });
+            alert("เปลี่ยนวอลเปเปอร์แล้ว!");
+        };
+
+        window.setCardColor = async (color) => {
+            await updateDoc(doc(db, "users", currentUser.uid), { cardColor: color });
+            alert("เปลี่ยนสีไพ่แล้ว!");
+        };
+
+        async function loadHistory(uid) {
+            const q = query(collection(db, "users", uid, "history"), orderBy("timestamp", "desc"), limit(5));
+            const snaps = await getDocs(q);
+            const list = document.getElementById('history-list'); list.innerHTML = "";
+            snaps.forEach(d => {
+                const h = d.data();
+                list.innerHTML += `<div style="padding:10px; border-bottom:1px solid #eee; text-align:left;">
+                    <small>${h.date}</small><br>
+                    ${h.cards.map(c => `<img src="${c.i}" style="width:30px; margin:2px;">`).join("")}
+                </div>`;
+            });
+        }
+
+        function getZodiac(dateStr) {
+            if(!dateStr) return "-"; const d = new Date(dateStr); const day = d.getDate(); const month = d.getMonth() + 1;
+            if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
+            if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
+            if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
+            if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "กรกฎ";
+            if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "สิงห์";
+            if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "กันย์";
+            if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "ตุลย์";
+            if ((month == 10 && day >= 24) || (month == 11 && day <= 21)) return "พิจิก";
+            if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "ธนู";
+            if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "มังกร";
+            if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "กุมภ์";
+            return "มีน";
+        }
+        window.logout = () => signOut(auth).then(() => location.href='index.html');
     </script>
 
     <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Sarabun', sans-serif; background-color: #F5F6F1;
-            color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh;
-        }
-        .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
-        .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
-        .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
-
-        .main-logo { width: 140px; margin-top: 50px; }
-        #selection-screen { width: 100%; max-width: 600px; text-align: center; }
-        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px; }
-        .card-back {
-            width: 42px; height: 70px; background: #000; border: 1.5px solid #ffd700; border-radius: 5px; 
-            cursor: pointer; margin: 2px -12px; transition: 0.3s; color: #ffd700; display: flex; align-items: center; justify-content: center;
-        }
-        .card-back:hover { transform: translateY(-15px); z-index: 100; box-shadow: 0 5px 15px rgba(0,0,0,0.5); }
-        .card-back.selected { visibility: hidden; }
-
-        #result-screen { display: none; width: 100%; max-width: 800px; padding: 15px; }
-        #captureArea { background: #ad1457; padding: 15px; border-radius: 15px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-        .summary-card { background: white; padding: 5px; border-radius: 8px; text-align: center; font-size: 10px; color: #333; }
-        .summary-card img { width: 100%; border-radius: 5px; aspect-ratio: 2/3.5; object-fit: cover; }
-
-        .detail-row { background: #fff; margin-top: 15px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .detail-header { background: #222; color: #ffd700; padding: 10px; font-weight: bold; text-align: center; }
-        .detail-body { display: flex; padding: 15px; gap: 15px; color: #333; font-size: 14px; line-height: 1.6; }
-        .detail-img { width: 80px; border-radius: 5px; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; z-index: 1000; }
-        .bottom-nav img { height: 45px; cursor: pointer; }
-        .nav-p-img { width: 40px; height: 40px; border-radius: 50%; border: 2.2px solid #ad1457; object-fit: cover; }
-
-        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2001; justify-content: center; align-items: center; }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
-        .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
-        .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { background: white; width: 100%; max-width: 450px; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
+        .p-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ad1457; }
+        input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
+        .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0; font-family: 'Sarabun'; }
+        .btn-save { background: #ad1457; color: white; }
+        .btn-premium { background: #ffd700; color: #1a237e; }
+        .section-title { text-align: left; border-left: 4px solid #ad1457; padding-left: 10px; margin: 25px 0 10px; font-weight: bold; color: #ad1457; }
+        .theme-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+        .theme-item { height: 60px; border-radius: 8px; cursor: pointer; background-size: cover; border: 1px solid #eee; background-color: #ddd; }
+        .color-item { height: 40px; border-radius: 8px; cursor: pointer; border: 1px solid #ddd; }
+        #display-zodiac { font-size: 18px; font-weight: bold; color: #ad1457; margin: 10px 0; }
     </style>
 </head>
 <body>
+    <div class="card">
+        <label style="cursor: pointer;">
+            <img id="p-img" class="p-img" src="">
+            <input type="file" style="display:none" onchange="uploadImg(event)">
+            <p style="font-size: 12px; color: #ad1457; margin-top: 5px;">แตะเปลี่ยนรูป</p>
+        </label>
+        
+        <div class="section-title">ข้อมูลส่วนตัว</div>
+        <input type="text" id="edit-nick" placeholder="ชื่อเล่น">
+        <input type="date" id="edit-bdate" onchange="updateZodiacDisplay(this.value)">
+        <div id="display-zodiac">ราศี: -</div>
+        <button class="btn btn-save" onclick="saveProfile()">บันทึกและกลับหน้าหลัก</button>
 
-    <div class="auth-header">
-        <div class="user-pill" onclick="goToProfile()">
-            <img id="pill-img" src="https://via.placeholder.com/40">
-            <span id="pill-name">เข้าสู่ระบบ</span>
+        <div id="buy-premium-section" style="margin-top: 20px; padding: 15px; background: #fff9e6; border-radius: 10px;">
+            <p style="font-size: 14px; margin-bottom: 10px;">💎 ปลดล็อกประวัติและธีมพิเศษ</p>
+            <button class="btn btn-premium" onclick="window.open('https://line.me/ti/p/@yourid', '_blank')">สมัครพรีเมียม (ทักแชท)</button>
         </div>
-    </div>
 
-    <img src="IMG_7035.png" class="main-logo">
-
-    <div id="selection-screen">
-        <h2 id="counter" style="color: #ad1457; margin: 10px 0;">เลือกแล้ว: 0 / 4</h2>
-        <div class="deck-container" id="deck"></div>
-    </div>
-
-    <div id="loading-screen" style="display:none; text-align: center; margin-top: 50px;">
-        <div style="border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto;"></div>
-        <p style="color: #333; margin-top: 15px;">กำลังเปิดคำทำนาย...</p>
-    </div>
-
-    <div id="result-screen">
-        <div id="captureArea"></div>
-        <div id="detailArea"></div>
-        <button onclick="location.reload()" style="width: 100%; padding: 15px; background: #ffd700; border: none; border-radius: 10px; font-weight: bold; margin-top: 20px; cursor: pointer; color: #1a237e;">สุ่มใหม่อีกครั้ง</button>
-    </div>
-
-    <nav class="bottom-nav">
-        <div onclick="location.href='index.html'"><img src="IMG_7070.png"></div>
-        <div><img src="IMG_7085.png"></div>
-        <div><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
-        <div onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
-    </nav>
-
-    <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
-        <div class="auth-card" onclick="event.stopPropagation()">
-            <h2 id="auth-title" style="color:#ad1457">เข้าสู่ระบบ</h2>
-            <div id="register-fields" style="display:none;">
-                <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
-                <input type="date" id="reg-bdate">
+        <div id="premium-tools" style="display: none;">
+            <div class="section-title">พรีเมียมคัสตอม</div>
+            <p style="text-align:left; font-size:12px;">เปลี่ยนวอลเปเปอร์เว็บ:</p>
+            <div class="theme-grid">
+                <div class="theme-item" style="background: #F5F6F1;" onclick="setTheme('')"></div>
+                <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1534796636912-3b95b3ab5986?q=80&w=2071')"></div>
+                <div class="theme-item" style="background-image: url('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=200');" onclick="setTheme('https://images.unsplash.com/photo-1518531933037-91b2f5f229cc?q=80&w=1854')"></div>
             </div>
-            <input type="email" id="auth-email" placeholder="อีเมล">
-            <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
-            <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
-            <button class="auth-btn" style="background: #DB4437;" onclick="handleGoogleLogin()">Google Login</button>
-            <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
+            <p style="text-align:left; font-size:12px; margin-top:10px;">สีหลังไพ่:</p>
+            <div class="theme-grid" style="grid-template-columns: repeat(4, 1fr);">
+                <div class="color-item" style="background: #000;" onclick="setCardColor('#000')"></div>
+                <div class="color-item" style="background: #4a148c;" onclick="setCardColor('#4a148c')"></div>
+                <div class="color-item" style="background: #ad1457;" onclick="setCardColor('#ad1457')"></div>
+                <div class="color-item" style="background: #1b5e20;" onclick="setCardColor('#1b5e20')"></div>
+            </div>
         </div>
+
+        <div class="section-title">ประวัติการดูดวง</div>
+        <div id="history-list"></div>
+        <div id="history-locked" style="padding: 15px; color: #999; font-size: 12px; border: 1px dashed #ccc; border-radius: 10px;">
+            🔒 ประวัติและธีมสงวนไว้สำหรับสมาชิกพรีเมียม
+        </div>
+
+        <button class="btn" style="margin-top: 20px; background: #eee;" onclick="location.href='index.html'">ยกเลิก</button>
+        <button class="btn" style="color: red; background: none; font-size: 14px;" onclick="logout()">ออกจากระบบ</button>
     </div>
-
-<script>
-    // --- คำทำนาย 78 ใบ (ข้อมูลชุดเดิมของคุณทั้งหมดเป๊ะๆ) ---
-    const rawData = [
-        {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
-        {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
-        {n:"The High Priestess",i:"02-TheHighPriestess.jpg",m:"มีความรู้สึกซ่อนอยู่ ต่างฝ่ายยังไม่เปิดใจทั้งหมด สื่อถึงการหลบเลี่ยงความรู้สึกต่อกัน มีความลับ/หรือการนอกใจ/หรือมีความไว้ใจต่อกัน คิดว่าอีกฝ่ายปิดบังหรือเข้าใจยาก"},
-        {n:"The Empress",i:"03-TheEmpress.jpg",m:"ความรักอบอุ่น เอาใจใส่ มีพัฒนาระยะยาว/ สื่อถึงคนที่คุณถามถึงให้คุณค่าและความเอาใจใส่ต่อคุณอย่างดี"},
-        {n:"The Emperor",i:"04-TheEmperor.jpg",m:"ความรักจริงจัง มั่นคง คนนี้พร้อมดูแล/ สื่อถึงคนๆนี้เป็นคนจริงจัง ชัดเจน ขี้หึง อีโก้ทิฐิ หรือความสัมพันธ์มีสภาวะตึงเครียด ต่างคนต่างอีโก้ ชอบเอาชนะ/ถ้าอยู่ช่วงโกรธมีปัญหาก็ยอมหักไม่ยอมงอ"},
-        {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"ความสัมพันธ์เป็นทางการ ผู้ใหญ่สนับสนุน/ สื่อถึงการอยากคบหาแบบจริงจัง หรือการทำทุกอย่างให้ถูกต้อง การยึดมั่นถือมั่นในความคิดความเชื่อตัวเอง / อาจจะหมายถึงความคาดหวังในสิ่งที่เชื่อได้"},
-        {n:"The Lovers",i:"06-TheLovers.jpg",m:"รักแรงดึงดูดสูง ต้องตัดสินใจด้วยความซื่อสัตย์/ สื่อถึงความรักที่มีให้กันแบบคู่รัก หรือเจ้าชะตาลังเลตัดสินใจไม่ได้ เจ้าชู้ ไม่เด็ดขาดมากพอ มีเรื่องให้ลังเลให้เลือก"},
-        {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงการระเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
-        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข้มแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
-        {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงทบทวนหัวใจ ต้องอยู่กับตัวเองก่อน/ สื่อถึงการคิดทบทวนอดีต คนรักเก่ากลับมา การยังไม่มูฟออนจากความสัมพันธ์ การอยากใช้เวลาอยู่คนเดียว รักตัวเองสักพัก"},
-        {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"ความรักเปลี่ยนแปลงตามจังหวะโชคชะตา/ สื่อถึงอาจจะมีการเริ่มต้นความสัมพันธ์ใหม่ หรืออาจจะเปลี่ยนแปลงความสัมพันธ์ใหม่ หรือการวนเวียนกลับมาของคนรัก หรือมีการเปลี่ยนแปลงของความสัมพันธ์/ ถ้าถามว่าจบรึยังอาจจะยังไม่จบได้"},
-        {n:"Justice",i:"11-Justice.jpg",m:"ต้องจริงใจ ชัดเจน ยุติธรรมต่อกัน/ สื่อถึงการตัดสินใจด้วยเหตุผล การตัดขาด การพูดความจริงต่อกัน"},
-        {n:"The Hanged Man",i:"12-TheHangedMan.jpg",m:"ความรักที่ต้องรอคอย หรือยอมเสียสละบางอย่าง"},
-        {n:"Death",i:"13-Death.jpg",m:"จบสิ่งเก่า เพื่อเริ่มต้นใหม่ที่ดีกว่า/ สื่อถึงการจบความสัมพันธ์ หรือเริ่มความสัมพันธ์ใหม่ขึ้นอยู่กับตำแหน่งไพ่"},
-        {n:"Temperance",i:"14-Temperance.jpg",m:"ความรักต้องประนีประนอม หาจุดสมดุล"},
-        {n:"The Devil",i:"15-TheDevil.jpg",m:"ผูกพันลึก หลงใหล ระวังความสัมพันธ์เป็นพิษ/ สื่อถึงความสัมพันธ์ท็อกซิก การยึดติด ความผูกพันที่ไม่ดีต่อกัน หรือคิดในแง่ 18+ ได้เช่นกัน คนๆนี้อาจจะยังไม่มีความจริงใจต่อคุณมากพอ"},
-        {n:"The Tower",i:"16-TheTower.jpg",m:"เหตุการณ์ฉับพลัน ทำให้รักสั่นคลอน"},
-        {n:"The Star",i:"17-TheStar.jpg",m:"ความหวัง การเยียวยาหัวใจ ความรักค่อยดีขึ้น"},
-        {n:"The Moon",i:"18-TheMoon.jpg",m:"ความลังเล ไม่แน่ใจ ระวังคิดไปเอง/ สื่อถึงความกังวล ความเข้าใจผิดไปเอง ความเศร้า"},
-        {n:"The Sun",i:"19-TheSun.jpg",m:"ความรักสดใส ชัดเจน มีความสุข"},
-        {n:"Judgement",i:"20-Judgement.jpg",m:"การตัดสินใจครั้งสำคัญ อดีตอาจย้อนกลับมา"},
-        {n:"The World",i:"21-TheWorld.jpg",m:"ความรักลงตัว สมบูรณ์ และจริงจัง"},
-        {n:"Ace of Wands",i:"Wands01.jpg",m:"ความรักเริ่มต้นด้วยแพชชั่น แรงดึงดูดสูง/สื่อถึงการเริ่มต้นใหม่ การทักหรือการเข้าหา"},
-        {n:"Two of Wands",i:"Wands02.jpg",m:"คิดถึงอนาคตร่วมกัน แต่ยังชั่งใจ/ สื่อถึงการมองไปข้างหน้า ยังคาดหวังและสับสน"},
-        {n:"Three of Wands",i:"Wands03.jpg",m:"รอพัฒนาความสัมพันธ์/ สื่อถึงการรอคอย หรืออยากมีอนาคตร่วมกัน การเดินหน้าความสัมพันธ์ หรืออาจจะสื่อถึงการมูฟออนได้"},
-        {n:"Four of Wands",i:"Wands04.jpg",m:"ความรักมั่นคง มีโอกาสจริงจัง/ สื่อถึงการแต่งงาน การคืนดี การกลับมาอยู่ร่วมกัน การประนีประนอม / ความสัมพันธ์ที่สบายใจ"},
-        {n:"Five of Wands",i:"Wands05.jpg",m:"มีความขัดแย้งเล็กน้อย ต่างคนต่างถือทิฐิ/ สื่อถึงภาวะทะเลาะขัดแย้ง ต่างคนต่างไม่ลงรอกัน ไม่ยอมกัน"},
-        {n:"Six of Wands",i:"Wands06.jpg",m:"ความรักได้รับการยอมรับ หรือสมหวัง/ สื่อถึงการกลับมาของคนรักเก่าการอยากคืนดี หรืออาจจะหมายถึงการคืนดีแม้มีอีโก้นำ / การติดต่อ"},
-        {n:"Seven of Wands",i:"Wands07.jpg",m:"ต้องปกป้องความรักจากสิ่งรอบข้าง/ สื่อถึงการยึดติดในแนวทางตัวเอง การต่อสู้ พยายามต่อแม้จะเหนื่อย / ทิฐิ"},
-        {n:"Eight of Wands",i:"Wands08.jpg",m:"ความรักคืบหน้าเร็ว การสื่อสารดี/สื่อถึงการติดต่อสื่อสาร การทัก การได้ข่าวต่างๆ"},
-        {n:"Nine of Wands",i:"Wands09.jpg",m:"ระวังความระแวง แต่ยังสู้เพื่อรัก/ สื่อถึงรักที่เจ็บมากเยอะ ผ่านอะไรมาเยอะ อาจจะมีอีโก้ทิฐิ มีบาดแผลเยอะจนยากจะกลับไปเป็นเหมือนเดิม / หรือการมองความสัมพันธ์แง่ลบไป"},
-        {n:"Ten of Wands",i:"Wands10.jpg",m:"ความรักหนักใจ แบกรับภาระมากเกินไป/ สื่อถึงการอดทนต่อความสัมพันธ์ การเหนื่อยสะสม"},
-        {n:"Page of Wands",i:"Wands11.jpg",m:"คนไฟแรง สดใส ความรักน่าตื่นเต้น/ สื่อถึงความรู้สึกชอบ การติดต่อ การทำอะไรไม่ค่อยจะจริงจังหรือเป็นเด็กๆ"},
-        {n:"Knight of Wands",i:"Wands12.jpg",m:"รักเร็วแรง แต่เปลี่ยนง่าย/ สื่อถึงความชอบแบบไม่ยั่งยืน การอยากเข้าหา หรือมีใจแบบไม่ยั่งยืน"},
-        {n:"Queen of Wands",i:"Wands13.jpg",m:"เสน่ห์แรง ดึงดูดสูง/ สื่อถึงคนๆนี้เป็นคนมีเสน่ห์ มีแพชชั่น น่าดึงดูดน่าหลงใหลสำหรับอีกฝ่าย หรืออีกฝ่ายยังมีความสนใจคุณอยู่"},
-        {n:"King of Wands",i:"Wands14.jpg",m:"รักจริงจัง มีแพชชั่น เป็นผู้นำ/ สื่อถึงอีโก้ ทิฐิมานะ อีกฝ่ายอาจจะมั่นใจในตัวเอง เป็นคนเสน่ห์แรง หรือถ้าถามว่าอีกฝ่ายคิดยังไงก็อาจจะมองว่าคุณอีโก้เข้าถึงยากแต่น่าดึงดูด"},
-        {n:"Ace of Cups",i:"Cups01.jpg",m:"รักใหม่เกิดขึ้นจากความรู้สึกบริสุทธิ์ สื่อว่าจะมีโอกาสดีๆทางความรักเข้ามา คนที่คุณชอบ/คนรัก มีความรู้สึกดีให้ หากเป็นคนรักเก่าแปลว่าเขมีโอกาสกลับมา หรือยังมีความรู้สึกให้คุณอยู่"},
-        {n:"Two of Cups",i:"Cups02.jpg",m:"รักสมดุล เข้าใจกันทั้งสองฝ่าย คนรักมีโอกาสขอคืนดี รักสงบ รอใครก็มีโอกาสกลับมา เป็นช่วงเวลาได้ปรับความเข้าใจต่อกัน"},
-        {n:"Three of Cups",i:"Cups03.jpg",m:"ความสุข เฉลิมฉลอง การพบปะ / มีโอกาสพบเจอคนที่คุณรัก คนรักคิดกับคุณแบบเพื่อน หรือความสัมพันธ์มีโอกาสพัฒนาในบางรูปแบบ"},
-        {n:"Four of Cups",i:"Cups04.jpg",m:"ลังเล เบื่อ ไม่เปิดใจเต็มที่ / คนรักอาจจะกำลังเบื่อคุณ / หรือคนที่คุณคิดถึงอาจจะยังไม่มูฟออน / ใจคุณยังไม่พร้อมเปิดรับความรักเต็มที่"},
-        {n:"Five of Cups",i:"Cups05.jpg",m:"เสียใจจากอดีต ยังตัดไม่ขาด/ ถ้าหากถามถึงคนเก่า ใบนี้แปลว่าเขยังอาลัยอาวรณ์คุณอยู่ยังไม่มูฟออน หรือมีเรื่องที่ทำให้คุณต้องผิดหวัง"},
-        {n:"Six of Cups",i:"Cups06.jpg",m:"ความรักเก่า หรือคนจากอดีตกลับมา / คนรักเก่าจะกลับมา การหวนคืน ใบนี้จะได้คืนดี หรือสุขสมหวังจากคนที่คุณรอคอย"},
-        {n:"Seven of Cups",i:"Cups07.jpg",m:"มีหลายตัวเลือก แต่ยังไม่ตัดสินใจ/สื่อถึงภาวะที่เจ้าชะตายังลังเล หรือมีคนเข้ามาเยอะแต่ไม่รู้จะเลือกใคร หรือบางทียังอยู่ในช่วงตัดสินใจยาก"},
-        {n:"Eight of Cups",i:"Cups08.jpg",m:"เดินออกจากรักที่ไม่เติมเต็ม/ คุณหรือเขาต้องตัดสินใจเดินจากแม้ยังรักกันอยู่ หรือเลือกปล่อยความสัมพันธ์ให้ถึงจุดจบ"},
-        {n:"Nine of Cups",i:"Cups09.jpg",m:"ความสมหวัง พอใจในความรัก/ พอใจกับการอยู่คนเดียวแม้โสด หรือคนที่ถามถึงค่อนข้างจะเจ้าชู้เยอะ / หรือเขาพอใจคุณแม้ไม่ได้ครอบครองก็ตาม"},
-        {n:"Ten of Cups",i:"Cups10.jpg",m:"รักอบอุ่น ครอบครัว/ สื่อถึงคนที่ถามถึงมีความคิดจริงจังกับเรา วางอนาคตไว้กับเรา หรือความรักอยู่เปี่ยมดี"},
-        {n:"Page of Cups",i:"Cups11.jpg",m:"รักใสๆ อ่อนโยน มีคนเข้ามาจีบ / สื่อถึงคนที่ชอบ คนที่รักยังอยู่ในช่วงหวานโรแมนติกกับคุณ หรือยังมีใจให้คุณ"},
-        {n:"Knight of Cups",i:"Cups12.jpg",m:"คนโรแมนติก เสน่ห์ดี/ สื่อถึงการที่ใครคนนึงอยากเข้าหาเรา อาจจะสื่อถึงการกลับมาใกล้ชิดและการจากไปได้เช่นกัน แต่คนที่ถามถึงมีใจให้เรา อยากจีบอยากเข้าหา"},
-        {n:"Queen of Cups",i:"Cups13.jpg",m:"เข้าใจ ดูแล เอาใจใส่/ สื่อถึงคนที่เราถามถึงยังมีความห่วงใย ความแคร์เรา อาจจะเป็นความรักที่อยู่ในใจ เก็บเงียบไม่ชอบแสดงออกเท่าไหร่นัก"},
-        {n:"King of Cups",i:"Cups14.jpg",m:"รักมั่นคง สุภาพ ควบคุมอารมณ์ได้/ สื่อถึงคนๆนี้อาจจะชอบเรา หรือเก็บอารมณ์ความรู้สึก หรือสนใจเราในแง่มุมนึง แต่ไมยากเปิดปากมาก"},
-        {n:"Ace of Swords",i:"Swords01.jpg",m:"ต้องพูดความจริง เปิดใจตรงไปตรงมา/ สื่อถึงการที่คุณทั้งคู่/หรือใครก็ตามต้องอยู่ในสภาวะตัดสินใจครั้งใหญ่ อาจจะเป็นการตัดขาด การตัดใจ หรือคุยกันด้วยทิฐิมานะ"},
-        {n:"Two of Swords",i:"Swords02.jpg",m:"การตัดสินใจยาก ลังเล/ สื่อถึงยังโลเล ตัดสินใจไม่ได้ เลยเลือกที่จะปิดกั้น เพราะยังไมยากหาทางออกของปัญหา อยู่ในช่วงใจไม่พร้อม"},
-        {n:"Three of Swords",i:"Swords03.jpg",m:"อกหัก เจ็บปวด ระวังรักสามเส้า/ สื่อถึงอยู่ในภาวะอกหัก โดนทำร้ายจิตใจ หรืออยู่ในช่วงโดนนอกใจได้"},
-        {n:"Four of Swords",i:"Swords04.jpg",m:"พักใจ หยุดคุย หยุดคิดสักพัก/ สื่อถึงอาจจะยังอยู่ในระยะพักหรือทบทวนความสัมพันธ์ไมยากเคลื่อนไหมากนัก"},
-        {n:"Five of Swords",i:"Swords05.jpg",m:"ทะเลาะ เอาชนะกันจนเสียความรู้สึก/ สื่อถึงอาจจะมีปัญหาขัดแย้ง ไม่ลงรอยกันด้วยอีโก้ ถ้าจบก็จบลงด้วยอีโก้"},
-        {n:"Six of Swords",i:"Swords06.jpg",m:"ก้าวข้ามอดีต เริ่มฟื้นใจ/ สื่อถึงการเดินต่อไปข้างหน้าแม้จะเจ็บปวด หรืออยากมูฟออนแต่ก้างอย่างช้าๆ"},
-        {n:"Seven of Swords",i:"Swords07.jpg",m:"มีเรื่องปิดบัง ไม่ซื่อสัตย์/ สื่อถึงอีกฝ่ายมีเรื่องปิดบัง ไม่ซื่อสัตย์ต่อคุณ หรืออาจจะมองคุณแบบไม่จริงจังนัก"},
-        {n:"Eight of Swords",i:"Swords08.jpg",m:"คิดมาก รู้สึกติดกับความสัมพันธ์/ สื่อถึงความคิดที่ฝ่ายใดฝ่ายนึงคิดไปเองและหาทางออกไม่ได้ ไม่พร้อมเผชิญปัญหา หาทางออกไม่ได้ มูฟออนไม่ได้ หรือไม่อยากรับรู้ หลีกเลี่ยงปัญหา"},
-        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกกังวลใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
-        {n:"Ten of Swords",i:"Swords10.jpg",m:"จบความสัมพันธ์แบบเจ็บปวด/ สื่อถึงอยู่ช่วงเจ็บปวดที่สุดและยากที่จะหายดี หรือจบความสัมพันธ์แบบหนักหน่วง ไม่พร้อมไปคืนดี"},
-        {n:"Page of Swords",i:"Swords11.jpg",m:"สอดส่อง เช็คโซเชียล อยากรู้เรื่องเขา/สื่อถึงการส่อง การยังติดตามอีกฝ่ายอย่างใกล้ชิด อาจจะอยากสื่อสารแต่ยังไม่กล้าและมีฐิ"},
-        {n:"Knight of Swords",i:"Swords12.jpg",m:"ใจร้อน พูดตรง อารมณ์ขึ้นง่าย/ สื่อถึงการปะทะอารมณ์ต่อกัน ไม่ว่าจะเพราะคำพูดหรือเพราะพฤติกรรม หรืออาจจะหมายถึงการทักมาแบบไม่คาดคิด การติดต่อแบบไม่คาดคิด"},
-        {n:"Queen of Swords",i:"Swords13.jpg",m:"ใช้เหตุผลนำหน้า หัวใจระวังเจ็บ/สื่อถึงอีกฝ่ายอยู่ในภาวะไม่สนใจหรือเย็นชา"},
-        {n:"King of Swords",i:"Swords14.jpg",m:"รักจริงจัง ต้องการความชัดเจน/ สื่อถึงการคิดด้วยเหตุผลมากไป การตัดสินใจอย่างเด็ดขาด ทิฐิมานะต่อกัน"},
-        {n:"Ace of Pentacles",i:"Pentacles01.jpg",m:"รักมั่นคง มีพื้นฐานที่ดี/ สื่อถึงการอยากเริ่มต้นใหม่ อยากได้โอกาส การกลับมา การเริ่มต้นอะไรใหมอย่างมั่นคง"},
-        {n:"Two of Pentacles",i:"Pentacles02.jpg",m:"แบ่งเวลาไม่ลงตัว ชีวิตไม่สมดุล/ สื่อถึงเจ้าชะตาวุ่นวายหรืออยู่ในสภาวะกำลังปรับตัว ยังโลเลลังเล"},
-        {n:"Three of Pentacles",i:"Pentacles03.jpg",m:"ร่วมมือกันสร้างความสัมพันธ์/ สื่อถึงอยากพัฒนาความสัมพันธ์อยากพูดคุย อยากพยายาม"},
-        {n:"Four of Pentacles",i:"Pentacles04.jpg",m:"หวงรัก ยึดติด กลัวเสียไป/ สื่อถึงเจ้าชะตามีภาวะหึงหวงและยึดติดในช่วงนั้นอยู่ หรือยังปล่อยวางไม่ได้ หรือความสัมพันธ์อยู่ในขั้นกั๊กไว้ ยึดติดไว้ หรือเขา/คุณ กลัวที่จะสูญเสียกันและกัน/หรือเขาหวงตัวเองไม่เปิดหมด"},
-        {n:"Five of Pentacles",i:"Pentacles05.jpg",m:"ความเหงา ขาดการดูแล เอาใจใส่/ สื่อถึงความรู้สึกโดนเมิน ไม่ได้รับการสนใจหรือใส่ใจดูแลมากพอ หรือห่างเหินกันไป"},
-        {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"การให้และรับที่สมดุล/ สื่อถึงภาวะอีกฝ่ายอาจจะให้มากไป หรือเราอาจจะให้น้อยไปขึ้นอยู่กับบริบทไพ่ หรืออาจจะหมายถึงการให้อภัยให้โอกาสใหม่ การรอคอยตอบรับจากอีกฝ่าย"},
-        {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"รอผลลัพธ์จากความพยายาม/ สื่อถึงการรอคอยแบบเงียบๆ การทุ่มเทแล้วรอผลลัพธ์"},
-        {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ตั้งใจพัฒนาความสัมพันธ์/ สื่อถึงอีกฝ่ายมีความจริงจัง อาจจะพยายามเข้าหาหรือพัฒนากันแบบจริงจัง หรือมีความตั้งใจในความรักมาก / หรือตอนนั้นอยู่ในช่วงที่อีกฝ่ายเอาเวลาไปพัฒนาตัวเองหรือการงานการเรียน จนเพิกเฉยเราได้"},
-        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิสระ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
-        {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"รักมั่นคงระยะยาว วางแผนอนาคตร่วมกัน/เจ้าชะตาอยู่ใช่ช่วงกำลังแต่งงาน มีครอบครัวแล้ว หรือคนที่คบหาค่อนข้างจะจริง"},
-        {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"เริ่มจริงจัง คิดอนาคต/ สื่อถึงการอยากริลองอะไรใหม่ เริ่มต้นใหม่แบบมีเงื่อนไข"},
-        {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"รักช้าแต่มั่นคง/ สื่อถึงคนๆนี้เป็นคนจริงจังในรัก อาจจะน่าเบื่อไปบ้าง แต่จริงจังกับคุณ พร้อมพัฒนาแบบช้าๆ"},
-        {n:"Queen of Pentacles",i:"Pentacles13.jpg",m:"ดูแล เอาใจใส่ มั่นคงอบอุ่น/ สื่อถึงอีกฝ่ายมองคนเป็นคนในฝัน หรือคนดีในสายตาเขา อยากดูแล อยากเอาใจใส่"},
-        {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
-    ];
-
-    let isLoginMode = true; let selectedIndices = [];
-    const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
-
-    function toggleAuthMode() {
-        isLoginMode = !isLoginMode;
-        document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
-        document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
-        document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
-    }
-    function openAuthModal() { document.getElementById('auth-overlay').style.display = 'flex'; }
-    function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
-
-    function createDeck() {
-        const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";
-        let deck = [...rawData].sort(() => Math.random() - 0.5);
-        for(let i=0; i<78; i++) {
-            const card = document.createElement("div");
-            card.className = "card-back"; card.innerHTML = "🌙";
-            if (window.customCardColor) card.style.backgroundColor = window.customCardColor;
-            card.onclick = function() { 
-                if (selectedIndices.length < 4 && !this.classList.contains("selected")) {
-                    this.classList.add("selected"); selectedIndices.push(deck[i]);
-                    document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
-                    if (selectedIndices.length === 4) {
-                        setTimeout(() => {
-                            document.getElementById("selection-screen").style.display = "none";
-                            document.getElementById("loading-screen").style.display = "block";
-                            setTimeout(showResults, 1500);
-                        }, 500);
-                    }
-                }
-            };
-            deckDiv.appendChild(card);
-        }
-    }
-
-    function showResults() {
-        document.getElementById("loading-screen").style.display = "none";
-        document.getElementById("result-screen").style.display = "block";
-        const area = document.getElementById("captureArea");
-        const detail = document.getElementById("detailArea");
-        selectedIndices.forEach((card, i) => {
-            area.innerHTML += `<div class="summary-card"><p style="font-weight:bold; color:#ad1457; margin-bottom:3px;">${posTitles[i]}</p><img src="${card.i}"><h3>${card.n}</h3></div>`;
-            detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div>${card.m}</div></div></div>`;
-        });
-    }
-
-    function getZodiac(dateStr) {
-        if(!dateStr) return ""; const d = new Date(dateStr); const day = d.getDate(); const month = d.getMonth() + 1;
-        if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
-        if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
-        if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
-        if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "กรกฎ";
-        if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "สิงห์";
-        if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "กันย์";
-        if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "ตุลย์";
-        if ((month == 10 && day >= 24) || (month == 11 && day <= 21)) return "พิจิก";
-        if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "ธนู";
-        if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "มังกร";
-        if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "กุมภ์";
-        return "มีน";
-    }
-    window.onload = createDeck;
-</script>
-<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
 </body>
 </html>

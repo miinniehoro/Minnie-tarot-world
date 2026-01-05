@@ -29,9 +29,7 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
-
-        // ระบบเช็คสถานะล็อกอินค้างไว้ และโหลดธีมพรีเมียม
+        // ตรวจสอบสถานะการล็อกอิน และโหลดธีมพรีเมียม
         onAuthStateChanged(auth, async (user) => {
             const pillImg = document.getElementById('pill-img');
             const pillName = document.getElementById('pill-name');
@@ -46,9 +44,13 @@
                     navImg.src = data.img || 'https://via.placeholder.com/40';
                     
                     if (data.isPaid) {
-                        if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+                        if (data.bgTheme) {
+                            document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+                            document.body.style.backgroundSize = "cover";
+                            document.body.style.backgroundAttachment = "fixed";
+                        }
                         if (data.cardColor) window.customCardColor = data.cardColor;
-                        createDeck(); // รีโหลดไพ่ให้เป็นสีพรีเมียม
+                        createDeck(); 
                     }
                 }
             } else {
@@ -57,6 +59,7 @@
             }
         });
 
+        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
@@ -71,7 +74,6 @@
                 closeAuthModal();
             } catch(e) { alert(e.message); }
         };
-
         window.handleGoogleLogin = async () => {
             try { 
                 const res = await signInWithPopup(auth, googleProvider);
@@ -160,7 +162,6 @@
         .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
         .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
 
-        /* ส่วนสนับสนุน (ที่คุณต้องการคืนมา) */
         .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
         body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
         .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
@@ -211,7 +212,6 @@
         <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
 
-        <!-- ส่วนสนับสนุน (ข้อมูลกลับมาครบแล้ว) -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
@@ -226,12 +226,25 @@
         </div>
     </div>
 
+    <!-- แถบล่าง 4 เมนู -->
     <nav class="bottom-nav">
         <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
         <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
         <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
         <div class="nav-item" onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
     </nav>
+
+    <!-- Modal เลือกประเภทดูดวง -->
+    <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <h3>เลือกประเภทการดูดวง</h3>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                <a href="index.html" style="background:#ffd700; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none;">ไพ่ยิปซีความรัก</a>
+                <a href="work.html" style="background:#f0f2ff; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
+            </div>
+            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
+        </div>
+    </div>
 
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
@@ -249,7 +262,7 @@
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเต็มของคุณเป๊ะๆ) ---
+    // --- คำทำนาย 78 ใบ (ข้อมูลชุดเดิมของคุณทั้งหมดเป๊ะๆ) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -297,7 +310,7 @@
         {n:"Eight of Cups",i:"Cups08.jpg",m:"เดินออกจากรักที่ไม่เติมเต็ม/ คุณหรือเขาต้องตัดสินใจเดินจากแม้ยังรักกันอยู่ หรือเลือกปล่อยความสัมพันธ์ให้ถึงจุดจบ"},
         {n:"Nine of Cups",i:"Cups09.jpg",m:"ความสมหวัง พอใจในความรัก/ พอใจกับการอยู่คนเดียวแม้โสด หรือคนที่ถามถึงค่อนข้างจะเจ้าชู้เยอะ / หรือเขาพอใจคุณแม้ไม่ได้ครอบครองก็ตาม"},
         {n:"Ten of Cups",i:"Cups10.jpg",m:"รักอบอุ่น ครอบครัว/ สื่อถึงคนที่ถามถึงมีความคิดจริงจังกับเรา วางอนาคตไว้กับเรา หรือความรักอยู่เปี่ยมดี"},
-        {n:"Page of Cups",i:"Cups11.jpg",m:"รักใสๆ ออ่อนโยน มีคนเข้ามาจีบ / สื่อถึงคนที่ชอบ คนที่รักยังอยู่ในช่วงหวานโรแมนติกกับคุณ หรือยังมีใจให้คุณ"},
+        {n:"Page of Cups",i:"Cups11.jpg",m:"รักใสๆ อ่อนโยน มีคนเข้ามาจีบ / สื่อถึงคนที่ชอบ คนที่รักยังอยู่ในช่วงหวานโรแมนติกกับคุณ หรือยังมีใจให้คุณ"},
         {n:"Knight of Cups",i:"Cups12.jpg",m:"คนโรแมนติก เสน่ห์ดี/ สื่อถึงการที่ใครคนนึงอยากเข้าหาเรา อาจจะสื่อถึงการกลับมาใกล้ชิดและการจากไปได้เช่นกัน แต่คนที่ถามถึงมีใจให้เรา อยากจีบอยากเข้าหา"},
         {n:"Queen of Cups",i:"Cups13.jpg",m:"เข้าใจ ดูแล เอาใจใส่/ สื่อถึงคนที่เราถามถึงยังมีความห่วงใย ความแคร์เรา อาจจะเป็นความรักที่อยู่ในใจ เก็บเงียบไม่ชอบแสดงออกเท่าไหร่นัก"},
         {n:"King of Cups",i:"Cups14.jpg",m:"รักมั่นคง สุภาพ ควบคุมอารมณ์ได้/ สื่อถึงคนๆนี้อาจจะชอบเรา หรือเก็บอารมณ์ความรู้สึก หรือสนใจเราในแง่มุมนึง แต่ไมยากเปิดปากมาก"},
@@ -339,7 +352,6 @@
         document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
         document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
     }
-
     function openAuthModal() { document.getElementById('auth-overlay').style.display = 'flex'; }
     function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }
 
@@ -404,5 +416,6 @@
     }
     window.onload = createDeck;
 </script>
+<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
 </body>
 </html>

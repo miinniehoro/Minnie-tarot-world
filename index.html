@@ -31,19 +31,15 @@
 
         window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
 
-        // ตรวจสอบสถานะการล็อกอิน (แบบเสถียร)
+        // ตรวจสอบสถานะการล็อกอิน
         onAuthStateChanged(auth, async (user) => {
             if (user) {
-                // บังคับปิดหน้าต่างล็อกอินทันทีเมื่อมี User
                 document.getElementById('auth-overlay').style.display = 'none';
-                
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                
                 document.getElementById('pill-name').innerText = data.nickname || "โปรไฟล์";
                 document.getElementById('pill-img').src = data.img || 'https://via.placeholder.com/40';
                 document.getElementById('nav-p-img').src = data.img || 'https://via.placeholder.com/40';
-                
                 if (data.isPaid) {
                     if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
                     if (data.cardColor) window.customCardColor = data.cardColor;
@@ -55,16 +51,13 @@
             }
         });
 
-        // จัดการผลการล็อกอินหลังจาก Google Redirect กลับมา
         getRedirectResult(auth).then(async (res) => {
             if (res && res.user) {
                 const docRef = doc(db, "users", res.user.uid);
                 const snap = await getDoc(docRef);
-                if (!snap.exists()) {
-                    await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
-                }
+                if (!snap.exists()) await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
             }
-        }).catch((e) => console.error("Login Error:", e));
+        });
 
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
@@ -80,19 +73,29 @@
                 }
             } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
-
-        // เปลี่ยนเป็น signInWithRedirect เพื่อให้เสถียรบนมือถือ
         window.handleGoogleLogin = () => signInWithRedirect(auth, googleProvider);
     </script>
 
     <style>
-        /* --- CSS เดิมทั้งหมด (ไม่แก้ไข) --- */
+        /* --- CSS เดิม + Night Mode --- */
         * { box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        body.dark-mode { background-color: #121212 !important; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        
+        /* สไตล์ Night Mode */
+        body.dark-mode { background-color: #121212 !important; color: #fff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
+        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
+
+        /* สวิตช์ Night Mode */
+        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-size: 12px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #ad1457; }
+        input:checked + .slider:before { transform: translateX(22px); }
 
         .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
         .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
@@ -148,6 +151,14 @@
 </head>
 <body>
 
+    <!-- สวิตช์ Night Mode (คืนมาแล้ว) -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
+            <div class="slider"><span class="icon-sun">☀️</span><span class="icon-moon">🌙</span></div>
+        </label>
+    </div>
+
     <div class="auth-header">
         <div class="user-pill" onclick="goToProfile()">
             <img id="pill-img" src="https://via.placeholder.com/40">
@@ -177,7 +188,6 @@
         <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
 
-        <!-- ส่วนสนับสนุน (อยู่ครบเหมือนเดิม) -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
@@ -228,7 +238,7 @@
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ ไม่แก้ข้อความ) ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณ 100%) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},

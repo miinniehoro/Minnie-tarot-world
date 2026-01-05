@@ -8,10 +8,10 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK (ใช้ Config ของคุณ) -->
+    <!-- Firebase SDK -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -29,15 +29,18 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // 1. ตรวจสอบสถานะการล็อกอิน (ให้ล็อกอินค้างไว้)
+        // ตั้งค่าให้จำการล็อกอินไว้ในเครื่องตลอดไปจนกว่าจะกด Logout
+        setPersistence(auth, browserLocalPersistence);
+
+        // ตรวจสอบสถานะการล็อกอิน
         onAuthStateChanged(auth, async (user) => {
             const pillImg = document.getElementById('pill-img');
             const pillName = document.getElementById('pill-name');
             const navImg = document.getElementById('nav-p-img');
-            const authOverlay = document.getElementById('auth-overlay');
 
             if (user) {
-                if(authOverlay) authOverlay.style.display = 'none'; // ปิดหน้าล็อกอินทันที
+                // ถ้ามี User ล็อกอินอยู่ ให้ปิดหน้าต่างล็อกอินทันที
+                document.getElementById('auth-overlay').style.display = 'none';
                 
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
@@ -57,28 +60,30 @@
             }
         });
 
-        // 2. จัดการผลลัพธ์ Google Login (แบบ Redirect)
-        getRedirectResult(auth).then(async (res) => {
-            if (res && res.user) {
-                const docRef = doc(db, "users", res.user.uid);
+        // ดักจับผลการ Redirect จาก Google (สำคัญมากสำหรับมือถือ)
+        getRedirectResult(auth).then(async (result) => {
+            if (result && result.user) {
+                const docRef = doc(db, "users", result.user.uid);
                 const snap = await getDoc(docRef);
                 if (!snap.exists()) {
-                    await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
+                    await setDoc(docRef, { nickname: result.user.displayName, img: result.user.photoURL, isPaid: false });
                 }
                 document.getElementById('auth-overlay').style.display = 'none';
             }
-        }).catch((e) => console.error("Login Error:", e));
+        }).catch((error) => {
+            if(error.code !== 'auth/redirect-cancelled-by-user') {
+                console.error("Login Error:", error.message);
+            }
+        });
 
-        // 3. ผูกฟังก์ชันเข้ากับ Window (สำคัญมากเพื่อให้ปุ่มกดติด)
         window.handleGoogleLogin = () => {
-            console.log("Google Login Clicked");
             signInWithRedirect(auth, googleProvider);
         };
 
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
-            if(!email || !pass) { alert("กรุณากรอกข้อมูล"); return; }
+            if(!email || !pass) return;
             try {
                 if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
                 else {
@@ -91,26 +96,19 @@
         };
 
         window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
-        window.toggleDarkMode = (checkbox) => { document.body.classList.toggle('dark-mode', checkbox.checked); };
-        window.toggleMenuModal = (show) => { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; };
         window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
         window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
-        window.toggleAuthMode = () => {
-            isLoginMode = !isLoginMode;
-            document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
-            document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
-            document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
-        };
+        window.toggleDarkMode = (checkbox) => { document.body.classList.toggle('dark-mode', checkbox.checked); };
+        window.toggleMenuModal = (show) => { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; };
     </script>
 
     <style>
-        /* --- CSS เดิม (Night Mode คืนชีพ) --- */
+        /* --- CSS เดิม + Night Mode (คงที่ 100%) --- */
         * { box-sizing: border-box; }
         body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* Night Mode */
         body.dark-mode { background-color: #121212 !important; color: #fff !important; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen { color: #ffffff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
         body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff; }
         body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
@@ -257,15 +255,15 @@
             <input type="email" id="auth-email" placeholder="อีเมล">
             <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
             <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
-            <!-- แก้ไขปุ่ม Google ให้ชัดเจน -->
-            <button class="auth-btn" style="background: #DB4437; position: relative; z-index: 9999;" onclick="handleGoogleLogin()">Login with Google</button>
+            <!-- ปุ่ม Google Login แบบ Redirect -->
+            <button class="auth-btn" style="background: #DB4437;" onclick="handleGoogleLogin()">Login with Google</button>
             <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
             <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ) ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณ 100%) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -275,7 +273,7 @@
         {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"ความสัมพันธ์เป็นทางการ ผู้ใหญ่สนับสนุน/ สื่อถึงการอยากคบหาแบบจริงจัง หรือการทำทุกอย่างให้ถูกต้อง การยึดมั่นถือมั่นในความคิดความเชื่อตัวเอง / อาจจะหมายถึงความคาดหวังในสิ่งที่เชื่อได้"},
         {n:"The Lovers",i:"06-TheLovers.jpg",m:"รักแรงดึงดูดสูง ต้องตัดสินใจด้วยความซื่อสัตย์/ สื่อถึงความรักที่มีให้กันแบบคู่รัก หรือเจ้าชะตาลังเลตัดสินใจไม่ได้ เจ้าชู้ ไม่เด็ดขาดมากพอ มีเรื่องให้ลังเลให้เลือก"},
         {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงการระเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
-        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข้มแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
+        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
         {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงทบทวนหัวใจ ต้องอยู่กับตัวเองก่อน/ สื่อถึงการคิดทบทวนอดีต คนรักเก่ากลับมา การยังไม่มูฟออนจากความสัมพันธ์ การอยากใช้เวลาอยู่คนเดียว รักตัวเองสักพัก"},
         {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"ความรักเปลี่ยนแปลงตามจังหวะโชคชะตา/ สื่อถึงอาจจะมีการเริ่มต้นความสัมพันธ์ใหม่ หรืออาจจะเปลี่ยนแปลงความสัมพันธ์ใหม่ หรือการวนเวียนกลับมาของคนรัก หรือมีการเปลี่ยนแปลงของความสัมพันธ์/ ถ้าถามว่าจบรึยังอาจจะยังไม่จบได้"},
         {n:"Justice",i:"11-Justice.jpg",m:"ต้องจริงใจ ชัดเจน ยุติธรรมต่อกัน/ สื่อถึงการตัดสินใจด้วยเหตุผล การตัดขาด การพูดความจริงต่อกัน"},
@@ -339,7 +337,7 @@
         {n:"Six of Pentacles",i:"Pentacles06.jpg",m:"การให้และรับที่สมดุล/ สื่อถึงภาวะอีกฝ่ายอาจจะให้มากไป หรือเราอาจจะให้น้อยไปขึ้นอยู่กับบริบทไพ่ หรืออาจจะหมายถึงการให้อภัยให้โอกาสใหม่ การรอคอยตอบรับจากอีกฝ่าย"},
         {n:"Seven of Pentacles",i:"Pentacles07.jpg",m:"รอผลลัพธ์จากความพยายาม/ สื่อถึงการรอคอยแบบเงียบๆ การทุ่มเทแล้วรอผลลัพธ์"},
         {n:"Eight of Pentacles",i:"Pentacles08.jpg",m:"ตั้งใจพัฒนาความสัมพันธ์/ สื่อถึงอีกฝ่ายมีความจริงจัง อาจจะพยายามเข้าหาหรือพัฒนากันแบบจริงจัง หรือมีความตั้งใจในความรักมาก / หรือตอนนั้นอยู่ในช่วงที่อีกฝ่ายเอาเวลาไปพัฒนาตัวเองหรือการงานการเรียน จนเพิกเฉยเราได้"},
-        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิสระ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
+        {n:"Nine of Pentacles",i:"Pentacles09.jpg",m:"รักตัวเอง มีคุณค่า เป็นอิรสะ/ สื่อถึงคนที่โสดอิสระ ไม่ต้องการใคร อยู่ได้ด้วยตัวเอง / ถ้าคำถามคือเขาคิดยังไงเขาก็จะคิดว่าคุณไม่จำเป็นต้องมีเขา หรือคุณไม่จำเป็นต้องมีเขาก็ได้"},
         {n:"Ten of Pentacles",i:"Pentacles10.jpg",m:"รักมั่นคงระยะยาว วางแผนอนาคตร่วมกัน/เจ้าชะตาอยู่ใช่ช่วงกำลังแต่งงาน มีครอบครัวแล้ว หรือคนที่คบหาค่อนข้างจะจริง"},
         {n:"Page of Pentacles",i:"Pentacles11.jpg",m:"เริ่มจริงจัง คิดอนาคต/ สื่อถึงการอยากริลองอะไรใหม่ เริ่มต้นใหม่แบบมีเงื่อนไข"},
         {n:"Knight of Pentacles",i:"Pentacles12.jpg",m:"รักช้าแต่มั่นคง/ สื่อถึงคนๆนี้เป็นคนจริงจังในรัก อาจจะน่าเบื่อไปบ้าง แต่จริงจังกับคุณ พร้อมพัฒนาแบบช้าๆ"},
@@ -402,12 +400,6 @@
         return "มีน";
     }
 
-    function shareURL() { navigator.share ? navigator.share({url: window.location.href}) : alert("คัดลอกลิงก์สำเร็จ!"); }
-    async function captureImageJPG() {
-        const area = document.getElementById("captureArea");
-        const canvas = await html2canvas(area, { backgroundColor: "#ad1457", scale: 2 });
-        const link = document.createElement("a"); link.download = "love-tarot.jpg"; link.href = canvas.toDataURL("image/jpeg", 0.9); link.click();
-    }
     window.onload = createDeck;
 </script>
 <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>

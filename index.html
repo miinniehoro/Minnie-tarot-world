@@ -29,13 +29,18 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // ตรวจสอบสถานะการล็อกอิน และโหลดธีมพรีเมียม
+        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
+
+        // จุดที่แก้ไข: เมื่อสถานะเปลี่ยนเป็นล็อกอิน ให้ปิดหน้าต่าง Modal ทันที
         onAuthStateChanged(auth, async (user) => {
             const pillImg = document.getElementById('pill-img');
             const pillName = document.getElementById('pill-name');
             const navImg = document.getElementById('nav-p-img');
 
             if (user) {
+                // ปิดหน้าต่างล็อกอินทันทีถ้ามันเปิดอยู่
+                document.getElementById('auth-overlay').style.display = 'none';
+                
                 const snap = await getDoc(doc(db, "users", user.uid));
                 if (snap.exists()) {
                     const data = snap.data();
@@ -59,10 +64,10 @@
             }
         });
 
-        window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
+            if(!email || !pass) { alert("กรุณากรอกข้อมูลให้ครบ"); return; }
             try {
                 if (isLoginMode) { await signInWithEmailAndPassword(auth, email, pass); } 
                 else {
@@ -71,48 +76,33 @@
                     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
                     await setDoc(doc(db, "users", userCred.user.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), isPaid: false });
                 }
-                closeAuthModal();
-            } catch(e) { alert(e.message); }
+            } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
+
         window.handleGoogleLogin = async () => {
             try { 
                 const res = await signInWithPopup(auth, googleProvider);
                 const docRef = doc(db, "users", res.user.uid);
                 const snap = await getDoc(docRef);
                 if (!snap.exists()) await setDoc(docRef, { nickname: res.user.displayName, img: res.user.photoURL, isPaid: false });
-                closeAuthModal();
             } catch(e) { alert(e.message); }
         };
     </script>
 
     <style>
-        /* --- CSS เดิมของคุณทั้งหมด --- */
+        /* --- CSS เดิมคงไว้ทั้งหมด --- */
         * { box-sizing: border-box; }
-        body {
-            font-family: 'Sarabun', sans-serif !important;
-            background-color: #F5F6F1 !important;
-            background-size: cover; background-attachment: fixed;
-            color: #ffffff; margin: 0; padding: 0;
-            display: flex; flex-direction: column; align-items: center;
-            min-height: 100vh; overflow-x: hidden;
-        }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; color: #ffffff; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         body.dark-mode { background-color: #121212 !important; }
         body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
         body.dark-mode .modal-content { background: #252525 !important; color: #fff; }
 
         .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
-        .user-pill {
-            background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px;
-            display: flex; align-items: center; gap: 8px; cursor: pointer;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px;
-        }
+        .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
 
-        .auth-overlay {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center;
-        }
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
         .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
         .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
         .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
@@ -130,12 +120,7 @@
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
 
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
-        .card-back {
-            width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; 
-            cursor: pointer; display: flex; align-items: center; justify-content: center;
-            box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; 
-            transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none;
-        }
+        .card-back { width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none; }
         .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .card-back.selected { visibility: hidden; }
 
@@ -226,7 +211,6 @@
         </div>
     </div>
 
-    <!-- แถบล่าง 4 เมนู -->
     <nav class="bottom-nav">
         <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
         <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
@@ -234,7 +218,6 @@
         <div class="nav-item" onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
     </nav>
 
-    <!-- Modal เลือกประเภทดูดวง -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <h3>เลือกประเภทการดูดวง</h3>
@@ -262,7 +245,7 @@
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ข้อมูลชุดเดิมของคุณทั้งหมดเป๊ะๆ) ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณเป๊ะๆ) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -272,7 +255,7 @@
         {n:"The Hierophant",i:"05-TheHierophant.jpg",m:"ความสัมพันธ์เป็นทางการ ผู้ใหญ่สนับสนุน/ สื่อถึงการอยากคบหาแบบจริงจัง หรือการทำทุกอย่างให้ถูกต้อง การยึดมั่นถือมั่นในความคิดความเชื่อตัวเอง / อาจจะหมายถึงความคาดหวังในสิ่งที่เชื่อได้"},
         {n:"The Lovers",i:"06-TheLovers.jpg",m:"รักแรงดึงดูดสูง ต้องตัดสินใจด้วยความซื่อสัตย์/ สื่อถึงความรักที่มีให้กันแบบคู่รัก หรือเจ้าชะตาลังเลตัดสินใจไม่ได้ เจ้าชู้ ไม่เด็ดขาดมากพอ มีเรื่องให้ลังเลให้เลือก"},
         {n:"The Chariot",i:"07-TheChariot.jpg",m:"รักเดินหน้า แม้อุปสรรค แต่ยังไปต่อได้/ สื่อถึงการระเด็ดขาด ทั้งการเลิกราหรือการกลับมา ถ้าอยู่ตำแหน่งแรกๆจะสื่อถึงการเข้าหา การกลับมา แต่ตำแหน่งสุดท้ายอาจจะแปลว่าจากไปหรือตัดขาดกันได้"},
-        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเข้มแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
+        {n:"Strength",i:"08-Strength.jpg",m:"ต้องใช้ความอดทน เข้าใจ และควบคุมอารมณ์/ สื่อถึงเจ้าชะตาเขแข็งอดทนต่อความสัมพันธ์ หรือดูแข็งกร้าวไม่ไปจนอีกฝ่ายไม่รู้ความรู้สึก หรือนิ่งๆเฉยๆต่อความสัมพันธ์"},
         {n:"The Hermit",i:"09-TheHermit.jpg",m:"ช่วงทบทวนหัวใจ ต้องอยู่กับตัวเองก่อน/ สื่อถึงการคิดทบทวนอดีต คนรักเก่ากลับมา การยังไม่มูฟออนจากความสัมพันธ์ การอยากใช้เวลาอยู่คนเดียว รักตัวเองสักพัก"},
         {n:"Wheel of Fortune",i:"10-WheelOfFortune.jpg",m:"ความรักเปลี่ยนแปลงตามจังหวะโชคชะตา/ สื่อถึงอาจจะมีการเริ่มต้นความสัมพันธ์ใหม่ หรืออาจจะเปลี่ยนแปลงความสัมพันธ์ใหม่ หรือการวนเวียนกลับมาของคนรัก หรือมีการเปลี่ยนแปลงของความสัมพันธ์/ ถ้าถามว่าจบรึยังอาจจะยังไม่จบได้"},
         {n:"Justice",i:"11-Justice.jpg",m:"ต้องจริงใจ ชัดเจน ยุติธรรมต่อกัน/ สื่อถึงการตัดสินใจด้วยเหตุผล การตัดขาด การพูดความจริงต่อกัน"},
@@ -351,6 +334,7 @@
         isLoginMode = !isLoginMode;
         document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
         document.getElementById('register-fields').style.display = isLoginMode ? "none" : "block";
+        document.getElementById('toggle-text').innerText = isLoginMode ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ";
     }
     function openAuthModal() { document.getElementById('auth-overlay').style.display = 'flex'; }
     function closeAuthModal() { document.getElementById('auth-overlay').style.display = 'none'; }

@@ -6,20 +6,21 @@
     <title>โปรไฟล์ของฉัน</title>
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     
-    <!-- Firebase SDK (ต้องใส่ทุกหน้าเพื่อดึงข้อมูล) -->
+    <!-- Firebase SDK (ใช้ Config ใหม่ล่าสุดที่คุณได้จากหน้าลงทะเบียน) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
+        // อัปเดต Config เป็นชุดใหม่แล้ว
         const firebaseConfig = {
             apiKey: "AIzaSyCQaWNsVQ5YmNdp9QeSFvbdOqtBXYyuH9c",
             authDomain: "index-823d8.firebaseapp.com",
             projectId: "index-823d8",
             storageBucket: "index-823d8.firebasestorage.app",
             messagingSenderId: "325415376294",
-            appId: "1:325415376294:web:4aa2b04631a89959266b67",
-            measurementId: "G-5V5RH8L9X6"
+            appId: "1:325415376294:web:2eeb267e5718b6f5266b67", // อัปเดตใหม่
+            measurementId: "G-7NDK3D96WM" // อัปเดตใหม่
         };
 
         const app = initializeApp(firebaseConfig);
@@ -41,9 +42,11 @@
                 // ตรวจสอบพรีเมียม
                 if (userData.isPaid) {
                     document.getElementById('p-status').innerText = "Premium Member";
+                    document.getElementById('p-status').style.background = "#ffd700";
+                    document.getElementById('p-status').style.color = "#000";
                     document.getElementById('history-locked').style.display = 'none';
                     
-                    // โหลดประวัติ (ดึงจาก Firestore)
+                    // โหลดประวัติ
                     const q = query(collection(db, "users", user.uid, "history"), orderBy("timestamp", "desc"), limit(10));
                     const historySnaps = await getDocs(q);
                     const list = document.getElementById('history-list');
@@ -51,7 +54,7 @@
                     historySnaps.forEach(doc => {
                         const data = doc.data();
                         let cardsHTML = data.cards.map(c => `<img src="${c.i}" style="width:40px; margin-right:5px; border-radius:3px;">`).join("");
-                        list.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px 0;">
+                        list.innerHTML += `<div style="border-bottom:1px solid #eee; padding:10px 0; text-align:left;">
                             <small style="color:#ad1457;">${data.date}</small><br>${cardsHTML}
                         </div>`;
                     });
@@ -60,7 +63,7 @@
                     document.getElementById('history-locked').style.display = 'block';
                 }
             } else {
-                window.location.href = 'index.html'; // ถ้าไม่ได้ล็อกอิน ให้เด้งกลับหน้าแรก
+                window.location.href = 'index.html'; 
             }
         });
 
@@ -68,14 +71,15 @@
     </script>
 
     <style>
-        body { font-family: 'Sarabun', sans-serif; background: #F5F6F1; margin: 0; display: flex; justify-content: center; }
+        body { font-family: 'Sarabun', sans-serif; background: #F5F6F1; margin: 0; display: flex; justify-content: center; padding-bottom: 80px; }
         .container { width: 90%; max-width: 500px; background: white; margin-top: 30px; border-radius: 20px; padding: 30px; text-align: center; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
         .profile-img { width: 100px; height: 100px; border-radius: 50%; border: 3px solid #ad1457; object-fit: cover; }
-        .status-tag { display: inline-block; padding: 4px 12px; border-radius: 10px; font-size: 12px; background: #eee; margin-top: 10px; }
-        .btn-back { background: #ad1457; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; }
+        .status-tag { display: inline-block; padding: 4px 12px; border-radius: 10px; font-size: 12px; background: #eee; margin-top: 10px; font-weight: bold; }
+        .btn-back { background: #ad1457; color: white; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; margin-top: 20px; width: 100%; font-weight: bold; }
         .locked { background: #f9f9f9; padding: 20px; border-radius: 10px; margin-top: 20px; color: #888; border: 1px dashed #ccc; }
-        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px; border-top: 1px solid #ddd; }
-        .bottom-nav img { height: 40px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 10px 0; border-top: 1px solid #ddd; align-items: center; }
+        .bottom-nav img { height: 45px; cursor: pointer; }
+        .nav-active { border-bottom: 3px solid #ad1457; padding-bottom: 5px; border-radius: 0; }
     </style>
 </head>
 <body>
@@ -83,11 +87,11 @@
         <img src="" id="p-img" class="profile-img">
         <h2 id="p-nick" style="margin: 10px 0 0; color:#ad1457;"></h2>
         <p id="p-email" style="margin: 5px 0; color:#666; font-size:14px;"></p>
-        <p id="p-zodiac" style="font-weight:bold;"></p>
+        <p id="p-zodiac" style="font-weight:bold; margin: 10px 0; color: #333;"></p>
         <span id="p-status" class="status-tag"></span>
 
         <div style="text-align: left; margin-top: 30px;">
-            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom:5px;">📜 ประวัติการดูดวง</h3>
+            <h3 style="border-bottom: 2px solid #ffd700; padding-bottom:5px; color: #333;">📜 ประวัติการดูดวง</h3>
             <div id="history-list"></div>
             <div id="history-locked" class="locked" style="display:none; text-align:center;">
                 <p>🔒 ส่วนนี้เฉพาะสมาชิกพรีเมียม</p>
@@ -96,15 +100,15 @@
         </div>
 
         <button class="btn-back" onclick="window.location.href='index.html'">กลับหน้าหลัก</button>
-        <button onclick="logout()" style="background:none; border:none; color:gray; margin-top:20px; cursor:pointer; text-decoration:underline;">ออกจากระบบ</button>
+        <button onclick="logout()" style="background:none; border:none; color:gray; margin-top:20px; cursor:pointer; text-decoration:underline; font-family: 'Sarabun';">ออกจากระบบ</button>
     </div>
 
-    <!-- แถบล่างเดิม (ก๊อปมาแค่หน้าตา) -->
+    <!-- แถบล่าง 4 เมนู -->
     <nav class="bottom-nav">
         <div onclick="window.location.href='index.html'"><img src="IMG_7070.png"></div>
         <div><img src="IMG_7085.png"></div>
         <div><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
-        <div><img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" style="filter:grayscale(0); border-bottom: 2px solid #ad1457;"></div>
+        <div><img src="https://cdn-icons-png.flaticon.com/512/1077/1077063.png" class="nav-active"></div>
     </nav>
 </body>
 </html>

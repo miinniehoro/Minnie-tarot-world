@@ -29,11 +29,13 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        // ตั้งค่าให้จำการล็อกอินไว้ในเครื่องตลอดไปจนกว่าจะกด Logout
-        setPersistence(auth, browserLocalPersistence);
+        import { setPersistence, browserLocalPersistence } from "firebase/auth";
+
+setPersistence(auth, browserLocalPersistence);
 
       // ตรวจสอบสถานะการล็อกอิน
 onAuthStateChanged(auth, async (user) => {
+    console.log("AUTH CHANGE", user);
     const pillImg = document.getElementById('pill-img');
     const pillName = document.getElementById('pill-name');
     const navProfileItem = document.getElementById("nav-profile-item");

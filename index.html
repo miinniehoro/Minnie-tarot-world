@@ -32,81 +32,50 @@
         // ตั้งค่าให้จำการล็อกอินไว้ในเครื่องตลอดไปจนกว่าจะกด Logout
         setPersistence(auth, browserLocalPersistence);
 
-        // ตรวจสอบสถานะการล็อกอิน
-        onAuthStateChanged(auth, async (user) => {
-            const pillImg = document.getElementById('pill-img');
-            const pillName = document.getElementById('pill-name');
-            const navImg = document.getElementById('nav-p-img');
-            const bottomProfile = navImg.closest('.nav-item');
-        
-        if (user) {
-                document.getElementById('auth-overlay').style.display = 'none';
-                const snap = await getDoc(doc(db, "users", user.uid));
-                const data = snap.exists()
-                    ? snap.data()
-                    : { nickname: user.displayName, img: user.photoURL };
+      // ตรวจสอบสถานะการล็อกอิน
+onAuthStateChanged(auth, async (user) => {
+    const pillImg = document.getElementById('pill-img');
+    const pillName = document.getElementById('pill-name');
 
-        // ด้านบนขวา (pill)
-                pillName.innerText = data.nickname || "โปรไฟล์";
-                pillImg.src = data.img || 'https://via.placeholder.com/40';
+    // 👇 ของจริงใน HTML
+    const navProfileItem = document.getElementById("nav-profile-item");
+    const navImg = document.getElementById("nav-p-img");
 
-        // โปรไฟล์ในแถบล่าง — แสดง + ใส่รูป
-                bottomProfile.style.display = "block";
-                navImg.src = data.img || 'https://via.placeholder.com/40';
+    if (user) {
+        document.getElementById('auth-overlay').style.display = 'none';
 
-        // ระบบ premium เดิม
+        const snap = await getDoc(doc(db, "users", user.uid));
+        const data = snap.exists()
+            ? snap.data()
+            : { nickname: user.displayName, img: user.photoURL };
+
+        // ---- pill บนขวา ----
+        pillName.innerText = data.nickname || "โปรไฟล์";
+        pillImg.src = data.img || 'https://via.placeholder.com/40';
+
+        // ---- Navbar ล่าง ----
+        navProfileItem.style.display = "block";
+        navImg.src = data.img || 'https://via.placeholder.com/40';
+
+        // ---- Premium เดิม ----
         if (data.isPaid) {
-            if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
-            if (data.cardColor) window.customCardColor = data.cardColor;
+            if (data.bgTheme)
+                document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+
+            if (data.cardColor)
+                window.customCardColor = data.cardColor;
+
             createDeck();
         }
 
-        } else {
-        // ไม่มีคนล็อคอิน
-            pillName.innerText = "เข้าสู่ระบบ";
-            pillImg.src = "https://via.placeholder.com/40";
+    } else {
+        // ไม่มี user
+        pillName.innerText = "เข้าสู่ระบบ";
+        pillImg.src = "https://via.placeholder.com/40";
 
-        // ซ่อนโปรไฟล์ตรงแถบล่าง
-            bottomProfile.style.display = "none";
-        });
-
-            if (user) {
-                // ถ้ามี User ล็อกอินอยู่ ให้ปิดหน้าต่างล็อกอินทันที
-                document.getElementById('auth-overlay').style.display = 'none';
-                
-                const snap = await getDoc(doc(db, "users", user.uid));
-                const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-                
-                pillName.innerText = data.nickname || "โปรไฟล์";
-                pillImg.src = data.img || 'https://via.placeholder.com/40';
-                navImg.src = data.img || 'https://via.placeholder.com/40';
-                
-                if (data.isPaid) {
-                    if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
-                    if (data.cardColor) window.customCardColor = data.cardColor;
-                    createDeck(); 
-                }
-            } else {
-                pillName.innerText = "เข้าสู่ระบบ";
-                pillImg.src = 'https://via.placeholder.com/40';
-            }
-        });
-
-        // ดักจับผลการ Redirect จาก Google (สำคัญมากสำหรับมือถือ)
-        getRedirectResult(auth).then(async (result) => {
-            if (result && result.user) {
-                const docRef = doc(db, "users", result.user.uid);
-                const snap = await getDoc(docRef);
-                if (!snap.exists()) {
-                    await setDoc(docRef, { nickname: result.user.displayName, img: result.user.photoURL, isPaid: false });
-                }
-                document.getElementById('auth-overlay').style.display = 'none';
-            }
-        }).catch((error) => {
-            if(error.code !== 'auth/redirect-cancelled-by-user') {
-                console.error("Login Error:", error.message);
-            }
-        });
+        navProfileItem.style.display = "none";
+    }
+});
 
         window.handleGoogleLogin = () => {
             signInWithRedirect(auth, googleProvider);

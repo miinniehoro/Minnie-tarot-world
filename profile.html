@@ -8,7 +8,7 @@
     
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
-        import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
+        import { getAuth, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
         import { getFirestore, doc, getDoc, updateDoc, collection, getDocs, query, orderBy, limit } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -24,6 +24,8 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app);
+
+        setPersistence(auth, browserLocalPersistence);
 
         let currentUser = null;
 
@@ -49,7 +51,10 @@
                         document.getElementById('history-locked').style.display = 'block';
                     }
                 }
-            } else { window.location.href = 'index.html'; }
+            } else { 
+                // ถ้าไม่ได้ Login ให้เด้งกลับหน้าหลัก
+                window.location.href = 'index.html'; 
+            }
         });
 
         window.updateZodiacDisplay = (dateStr) => {
@@ -121,7 +126,7 @@
     <style>
         body { font-family: 'Sarabun', sans-serif; background: #f5f5f5; margin: 0; padding: 20px; display: flex; justify-content: center; }
         .card { background: white; width: 100%; max-width: 450px; border-radius: 20px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); text-align: center; }
-        .p-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ad1457; }
+        .p-img { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; border: 3px solid #ad1457; aspect-ratio: 1/1; }
         input { width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
         .btn { padding: 12px; border-radius: 10px; border: none; font-weight: bold; cursor: pointer; width: 100%; margin: 5px 0; font-family: 'Sarabun'; }
         .btn-save { background: #ad1457; color: white; }
@@ -136,7 +141,7 @@
 <body>
     <div class="card">
         <label style="cursor: pointer;">
-            <img id="p-img" class="p-img" src="">
+            <img id="p-img" class="p-img" src="https://via.placeholder.com/100">
             <input type="file" style="display:none" onchange="uploadImg(event)">
             <p style="font-size: 12px; color: #ad1457; margin-top: 5px;">แตะเปลี่ยนรูป</p>
         </label>
@@ -175,7 +180,7 @@
             🔒 ประวัติและธีมสงวนไว้สำหรับสมาชิกพรีเมียม
         </div>
 
-        <button class="btn" style="margin-top: 20px; background: #eee;" onclick="location.href='index.html'">ยกเลิก</button>
+        <button class="btn" style="margin-top: 20px; background: #eee;" onclick="location.href='index.html'">กลับหน้าหลัก</button>
         <button class="btn" style="color: red; background: none; font-size: 14px;" onclick="logout()">ออกจากระบบ</button>
     </div>
 </body>

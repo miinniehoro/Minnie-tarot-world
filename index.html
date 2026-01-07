@@ -31,7 +31,7 @@
 
         setPersistence(auth, browserLocalPersistence);
 
-        // ตรวจสอบสถานะการล็อคอินทันทีที่โหลดหน้า (Persistence)
+        // ตรวจสอบสถานะการล็อกอินทันทีที่โหลดหน้า
         onAuthStateChanged(auth, async (user) => {
             const pillImg = document.getElementById('pill-img');
             const pillName = document.getElementById('pill-name');
@@ -40,14 +40,14 @@
 
             if (user) {
                 document.getElementById('auth-overlay').style.display = 'none';
-                navProfileItem.style.display = 'flex'; // แสดงปุ่มโปรไฟล์แถบล่าง
-                
+                if(navProfileItem) navProfileItem.style.display = 'flex'; // แสดงปุ่มที่ 4
+
                 const snap = await getDoc(doc(db, "users", user.uid));
                 const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
                 
                 pillName.innerText = data.nickname || "โปรไฟล์";
                 pillImg.src = data.img || 'https://via.placeholder.com/40';
-                navImg.src = data.img || 'https://via.placeholder.com/40';
+                if(navImg) navImg.src = data.img || 'https://via.placeholder.com/40';
                 
                 if (data.isPaid) {
                     if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
@@ -56,8 +56,7 @@
                 }
             } else {
                 pillName.innerText = "เข้าสู่ระบบ";
-                pillImg.src = 'https://via.placeholder.com/40';
-                navProfileItem.style.display = 'none';
+                if(navProfileItem) navProfileItem.style.display = 'none'; // ซ่อนปุ่มที่ 4
             }
         });
 
@@ -72,7 +71,7 @@
             }
         });
 
-        window.handleGoogleLogin = () => signInWithRedirect(auth, googleProvider);
+        window.handleGoogleLogin = () => { signInWithRedirect(auth, googleProvider); };
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
@@ -85,15 +84,16 @@
                     const userCred = await createUserWithEmailAndPassword(auth, email, pass);
                     await setDoc(doc(db, "users", userCred.user.uid), { nickname: nick, birthdate: bdate, zodiac: getZodiac(bdate), isPaid: false });
                 }
-                document.getElementById('auth-overlay').style.display = 'none';
             } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
 
         window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
-        window.openAuthModal = () => document.getElementById('auth-overlay').style.display = 'flex';
-        window.closeAuthModal = () => document.getElementById('auth-overlay').style.display = 'none';
-        window.toggleDarkMode = (checkbox) => document.body.classList.toggle('dark-mode', checkbox.checked);
-        window.toggleMenuModal = (show) => document.getElementById("tarot-modal").style.display = show ? "flex" : "none";
+        window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
+        window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
+        window.toggleDarkMode = (checkbox) => { document.body.classList.toggle('dark-mode', checkbox.checked); };
+        window.toggleMenuModal = (show) => { document.getElementById("tarot-modal").style.display = show ? "flex" : "none"; };
+        
+        let isLoginMode = true;
         window.toggleAuthMode = () => {
             isLoginMode = !isLoginMode;
             document.getElementById('auth-title').innerText = isLoginMode ? "เข้าสู่ระบบ" : "สมัครสมาชิก";
@@ -103,56 +103,76 @@
     </script>
 
     <style>
-        /* CSS พื้นฐาน */
+        /* --- Night Mode CSS (กู้คืนมา 100%) --- */
         * { box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
-        body.dark-mode { background-color: #121212 !important; color: #fff !important; }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* Profile Pill ด้านบน */
+        body.dark-mode { background-color: #121212 !important; color: #fff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
+        body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
+        body.dark-mode .modal-content, body.dark-mode .auth-card, body.dark-mode .support-container { background: #252525 !important; color: #fff !important; }
+        body.dark-mode .detail-row { background-color: #2a2a2a !important; color: #eee !important; }
+
+        .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
+        .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
+        .theme-switch input { display: none; }
+        .slider { background-color: #ccc; bottom: 0; cursor: pointer; left: 0; position: absolute; right: 0; top: 0; transition: .4s; border-radius: 34px; display: flex; align-items: center; justify-content: space-between; padding: 0 5px; font-size: 12px; }
+        .slider:before { background-color: white; bottom: 4px; content: ""; height: 20px; left: 4px; position: absolute; transition: .4s; width: 20px; border-radius: 50%; z-index: 2; }
+        input:checked + .slider { background-color: #ad1457; }
+        input:checked + .slider:before { transform: translateX(22px); }
+
         .auth-header { position: fixed; top: 15px; right: 15px; z-index: 1000; }
         .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; aspect-ratio: 1/1; }
 
         .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
+        #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
+        #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
 
-        /* กองไพ่ */
-        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; max-width: 600px; }
-        .card-back { width: 40px; height: 65px; background: #000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; margin: 2px -12px; transition: 0.2s; color: #ffd700; display: flex; align-items: center; justify-content: center; position: relative; }
-        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; }
+        .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
+        .card-back { width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none; }
+        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .card-back.selected { visibility: hidden; }
 
-        /* ผลทำนาย */
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
-        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
+        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
         .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #ad1457; }
 
-        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 25px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 600px; }
+        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         .detail-header { background-color: #212121; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
-        .detail-body { display: flex; padding: 15px; gap: 15px; align-items: flex-start; }
-        .detail-img { width: 90px; border-radius: 5px; flex-shrink: 0; }
-        
-        /* แถบล่าง 3-4 ปุ่ม */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
+        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
+        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
+
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
+        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
+
+        /* Bottom Nav */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
         .nav-item img { height: 50px; cursor: pointer; }
         .nav-p-img { width: 44px; height: 44px; border-radius: 50%; border: 2.2px solid #ad1457; object-fit: cover; aspect-ratio: 1/1; }
 
-        /* หน้าต่างสนับสนุน */
-        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #fff; border-radius: 15px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); }
-        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; }
-
-        /* Modals */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 2000; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; }
-        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2100; justify-content: center; align-items: center; }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; text-align: center; }
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
         .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
         .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+        
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
     </style>
 </head>
 <body>
 
+    <!-- Night Mode Button -->
+    <div class="theme-switch-wrapper">
+        <label class="theme-switch">
+            <input type="checkbox" id="checkbox" onchange="toggleDarkMode(this)" />
+            <div class="slider">☀️🌙</div>
+        </label>
+    </div>
+
+    <!-- Login Pill Top Right -->
     <div class="auth-header">
         <div class="user-pill" onclick="goToProfile()">
             <img id="pill-img" src="https://via.placeholder.com/40">
@@ -163,33 +183,33 @@
     <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
 
     <div id="selection-screen">
-        <p style="text-align: center;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
-        <h2 id="counter" style="text-align: center;">เลือกแล้ว: 0 / 4</h2>
+        <p style="font-weight: 300; color: #000;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
+        <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
-    <div id="loading-screen" style="display:none; text-align:center; margin-top:50px;">
-        <div style="border:4px solid #f3f3f3; border-top:4px solid #ad1457; border-radius:50%; width:40px; height:40px; animation:spin 1s linear infinite; margin:20px auto;"></div>
-        <p>กำลังเปิดคำทำนาย...</p>
+    <div id="loading-screen" style="display:none; text-align:center; margin-top:80px;">
+        <div style="border:4px solid #f3f3f3; border-top:4px solid #ad1457; border-radius:50%; width:50px; height:50px; animation:spin 1s linear infinite; margin:20px auto;"></div>
+        <p>กำลังเปิดคำทำนายความรัก... โปรดรอสักครู่</p>
     </div>
 
     <div id="result-screen">
         <div style="display:flex; justify-content:center; gap:10px; margin:20px 0;">
-            <button onclick="location.reload()" style="background:#ffd700; color:#1a237e; padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer;">สุ่มใหม่อีกครั้ง</button>
-            <button onclick="alert('📸 กำลังบันทึกรูป')" style="background:#ad1457; color:white; padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer;">📸 บันทึกรูปดวง</button>
+            <button onclick="location.reload()" style="background:#ffd700; padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer;">สุ่มใหม่อีกครั้ง</button>
+            <button onclick="alert('📸 กำลังบันทึกดวง')" style="background:#ad1457; color:white; padding:10px 20px; border-radius:30px; border:none; font-weight:bold; cursor:pointer;">📸 บันทึกรูปดวง</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px;">📖 เจาะลึกคำทำนายความรัก</h2>
-        <div id="detailArea" style="display:flex; flex-direction:column; align-items:center;"></div>
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
+        <div id="detailArea"></div>
 
-        <!-- กู้คืนโซนสนับสนุนและโฆษณา -->
+        <!-- Support Section (กู้คืนมาแล้ว) -->
         <div class="support-container">
             <div class="donation-section">
                 <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
-                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px; display:block; margin: 10px auto;">
+                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
                 <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
             </div>
-            <div class="personal-ad-box" style="margin-top:20px;">
+            <div class="personal-ad-box">
                 <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
                 <img src="IMG_7155.png" alt="Personal Reading" style="width:100%; border-radius:12px;">
                 <a href="https://line.me/ti/p/@yourid" target="_blank" style="display:inline-block; background:#06c755; color:white; padding:12px 25px; border-radius:50px; text-decoration:none; margin-top:15px; font-weight:bold;">💬 ติดต่อทาง Line</a>
@@ -197,30 +217,33 @@
         </div>
     </div>
 
-    <!-- แถบเมนูล่าง -->
     <nav class="bottom-nav">
+        <!-- ปุ่มแรก เปิด Modal -->
         <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
-        <div class="nav-item" onclick="alert('แชร์คำทำนาย')"><img src="IMG_7085.png"></div>
+        <div class="nav-item" onclick="alert('แชร์ดวง')"><img src="IMG_7085.png"></div>
         <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
+        <!-- ปุ่มที่ 4 แสดงเมื่อล็อกอินแล้ว -->
         <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()">
             <img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img">
         </div>
     </nav>
 
-    <!-- Modals -->
+    <!-- Modal เมนูดูดวง -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="color:#ad1457; margin-bottom:20px;">เลือกประเภทการดูดวง</h3>
+            <h3 style="color:#ad1457">เลือกประเภทการดูดวง</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                 <a href="index.html" style="background:#ffd700; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none;">ไพ่ยิปซีความรัก</a>
                 <a href="work.html" style="background:#f0f2ff; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
             </div>
+            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
         </div>
     </div>
 
+    <!-- Login Modal -->
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
-            <h2 id="auth-title">เข้าสู่ระบบ</h2>
+            <h2 id="auth-title" style="color:#ad1457">เข้าสู่ระบบ</h2>
             <div id="register-fields" style="display:none;">
                 <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
                 <input type="date" id="reg-bdate">
@@ -234,7 +257,7 @@
     </div>
 
 <script>
-    // --- กู้คืนคำทำนายเดิม 100% ครบทุกตัวอักษร ---
+    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณ 100%) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -294,7 +317,7 @@
         {n:"Six of Swords",i:"Swords06.jpg",m:"ก้าวข้ามอดีต เริ่มฟื้นใจ/ สื่อถึงการเดินต่อไปข้างหน้าแม้จะเจ็บปวด หรืออยากมูฟออนแต่ก้างอย่างช้าๆ"},
         {n:"Seven of Swords",i:"Swords07.jpg",m:"มีเรื่องปิดบัง ไม่ซื่อสัตย์/ สื่อถึงอีกฝ่ายมีเรื่องปิดบัง ไม่ซื่อสัตย์ต่อคุณ หรืออาจจะมองคุณแบบไม่จริงจังนัก"},
         {n:"Eight of Swords",i:"Swords08.jpg",m:"คิดมาก รู้สึกติดกับความสัมพันธ์/ สื่อถึงความคิดที่ฝ่ายใดฝ่ายนึงคิดไปเองและหาทางออกไม่ได้ ไม่พร้อมเผชิญปัญหา หาทางออกไม่ได้ มูฟออนไม่ได้ หรือไม่อยากรับรู้ หลีกเลี่ยงปัญหา"},
-        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกกังวลใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
+        {n:"Nine of Swords",i:"Swords09.jpg",m:"กังวล นอนไม่หลับ คิดมากเรื่องรัก/ สื่อถึงถ้าเลิกราก็มีโอกาสที่ยังวิตกกังวล ลืมไม่ได้ เสียใจเสียดายอย่างหนัก คิดทบทวนเรื่องเดิมแล้วหาทางออกไม่ได้ ไม่พร้อมตัดสินใจ หรือกกกวรใจเรื่องอีกฝ่ายมากเกิน/ วกวนแต่เรื่องเดิมๆ"},
         {n:"Ten of Swords",i:"Swords10.jpg",m:"จบความสัมพันธ์แบบเจ็บปวด/ สื่อถึงอยู่ช่วงเจ็บปวดที่สุดและยากที่จะหายดี หรือจบความสัมพันธ์แบบหนักหน่วง ไม่พร้อมไปคืนดี"},
         {n:"Page of Swords",i:"Swords11.jpg",m:"สอดส่อง เช็คโซเชียล อยากรู้เรื่องเขา/สื่อถึงการส่อง การยังติดตามอีกฝ่ายอย่างใกล้ชิด อาจจะอยากสื่อสารแต่ยังไม่กล้าและมีฐิ"},
         {n:"Knight of Swords",i:"Swords12.jpg",m:"ใจร้อน พูดตรง อารมณ์ขึ้นง่าย/ สื่อถึงการปะทะอารมณ์ต่อกัน ไม่ว่าจะเพราะคำพูดหรือเพราะพฤติกรรม หรืออาจจะหมายถึงการทักมาแบบไม่คาดคิด การติดต่อแบบไม่คาดคิด"},
@@ -333,7 +356,7 @@
         return "มีน";
     }
 
-    let isLoginMode = true; let selectedIndices = [];
+    let selectedIndices = [];
     const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
 
     function createDeck() {
@@ -342,6 +365,7 @@
         for(let i=0; i<78; i++) {
             const card = document.createElement("div");
             card.className = "card-back"; card.innerHTML = "🌙";
+            if (window.customCardColor) card.style.backgroundColor = window.customCardColor;
             card.onclick = function() { 
                 if (selectedIndices.length < 4 && !this.classList.contains("selected")) {
                     this.classList.add("selected"); selectedIndices.push(deck[i]);

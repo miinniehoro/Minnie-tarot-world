@@ -37,6 +37,38 @@
             const pillImg = document.getElementById('pill-img');
             const pillName = document.getElementById('pill-name');
             const navImg = document.getElementById('nav-p-img');
+            const bottomProfile = navImg.closest('.nav-item');
+        
+        if (user) {
+                document.getElementById('auth-overlay').style.display = 'none';
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const data = snap.exists()
+                    ? snap.data()
+                    : { nickname: user.displayName, img: user.photoURL };
+
+        // ด้านบนขวา (pill)
+                pillName.innerText = data.nickname || "โปรไฟล์";
+                pillImg.src = data.img || 'https://via.placeholder.com/40';
+
+        // โปรไฟล์ในแถบล่าง — แสดง + ใส่รูป
+                bottomProfile.style.display = "block";
+                navImg.src = data.img || 'https://via.placeholder.com/40';
+
+        // ระบบ premium เดิม
+        if (data.isPaid) {
+            if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+            if (data.cardColor) window.customCardColor = data.cardColor;
+            createDeck();
+        }
+
+        } else {
+        // ไม่มีคนล็อคอิน
+            pillName.innerText = "เข้าสู่ระบบ";
+            pillImg.src = "https://via.placeholder.com/40";
+
+        // ซ่อนโปรไฟล์ตรงแถบล่าง
+            bottomProfile.style.display = "none";
+        });
 
             if (user) {
                 // ถ้ามี User ล็อกอินอยู่ ให้ปิดหน้าต่างล็อกอินทันที
@@ -226,10 +258,24 @@
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
-        <div class="nav-item" onclick="shareURL()"><img src="IMG_7085.png"></div>
-        <div class="nav-item" onclick="alert('เร็วๆ นี้')"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
-        <div class="nav-item" onclick="goToProfile()"><img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img"></div>
+        <nav class="bottom-nav">
+    <div class="nav-item" onclick="toggleMenuModal(true)">
+        <img src="IMG_7070.png">
+    </div>
+
+    <div class="nav-item" onclick="shareURL()">
+        <img src="IMG_7085.png">
+    </div>
+
+    <div class="nav-item" onclick="alert('เร็วๆ นี้')">
+        <img src="ไม่มีชื่อ (2000 x 2000 px).png">
+    </div>
+
+    <!-- <<< ปุ่มโปรไฟล์ — ซ่อนก่อนล็อกอิน >>> -->
+    <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()">
+        <img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img">
+    </div>
+            
     </nav>
 
     <!-- Modal เลือกประเภทดูดวง -->

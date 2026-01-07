@@ -36,13 +36,11 @@
 onAuthStateChanged(auth, async (user) => {
     const pillImg = document.getElementById('pill-img');
     const pillName = document.getElementById('pill-name');
-
-    // 👇 ของจริงใน HTML
     const navProfileItem = document.getElementById("nav-profile-item");
     const navImg = document.getElementById("nav-p-img");
 
     if (user) {
-        document.getElementById('auth-overlay').style.display = 'none';
+        console.log("User Logged In");
 
         const snap = await getDoc(doc(db, "users", user.uid));
         const data = snap.exists()
@@ -69,7 +67,8 @@ onAuthStateChanged(auth, async (user) => {
         }
 
     } else {
-        // ไม่มี user
+        console.log("User Logged Out");
+
         pillName.innerText = "เข้าสู่ระบบ";
         pillImg.src = "https://via.placeholder.com/40";
 

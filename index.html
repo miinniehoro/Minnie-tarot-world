@@ -29,11 +29,8 @@
         const db = getFirestore(app);
         const googleProvider = new GoogleAuthProvider();
 
-        import { setPersistence, browserLocalPersistence } from "firebase/auth";
+        setPersistence(auth, browserLocalPersistence);
 
-setPersistence(auth, browserLocalPersistence);
-
-      // ตรวจสอบสถานะการล็อกอิน
 onAuthStateChanged(auth, async (user) => {
     console.log("AUTH CHANGE", user);
     const pillImg = document.getElementById('pill-img');
@@ -42,46 +39,25 @@ onAuthStateChanged(auth, async (user) => {
     const navImg = document.getElementById("nav-p-img");
 
     if (user) {
-        console.log("User Logged In");
-
         const snap = await getDoc(doc(db, "users", user.uid));
-        const data = snap.exists()
-            ? snap.data()
-            : { nickname: user.displayName, img: user.photoURL };
-
-        // ---- pill บนขวา ----
+        const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
         pillName.innerText = data.nickname || "โปรไฟล์";
         pillImg.src = data.img || 'https://via.placeholder.com/40';
-
-        // ---- Navbar ล่าง ----
         navProfileItem.style.display = "block";
         navImg.src = data.img || 'https://via.placeholder.com/40';
-
-        // ---- Premium เดิม ----
         if (data.isPaid) {
-            if (data.bgTheme)
-                document.body.style.backgroundImage = `url('${data.bgTheme}')`;
-
-            if (data.cardColor)
-                window.customCardColor = data.cardColor;
-
+            if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+            if (data.cardColor) window.customCardColor = data.cardColor;
             createDeck();
         }
-
     } else {
-        console.log("User Logged Out");
-
         pillName.innerText = "เข้าสู่ระบบ";
         pillImg.src = "https://via.placeholder.com/40";
-
         navProfileItem.style.display = "none";
     }
 });
 
-        window.handleGoogleLogin = () => {
-            signInWithRedirect(auth, googleProvider);
-        };
-
+        window.handleGoogleLogin = () => { signInWithRedirect(auth, googleProvider); };
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
@@ -96,7 +72,6 @@ onAuthStateChanged(auth, async (user) => {
                 }
             } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
-
         window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
         window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
         window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
@@ -105,16 +80,22 @@ onAuthStateChanged(auth, async (user) => {
     </script>
 
     <style>
-        /* --- CSS เดิม + Night Mode (คงที่ 100%) --- */
         * { box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; transition: background 0.3s; }
         
-        body.dark-mode { background-color: #121212 !important; color: #fff !important; }
-        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
+        /* --- แก้ไข Dark Mode ให้สมบูรณ์ --- */
+        body.dark-mode { background-color: #121212 !important; color: #ffffff !important; }
+        body.dark-mode #selection-screen p, body.dark-mode #counter, body.dark-mode h2 { color: #ffffff !important; }
+        body.dark-mode .detail-row { background-color: #1e1e1e !important; color: #ffffff !important; border: 1px solid #333; }
+        body.dark-mode .detail-header { background-color: #333 !important; color: #ffd700 !important; }
+        body.dark-mode .detail-text h4 { color: #ff4081 !important; border-bottom: 1px solid #444; }
+        body.dark-mode .support-container { background: #1e1e1e !important; color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
-        body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff; }
-        body.dark-mode .support-container { background: #1e1e1e; color: #fff; }
+        body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff !important; }
+        body.dark-mode .user-pill { background: #252525 !important; color: #ffd700 !important; border-color: #ffd700 !important; }
+        body.dark-mode .summary-card { background: #252525 !important; color: #fff !important; }
 
+        /* UI elements */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -127,52 +108,41 @@ onAuthStateChanged(auth, async (user) => {
         .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
 
-        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
-        .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
-        .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
-
         .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
         #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
-
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
-        .card-back { width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none; }
-        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
+        .card-back { width: 40px; height: 65px; background: #000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s; position: relative; z-index: 1; font-size: 14px; color: #ffd700; }
+        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; }
         .card-back.selected { visibility: hidden; }
 
-        #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
-
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
-        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
-        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #ad1457; margin-bottom: 3px; }
+        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #ad1457; overflow: hidden; }
+        .summary-card h3 { font-size: 10px; margin: 4px 0; color: #ad1457; }
 
-        .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
-        button { padding: 10px 20px; border-radius: 30px; border: none; font-family: 'Sarabun'; font-weight: bold; cursor: pointer; }
-        .btn-cap { background: #ad1457; color: white; }
-        .btn-new { background: #ffd700; color: #1a237e; }
+        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 25px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+        .detail-header { background-color: #212121; color: #ffd700; padding: 10px; font-weight: bold; text-align: center; }
+        .detail-body { display: flex; padding: 15px; gap: 15px; }
+        .detail-img { width: 80px; border-radius: 5px; flex-shrink: 0; }
+        .detail-text h4 { margin: 0 0 5px; color: #ad1457; font-size: 16px; border-bottom: 1px solid #ddd; }
 
-        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 20px; }
-        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .detail-header { background-color: #212121; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
-        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
-        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
-        .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
-        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
-
-        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
-        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
-
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
-        .nav-item img { height: 50px; cursor: pointer; }
-        .nav-p-img { width: 40px; height: 40px; border-radius: 50%; border: 2.2px solid #ad1457; object-fit: cover; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
+        .nav-item img { height: 45px; cursor: pointer; }
+        .nav-p-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ad1457; object-fit: cover; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; }
+        .modal-btn { display: block; margin: 10px 0; padding: 15px; border-radius: 12px; font-weight: bold; text-decoration: none; cursor: pointer; }
+
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 100px; padding: 20px; background: #fff; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; text-align: center; }
+        .auth-card input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; }
+        .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -191,71 +161,50 @@ onAuthStateChanged(auth, async (user) => {
         </div>
     </div>
 
-    <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
+    <img src="IMG_7035.png" class="main-logo">
 
     <div id="selection-screen">
-        <p style="font-weight: 300; color: #000;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
+        <p style="font-weight: 300;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
         <h2 id="counter">เลือกแล้ว: 0 / 4</h2>
         <div class="deck-container" id="deck"></div>
     </div>
 
-    <div id="loading-screen">
+    <div id="loading-screen" style="display:none; text-align: center; margin-top: 50px;">
         <div class="spinner"></div>
-        <p>กำลังเปิดคำทำนายความรัก... โปรดรอสักครู่</p>
+        <p>กำลังเปิดคำทำนายความรัก...</p>
     </div>
 
     <div id="result-screen">
-        <div class="btn-group">
-            <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
-            <button class="btn-cap" onclick="captureImageJPG()">📸 บันทึกรูปดวงความรัก</button>
+        <div class="btn-group" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
+            <button onclick="location.reload()" style="background:#ffd700; padding:10px 20px; border-radius:20px; font-weight:bold;">สุ่มใหม่</button>
+            <button onclick="alert('ฟีเจอร์บันทึกรูปกำลังเตรียมเปิดใช้งาน')" style="background:#ad1457; color:white; padding:10px 20px; border-radius:20px; font-weight:bold;">📸 บันทึกรูป</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
+        <h2 style="text-align: center; margin: 30px 0 15px;">📖 เจาะลึกคำทำนาย</h2>
         <div id="detailArea"></div>
 
         <div class="support-container">
-            <div class="donation-section">
-                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
-                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
-                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
-            </div>
-            <div class="personal-ad-box">
-                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
-                <img src="IMG_7155.png" alt="Personal Reading" style="width:100%; border-radius:12px;">
-                <a href="https://line.me/ti/p/@yourid" target="_blank" style="display:inline-block; background:#06c755; color:white; padding:12px 25px; border-radius:50px; text-decoration:none; margin-top:15px; font-weight:bold;">💬 ติดต่อทาง Line</a>
-            </div>
+            <h3 style="color:#ad1457">☕ สนับสนุนเรา</h3>
+            <img src="IMG_7157.png" style="width:200px; border-radius:10px;">
         </div>
     </div>
 
-        <nav class="bottom-nav">
-    <div class="nav-item" onclick="toggleMenuModal(true)">
-        <img src="IMG_7070.png">
-    </div>
-
-    <div class="nav-item" onclick="shareURL()">
-        <img src="IMG_7085.png">
-    </div>
-
-    <div class="nav-item" onclick="alert('เร็วๆ นี้')">
-        <img src="ไม่มีชื่อ (2000 x 2000 px).png">
-    </div>
-
-    <!-- <<< ปุ่มโปรไฟล์ — ซ่อนก่อนล็อกอิน >>> -->
-    <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()">
-        <img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img">
-    </div>
-            
+    <nav class="bottom-nav">
+        <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
+        <div class="nav-item" onclick="alert('แชร์ลิ้งค์หน้าเว็บนี้ให้เพื่อนของคุณ')"><img src="IMG_7085.png"></div>
+        <div class="nav-item"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
+        <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()"><img id="nav-p-img" class="nav-p-img"></div>
     </nav>
 
-    <!-- Modal เลือกประเภทดูดวง -->
+    <!-- Modal เลือกประเภทดูดวง (แก้ไขให้ลิงก์ได้) -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3>เลือกประเภทการดูดวง</h3>
+            <h3 style="margin-bottom:20px;">เลือกประเภทการดูดวง</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <a href="index.html" style="background:#ffd700; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none;">ไพ่ยิปซีความรัก</a>
-                <a href="work.html" style="background:#f0f2ff; color:#1a237e; padding:15px; border-radius:12px; font-weight:bold; text-decoration:none; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
+                <div onclick="window.location.href='index.html'" class="modal-btn" style="background:#ffd700; color:#1a237e;">ยิปซีความรัก</div>
+                <div onclick="window.location.href='work.html'" class="modal-btn" style="background:#f0f2ff; color:#1a237e; border:1px solid #ccc;">ยิปซีการงาน</div>
             </div>
-            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
+            <p style="margin-top:20px; cursor:pointer; color:#ad1457;" onclick="toggleMenuModal(false)">ปิดหน้าต่าง</p>
         </div>
     </div>
 
@@ -263,22 +212,16 @@ onAuthStateChanged(auth, async (user) => {
     <div id="auth-overlay" class="auth-overlay" onclick="closeAuthModal()">
         <div class="auth-card" onclick="event.stopPropagation()">
             <h2 id="auth-title" style="color:#ad1457">เข้าสู่ระบบ</h2>
-            <div id="register-fields" style="display:none;">
-                <input type="text" id="reg-nickname" placeholder="ชื่อเล่น">
-                <input type="date" id="reg-bdate">
-            </div>
             <input type="email" id="auth-email" placeholder="อีเมล">
             <input type="password" id="auth-pass" placeholder="รหัสผ่าน">
             <button class="auth-btn" onclick="handleAuth()">ตกลง</button>
-            <!-- ปุ่ม Google Login แบบ Redirect -->
             <button class="auth-btn" style="background: #DB4437;" onclick="handleGoogleLogin()">Login with Google</button>
-            <p id="toggle-text" style="cursor:pointer; text-decoration:underline; font-size:13px; margin-top:15px;" onclick="toggleAuthMode()">ยังไม่มีบัญชี? สมัครสมาชิก</p>
             <p style="margin-top:20px; cursor:pointer; font-size:12px;" onclick="closeAuthModal()">ปิดหน้าต่าง</p>
         </div>
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (ฉบับเดิมของคุณ 100%) ---
+    // --- คำทำนาย 78 ใบ (คงเดิม 100%) ---
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -360,26 +303,29 @@ onAuthStateChanged(auth, async (user) => {
         {n:"King of Pentacles",i:"Pentacles14.jpg",m:"พร้อมสร้างอนาคตร่วมกัน/ สื่อถึงคนๆนี้ทุ่มเทจริงจังกับเรามาก เห็นคุณเป็นคนสำคัญในชีวิต"}
     ];
 
-    let isLoginMode = true; let selectedIndices = [];
+    let selectedIndices = [];
     const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
 
     function createDeck() {
-        const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";
+        const deckDiv = document.getElementById("deck");
+        deckDiv.innerHTML = "";
         let deck = [...rawData].sort(() => Math.random() - 0.5);
         for(let i=0; i<78; i++) {
             const card = document.createElement("div");
-            card.className = "card-back"; card.innerHTML = "🌙";
+            card.className = "card-back";
+            card.innerHTML = "🌙";
             if (window.customCardColor) card.style.backgroundColor = window.customCardColor;
             card.onclick = function() { 
                 if (selectedIndices.length < 4 && !this.classList.contains("selected")) {
-                    this.classList.add("selected"); selectedIndices.push(deck[i]);
+                    this.classList.add("selected");
+                    selectedIndices.push(deck[i]);
                     document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
                     if (selectedIndices.length === 4) {
                         setTimeout(() => {
                             document.getElementById("selection-screen").style.display = "none";
                             document.getElementById("loading-screen").style.display = "block";
-                            setTimeout(showResults, 1500);
-                        }, 500);
+                            setTimeout(showResults, 1200);
+                        }, 400);
                     }
                 }
             };
@@ -395,28 +341,11 @@ onAuthStateChanged(auth, async (user) => {
         area.innerHTML = ""; detail.innerHTML = "";
         selectedIndices.forEach((card, i) => {
             area.innerHTML += `<div class="summary-card"><p style="font-size:9px; font-weight:bold; color:#ad1457; margin-bottom:3px;">${posTitles[i]}</p><img src="${card.i}"><h3>${card.n}</h3></div>`;
-            detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div>${card.m}</div></div></div>`;
+            detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div class="detail-text"><h4>คำทำนาย</h4><p>${card.m}</p></div></div></div>`;
         });
-    }
-
-    function getZodiac(dateStr) {
-        if(!dateStr) return ""; const d = new Date(dateStr); const day = d.getDate(); const month = d.getMonth() + 1;
-        if ((month == 3 && day >= 21) || (month == 4 && day <= 19)) return "เมษ";
-        if ((month == 4 && day >= 20) || (month == 5 && day <= 20)) return "พฤษภ";
-        if ((month == 5 && day >= 21) || (month == 6 && day <= 21)) return "เมถุน";
-        if ((month == 6 && day >= 22) || (month == 7 && day <= 22)) return "กรกฎ";
-        if ((month == 7 && day >= 23) || (month == 8 && day <= 22)) return "สิงห์";
-        if ((month == 8 && day >= 23) || (month == 9 && day <= 22)) return "กันย์";
-        if ((month == 9 && day >= 23) || (month == 10 && day <= 23)) return "ตุลย์";
-        if ((month == 10 && day >= 24) || (month == 11 && day <= 21)) return "พิจิก";
-        if ((month == 11 && day >= 22) || (month == 12 && day <= 21)) return "ธนู";
-        if ((month == 12 && day >= 22) || (month == 1 && day <= 19)) return "มังกร";
-        if ((month == 1 && day >= 20) || (month == 2 && day <= 18)) return "กุมภ์";
-        return "มีน";
     }
 
     window.onload = createDeck;
 </script>
-<style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
 </body>
 </html>

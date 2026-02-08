@@ -8,7 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@300;400;700&display=swap" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
-    <!-- Firebase SDK -->
+    <!-- Firebase SDK (คงเดิม) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-app.js";
         import { getAuth, setPersistence, browserLocalPersistence, signInWithEmailAndPassword, signInWithRedirect, getRedirectResult, GoogleAuthProvider, onAuthStateChanged, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/11.0.1/firebase-auth.js";
@@ -31,33 +31,32 @@
 
         setPersistence(auth, browserLocalPersistence);
 
-onAuthStateChanged(auth, async (user) => {
-    console.log("AUTH CHANGE", user);
-    const pillImg = document.getElementById('pill-img');
-    const pillName = document.getElementById('pill-name');
-    const navProfileItem = document.getElementById("nav-profile-item");
-    const navImg = document.getElementById("nav-p-img");
+        onAuthStateChanged(auth, async (user) => {
+            const pillImg = document.getElementById('pill-img');
+            const pillName = document.getElementById('pill-name');
+            const navProfileItem = document.getElementById("nav-profile-item");
+            const navImg = document.getElementById("nav-p-img");
 
-    if (user) {
-        const snap = await getDoc(doc(db, "users", user.uid));
-        const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
-        pillName.innerText = data.nickname || "โปรไฟล์";
-        pillImg.src = data.img || 'https://via.placeholder.com/40';
-        navProfileItem.style.display = "block";
-        navImg.src = data.img || 'https://via.placeholder.com/40';
-        if (data.isPaid) {
-            if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
-            if (data.cardColor) window.customCardColor = data.cardColor;
-            createDeck();
-        }
-    } else {
-        pillName.innerText = "เข้าสู่ระบบ";
-        pillImg.src = "https://via.placeholder.com/40";
-        navProfileItem.style.display = "none";
-    }
-});
+            if (user) {
+                const snap = await getDoc(doc(db, "users", user.uid));
+                const data = snap.exists() ? snap.data() : { nickname: user.displayName, img: user.photoURL };
+                pillName.innerText = data.nickname || "โปรไฟล์";
+                pillImg.src = data.img || 'https://via.placeholder.com/40';
+                navProfileItem.style.display = "block";
+                navImg.src = data.img || 'https://via.placeholder.com/40';
+                if (data.isPaid) {
+                    if (data.bgTheme) document.body.style.backgroundImage = `url('${data.bgTheme}')`;
+                    if (data.cardColor) window.customCardColor = data.cardColor;
+                    createDeck();
+                }
+            } else {
+                pillName.innerText = "เข้าสู่ระบบ";
+                pillImg.src = "https://via.placeholder.com/40";
+                navProfileItem.style.display = "none";
+            }
+        });
 
-        window.handleGoogleLogin = () => { signInWithRedirect(auth, googleProvider); };
+        window.handleGoogleLogin = () => signInWithRedirect(auth, googleProvider);
         window.handleAuth = async () => {
             const email = document.getElementById('auth-email').value;
             const pass = document.getElementById('auth-pass').value;
@@ -72,6 +71,7 @@ onAuthStateChanged(auth, async (user) => {
                 }
             } catch(e) { alert("ผิดพลาด: " + e.message); }
         };
+
         window.goToProfile = () => { if (auth.currentUser) window.location.href = 'profile.html'; else openAuthModal(); };
         window.openAuthModal = () => { document.getElementById('auth-overlay').style.display = 'flex'; };
         window.closeAuthModal = () => { document.getElementById('auth-overlay').style.display = 'none'; };
@@ -80,22 +80,22 @@ onAuthStateChanged(auth, async (user) => {
     </script>
 
     <style>
+        /* --- CSS เดิม --- */
         * { box-sizing: border-box; }
-        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; transition: background 0.3s; }
+        body { font-family: 'Sarabun', sans-serif !important; background-color: #F5F6F1 !important; background-size: cover; background-attachment: fixed; color: #333; margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; overflow-x: hidden; }
         
-        /* --- แก้ไข Dark Mode ให้สมบูรณ์ --- */
+        /* --- ส่วนที่ซ่อม: Night Mode ให้ทำงานครอบคลุม --- */
         body.dark-mode { background-color: #121212 !important; color: #ffffff !important; }
-        body.dark-mode #selection-screen p, body.dark-mode #counter, body.dark-mode h2 { color: #ffffff !important; }
-        body.dark-mode .detail-row { background-color: #1e1e1e !important; color: #ffffff !important; border: 1px solid #333; }
-        body.dark-mode .detail-header { background-color: #333 !important; color: #ffd700 !important; }
-        body.dark-mode .detail-text h4 { color: #ff4081 !important; border-bottom: 1px solid #444; }
-        body.dark-mode .support-container { background: #1e1e1e !important; color: #ffffff !important; }
+        body.dark-mode #counter, body.dark-mode #selection-screen p, body.dark-mode #loading-screen, body.dark-mode h2 { color: #ffffff !important; }
         body.dark-mode .bottom-nav { background: #1a1a1a !important; border-top: 1px solid #333 !important; }
-        body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff !important; }
-        body.dark-mode .user-pill { background: #252525 !important; color: #ffd700 !important; border-color: #ffd700 !important; }
-        body.dark-mode .summary-card { background: #252525 !important; color: #fff !important; }
+        body.dark-mode .modal-content, body.dark-mode .auth-card { background: #252525 !important; color: #fff; }
+        body.dark-mode .support-container { background: #1e1e1e !important; color: #fff !important; }
+        body.dark-mode .detail-row { background-color: #252525 !important; color: #fff !important; }
+        body.dark-mode .detail-header { background-color: #333 !important; }
+        body.dark-mode .detail-text h4 { color: #ff4081 !important; border-bottom: 1px solid #444; }
+        body.dark-mode .user-pill { background: #333 !important; border-color: #ffd700 !important; color: #ffd700 !important; }
+        body.dark-mode .summary-card { background: #333 !important; color: #fff !important; }
 
-        /* UI elements */
         .theme-switch-wrapper { position: fixed; left: 15px; top: 20px; z-index: 1000; }
         .theme-switch { display: inline-block; height: 28px; position: relative; width: 50px; }
         .theme-switch input { display: none; }
@@ -108,41 +108,56 @@ onAuthStateChanged(auth, async (user) => {
         .user-pill { background: white; color: #ad1457; padding: 6px 15px; border-radius: 30px; display: flex; align-items: center; gap: 8px; cursor: pointer; box-shadow: 0 2px 8px rgba(0,0,0,0.15); border: 1.5px solid #ad1457; font-weight: bold; font-size: 14px; }
         .user-pill img { width: 25px; height: 25px; border-radius: 50%; object-fit: cover; }
 
+        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
+        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; color: #333; text-align: center; }
+        .auth-card input { width: 100%; padding: 12px; margin: 6px 0; border: 1px solid #ddd; border-radius: 10px; font-family: 'Sarabun'; }
+        .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; cursor: pointer; }
+
         .main-logo { width: 50%; max-width: 180px; height: auto; margin: 10px auto -10px; display: block; }
         #selection-screen { width: 100%; max-width: 600px; text-align: center; padding: 0 5px; z-index: 10; }
         #counter { color: #000; font-size: 18px; font-weight: 700; margin: 10px 0; }
+
         .deck-container { display: flex; flex-wrap: wrap; justify-content: center; padding: 15px 5px; margin: 0 auto; }
-        .card-back { width: 40px; height: 65px; background: #000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s; position: relative; z-index: 1; font-size: 14px; color: #ffd700; }
-        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; }
+        .card-back { width: 40px; height: 65px; background: #000000; border: 1.2px solid #ffd700; border-radius: 4px; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: -2px 2px 5px rgba(0,0,0,0.4); margin: 2px -12px; transition: 0.2s ease-out; position: relative; z-index: 1; font-size: 14px; color: #ffd700; user-select: none; }
+        .card-back:hover { transform: translateY(-15px) scale(1.15); z-index: 100; background: #1a1a1a; box-shadow: 0 5px 15px rgba(0,0,0,0.6); }
         .card-back.selected { visibility: hidden; }
 
+        #loading-screen { display: none; text-align: center; margin-top: 80px; color: #000; }
+        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 20px auto; }
+
         #result-screen { display: none; width: 100%; max-width: 800px; padding: 10px; }
-        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-        .summary-card { background: white; padding: 5px; border-radius: 6px; text-align: center; color: #333; }
+        #captureArea { background-color: #ad1457; padding: 15px; border-radius: 12px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; }
+        .summary-card { background: white; padding: 5px; border-radius: 6px; color: #333; text-align: center; }
+        .summary-card .pos-top { font-size: 9px; font-weight: bold; color: #ad1457; margin-bottom: 3px; }
         .summary-card img { width: 100%; border-radius: 4px; aspect-ratio: 2/3.5; object-fit: cover; }
-        .summary-card h3 { font-size: 10px; margin: 4px 0; color: #ad1457; }
+        .summary-card h3 { font-size: 10px; margin: 4px 0 2px; color: #ad1457; overflow: hidden; }
 
-        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 25px; border-radius: 10px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-        .detail-header { background-color: #212121; color: #ffd700; padding: 10px; font-weight: bold; text-align: center; }
-        .detail-body { display: flex; padding: 15px; gap: 15px; }
-        .detail-img { width: 80px; border-radius: 5px; flex-shrink: 0; }
-        .detail-text h4 { margin: 0 0 5px; color: #ad1457; font-size: 16px; border-bottom: 1px solid #ddd; }
+        .btn-group { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin: 20px 0; }
+        button { padding: 10px 20px; border-radius: 30px; border: none; font-family: 'Sarabun'; font-weight: bold; cursor: pointer; }
+        .btn-cap { background: #ad1457; color: white; }
+        .btn-new { background: #ffd700; color: #1a237e; }
 
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #fff; display: flex; justify-content: space-around; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
-        .nav-item img { height: 45px; cursor: pointer; }
-        .nav-p-img { width: 40px; height: 40px; border-radius: 50%; border: 2px solid #ad1457; object-fit: cover; }
+        #detailArea { width: 100%; max-width: 600px; margin: 0 auto; padding-bottom: 20px; }
+        .detail-row { background-color: #fff0f5; color: #333; margin-bottom: 30px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .detail-header { background-color: #212121; color: #ffd700; padding: 12px; font-weight: bold; text-align: center; }
+        .detail-body { display: flex; padding: 20px; gap: 20px; align-items: flex-start; }
+        .detail-img { width: 100px; border-radius: 5px; flex-shrink: 0; }
+        .detail-text h4 { margin: 0 0 8px; color: #ad1457; border-bottom: 1px solid #ccc; font-size: 18px; }
+        .detail-text p { margin: 0; line-height: 1.6; font-size: 15px; }
+
+        .support-container { width: 100%; max-width: 600px; margin: 30px auto 120px; padding: 20px; background: #ffffff; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.08); text-align: center; color: #333; }
+        .support-title { font-size: 18px; font-weight: bold; color: #ad1457; margin-bottom: 15px; border-bottom: 2px solid #ffd700; display: inline-block; padding-bottom: 5px; }
+
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: #ffffff; display: flex; justify-content: space-around; align-items: center; padding: 8px 0; border-top: 1px solid #e0e0e0; z-index: 100; }
+        .nav-item img { height: 50px; cursor: pointer; }
+        .nav-p-img { width: 40px; height: 40px; border-radius: 50%; border: 2.2px solid #ad1457; object-fit: cover; }
 
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1001; justify-content: center; align-items: center; }
-        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; }
-        .modal-btn { display: block; margin: 10px 0; padding: 15px; border-radius: 12px; font-weight: bold; text-decoration: none; cursor: pointer; }
-
-        .support-container { width: 100%; max-width: 600px; margin: 30px auto 100px; padding: 20px; background: #fff; border-radius: 15px; text-align: center; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .spinner { border: 4px solid #f3f3f3; border-top: 4px solid #ad1457; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 20px auto; }
+        .modal-content { background: white; width: 85%; max-width: 400px; padding: 25px; border-radius: 20px; text-align: center; color: #333; }
+        
+        /* --- แก้ไขสไตล์ปุ่มใน Modal --- */
+        .modal-link-btn { display: block; background: #ffd700; color: #1a237e; padding: 15px; border-radius: 12px; font-weight: bold; text-decoration: none; margin-bottom: 10px; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        .auth-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 2000; justify-content: center; align-items: center; }
-        .auth-card { background: white; width: 90%; max-width: 380px; padding: 25px; border-radius: 20px; text-align: center; }
-        .auth-card input { width: 100%; padding: 10px; margin: 5px 0; border-radius: 8px; border: 1px solid #ddd; }
-        .auth-btn { width: 100%; background: #ad1457; color: white; border: none; padding: 12px; border-radius: 10px; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -161,7 +176,7 @@ onAuthStateChanged(auth, async (user) => {
         </div>
     </div>
 
-    <img src="IMG_7035.png" class="main-logo">
+    <img src="IMG_7035.png" alt="ไพ่ยิปซีความรัก" class="main-logo">
 
     <div id="selection-screen">
         <p style="font-weight: 300;">ตั้งจิตอธิษฐานนิ่งๆ แล้วเลือกไพ่ 4 ใบจากกอง</p>
@@ -169,42 +184,58 @@ onAuthStateChanged(auth, async (user) => {
         <div class="deck-container" id="deck"></div>
     </div>
 
-    <div id="loading-screen" style="display:none; text-align: center; margin-top: 50px;">
+    <div id="loading-screen">
         <div class="spinner"></div>
-        <p>กำลังเปิดคำทำนายความรัก...</p>
+        <p>กำลังเปิดคำทำนายความรัก... โปรดรอสักครู่</p>
     </div>
 
     <div id="result-screen">
-        <div class="btn-group" style="display:flex; justify-content:center; gap:10px; margin-bottom:20px;">
-            <button onclick="location.reload()" style="background:#ffd700; padding:10px 20px; border-radius:20px; font-weight:bold;">สุ่มใหม่</button>
-            <button onclick="alert('ฟีเจอร์บันทึกรูปกำลังเตรียมเปิดใช้งาน')" style="background:#ad1457; color:white; padding:10px 20px; border-radius:20px; font-weight:bold;">📸 บันทึกรูป</button>
+        <div class="btn-group">
+            <button class="btn-new" onclick="location.reload()">สุ่มใหม่อีกครั้ง</button>
+            <button class="btn-cap" onclick="alert('ฟีเจอร์นี้ต้องใช้ html2canvas ในการทำงาน')">📸 บันทึกรูปดวงความรัก</button>
         </div>
         <div id="captureArea"></div>
-        <h2 style="text-align: center; margin: 30px 0 15px;">📖 เจาะลึกคำทำนาย</h2>
+        <h2 style="text-align: center; margin: 40px 0 20px; color: #212121;">📖 เจาะลึกคำทำนายความรัก</h2>
         <div id="detailArea"></div>
 
         <div class="support-container">
-            <h3 style="color:#ad1457">☕ สนับสนุนเรา</h3>
-            <img src="IMG_7157.png" style="width:200px; border-radius:10px;">
+            <div class="donation-section">
+                <div class="support-title">☕ ร่วมสนับสนุนเว็บไซต์</div>
+                <img src="IMG_7157.png" alt="Donate QR" style="width:100%; max-width:250px; border-radius:10px;">
+                <p style="font-weight: bold; color: #ad1457;">ขอบพระคุณทุกการสนับสนุน 🙏</p>
+            </div>
+            <div class="personal-ad-box">
+                <div class="support-title">🔮 ดูดวงเจาะลึกกับนักพยากรณ์</div>
+                <img src="IMG_7155.png" alt="Personal Reading" style="width:100%; border-radius:12px;">
+                <a href="https://line.me/ti/p/@yourid" target="_blank" style="display:inline-block; background:#06c755; color:white; padding:12px 25px; border-radius:50px; text-decoration:none; margin-top:15px; font-weight:bold;">💬 ติดต่อทาง Line</a>
+            </div>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <div class="nav-item" onclick="toggleMenuModal(true)"><img src="IMG_7070.png"></div>
-        <div class="nav-item" onclick="alert('แชร์ลิ้งค์หน้าเว็บนี้ให้เพื่อนของคุณ')"><img src="IMG_7085.png"></div>
-        <div class="nav-item"><img src="ไม่มีชื่อ (2000 x 2000 px).png"></div>
-        <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()"><img id="nav-p-img" class="nav-p-img"></div>
+        <div class="nav-item" onclick="toggleMenuModal(true)">
+            <img src="IMG_7070.png">
+        </div>
+        <div class="nav-item" onclick="alert('แชร์ลิ้งค์หน้าเว็บนี้')">
+            <img src="IMG_7085.png">
+        </div>
+        <div class="nav-item" onclick="alert('เร็วๆ นี้')">
+            <img src="ไม่มีชื่อ (2000 x 2000 px).png">
+        </div>
+        <div class="nav-item" id="nav-profile-item" style="display:none;" onclick="goToProfile()">
+            <img id="nav-p-img" src="https://via.placeholder.com/40" class="nav-p-img">
+        </div>
     </nav>
 
-    <!-- Modal เลือกประเภทดูดวง (แก้ไขให้ลิงก์ได้) -->
+    <!-- Modal เลือกประเภทดูดวง (ซ่อมให้คลิกได้) -->
     <div id="tarot-modal" class="modal-overlay" onclick="toggleMenuModal(false)">
         <div class="modal-content" onclick="event.stopPropagation()">
-            <h3 style="margin-bottom:20px;">เลือกประเภทการดูดวง</h3>
+            <h3>เลือกประเภทการดูดวง</h3>
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <div onclick="window.location.href='index.html'" class="modal-btn" style="background:#ffd700; color:#1a237e;">ยิปซีความรัก</div>
-                <div onclick="window.location.href='work.html'" class="modal-btn" style="background:#f0f2ff; color:#1a237e; border:1px solid #ccc;">ยิปซีการงาน</div>
+                <a href="index.html" class="modal-link-btn">ไพ่ยิปซีความรัก</a>
+                <a href="work.html" class="modal-link-btn" style="background:#f0f2ff; border:1px solid #ccc;">ไพ่ยิปซีการงาน</a>
             </div>
-            <p style="margin-top:20px; cursor:pointer; color:#ad1457;" onclick="toggleMenuModal(false)">ปิดหน้าต่าง</p>
+            <p style="margin-top:20px; cursor:pointer;" onclick="toggleMenuModal(false)">ปิดหน้าต่างนี้</p>
         </div>
     </div>
 
@@ -221,7 +252,7 @@ onAuthStateChanged(auth, async (user) => {
     </div>
 
 <script>
-    // --- คำทำนาย 78 ใบ (คงเดิม 100%) ---
+    /* --- คำทำนาย 78 ใบ เดิม 100% --- */
     const rawData = [
         {n:"The Fool",i:"00-TheFool.jpg",m:"ความรักเริ่มต้นใหม่ ใสซื่อ เปิดใจ แต่ยังไม่แน่นอน/ สื่อถึงเจ้าชะตารักอิสระ ไม่พร้อมมีใคร หรือคนที่ถามถึงยังไม่คิดจริงจังมาก หรือไม่มีความคิดแง่ลบต่อเจ้าชะตา/ หรือการอยากเริ่มต้นใหม่แบบไม่คิดอะไร หรือไม่ผูกมัดมาก"},
         {n:"The Magician",i:"01-TheMagician.jpg",m:"เสน่ห์แรง ดึงดูดกันด้วยการสื่อสาร มีโอกาสเริ่มจริงจัง/ สื่อถึงการหว่านเสน่ห์ การคิดริเริ่มอะไรใหม่ๆ การติดต่อสื่อสาร/ สื่อที่มีความสนใจอยากจีบอยากเข้าหา"},
@@ -307,25 +338,22 @@ onAuthStateChanged(auth, async (user) => {
     const posTitles = ["ตัวคุณ", "เขาคนนั้น", "ปัจจุบัน", "อนาคต"];
 
     function createDeck() {
-        const deckDiv = document.getElementById("deck");
-        deckDiv.innerHTML = "";
+        const deckDiv = document.getElementById("deck"); deckDiv.innerHTML = "";
         let deck = [...rawData].sort(() => Math.random() - 0.5);
         for(let i=0; i<78; i++) {
             const card = document.createElement("div");
-            card.className = "card-back";
-            card.innerHTML = "🌙";
+            card.className = "card-back"; card.innerHTML = "🌙";
             if (window.customCardColor) card.style.backgroundColor = window.customCardColor;
             card.onclick = function() { 
                 if (selectedIndices.length < 4 && !this.classList.contains("selected")) {
-                    this.classList.add("selected");
-                    selectedIndices.push(deck[i]);
+                    this.classList.add("selected"); selectedIndices.push(deck[i]);
                     document.getElementById("counter").innerText = `เลือกแล้ว: ${selectedIndices.length} / 4`;
                     if (selectedIndices.length === 4) {
                         setTimeout(() => {
                             document.getElementById("selection-screen").style.display = "none";
                             document.getElementById("loading-screen").style.display = "block";
-                            setTimeout(showResults, 1200);
-                        }, 400);
+                            setTimeout(showResults, 1500);
+                        }, 500);
                     }
                 }
             };
@@ -341,7 +369,7 @@ onAuthStateChanged(auth, async (user) => {
         area.innerHTML = ""; detail.innerHTML = "";
         selectedIndices.forEach((card, i) => {
             area.innerHTML += `<div class="summary-card"><p style="font-size:9px; font-weight:bold; color:#ad1457; margin-bottom:3px;">${posTitles[i]}</p><img src="${card.i}"><h3>${card.n}</h3></div>`;
-            detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div class="detail-text"><h4>คำทำนาย</h4><p>${card.m}</p></div></div></div>`;
+            detail.innerHTML += `<div class="detail-row"><div class="detail-header">${posTitles[i]} : ${card.n}</div><div class="detail-body"><img src="${card.i}" class="detail-img"><div>${card.m}</div></div></div>`;
         });
     }
 
